@@ -24,9 +24,13 @@ Metrics/ClassLength:
   Exclude:
     - "spec/**/*"
 
+Metrics/MethodLength:
+  Max: 15
+
 Metrics/ModuleLength:
   Exclude:
     - "spec/**/*"
+    - "lib/ruby_llm/ag_ui/coverage.rb"
 
 RSpec/ExampleLength:
   Max: 30
@@ -40,6 +44,10 @@ RSpec/NestedGroups:
 RSpec/DescribeClass:
   Exclude:
     - "spec/integration/**/*"
+
+RSpec/SpecFilePathFormat:
+  Exclude:
+    - "spec/ruby_llm/ag_ui/configuration_spec.rb"
 
 Style/Documentation:
   Enabled: false

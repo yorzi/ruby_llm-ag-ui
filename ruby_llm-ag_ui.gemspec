@@ -36,15 +36,4 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'ag-ui-protocol', '~> 0.2.0'
   spec.add_dependency 'ruby_llm', '>= 2.1', '< 3.0'
-
-  spec.add_development_dependency 'appraisal'
-  spec.add_development_dependency 'dotenv'
-  spec.add_development_dependency 'json_schemer'
-  spec.add_development_dependency 'rake'
-  spec.add_development_dependency 'rspec'
-  spec.add_development_dependency 'rubocop'
-  spec.add_development_dependency 'rubocop-rake'
-  spec.add_development_dependency 'rubocop-rspec'
-  spec.add_development_dependency 'simplecov'
-  spec.add_development_dependency 'webmock'
 end
