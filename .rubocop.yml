@@ -21,6 +21,7 @@ Metrics/BlockLength:
     - "tasks/**/*"
 
 Metrics/ClassLength:
+  Max: 110
   Exclude:
     - "spec/**/*"
 
@@ -32,11 +33,19 @@ Metrics/ModuleLength:
     - "spec/**/*"
     - "lib/ruby_llm/ag_ui/coverage.rb"
 
+# The input parser and the schema-shaped validators are dense by nature: each
+# member the pinned schema defines is one guard. Splitting them further would
+# scatter one contract across several files.
+Metrics/AbcSize:
+  Exclude:
+    - "lib/ruby_llm/ag_ui/input.rb"
+    - "lib/ruby_llm/ag_ui/message_parser.rb"
+
 RSpec/ExampleLength:
   Max: 30
 
 RSpec/MultipleExpectations:
-  Max: 8
+  Max: 12
 
 RSpec/NestedGroups:
   Max: 6

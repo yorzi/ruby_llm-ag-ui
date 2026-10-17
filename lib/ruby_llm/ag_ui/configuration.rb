@@ -98,22 +98,5 @@ module RubyLLM
         }
       end
     end
-
-    class << self
-      # Yields the memoized configuration.
-      def configure
-        yield config
-      end
-
-      # The memoized configuration.
-      def config
-        @config ||= Configuration.new
-      end
-
-      # Replaces the configuration with defaults. Intended for tests.
-      def reset_configuration!
-        @config = Configuration.new
-      end
-    end
   end
 end

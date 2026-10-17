@@ -23,6 +23,26 @@ module RubyLLM
   # referred to as ::AgUiProtocol and the Rails framework as ::Rails, because
   # RubyLLM::AgUI::Rails would otherwise shadow them.
   module AgUI
+    class << self
+      # Yields the memoized configuration.
+      #
+      #   RubyLLM::AgUI.configure do |config|
+      #     config.run_store = MyRunStore.new
+      #   end
+      def configure
+        yield config
+      end
+
+      # The memoized RubyLLM::AgUI::Configuration.
+      def config
+        @config ||= Configuration.new
+      end
+
+      # Replaces the configuration with defaults. Intended for tests.
+      def reset_configuration!
+        @config = Configuration.new
+      end
+    end
   end
 end
 

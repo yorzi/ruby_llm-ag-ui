@@ -2,6 +2,12 @@
 
 RSpec.describe RubyLLM::AgUI::Protocol do
   let(:encoder) { AgUiProtocol::EventEncoder.new }
+  let(:minimal_input) do
+    {
+      'threadId' => 't1', 'runId' => 'r1', 'messages' => [],
+      'state' => {}, 'tools' => [], 'context' => [], 'forwardedProps' => {}
+    }
+  end
   let(:decoded) { JSON.parse(encoded.sub(/\Adata: /, '')) }
 
   describe RubyLLM::AgUI::Protocol::CancelledOutcome do
@@ -35,9 +41,10 @@ RSpec.describe RubyLLM::AgUI::Protocol do
 
   describe 'encoding through the protocol SDK' do
     it 'serializes RUN_STARTED with protocolVersion and RunFinishedEvent with a cancelled outcome' do
-      started = RubyLLM::AgUI::Protocol::RunStartedEvent.new(thread_id: 't1', run_id: 'r1')
+      started = RubyLLM::AgUI::Protocol::RunStartedEvent.new(thread_id: 't1', run_id: 'r1', input: minimal_input)
       started_payload = JSON.parse(encoder.encode(started).sub(/\Adata: /, ''))
       expect(started_payload).to include('type' => 'RUN_STARTED', 'protocolVersion' => '1.0')
+      expect_valid_event(started_payload)
 
       finished = RubyLLM::AgUI::Protocol::RunFinishedEvent.new(
         thread_id: 't1', run_id: 'r1', outcome: RubyLLM::AgUI::Protocol::CancelledOutcome.new
@@ -45,6 +52,7 @@ RSpec.describe RubyLLM::AgUI::Protocol do
       finished_payload = JSON.parse(encoder.encode(finished).sub(/\Adata: /, ''))
       expect(finished_payload).to include('type' => 'RUN_FINISHED')
       expect(finished_payload['outcome']).to eq('type' => 'cancelled')
+      expect_valid_event(finished_payload)
     end
 
     it 'still carries the SDK success and interrupt outcomes unchanged' do
@@ -52,7 +60,9 @@ RSpec.describe RubyLLM::AgUI::Protocol do
         thread_id: 't1', run_id: 'r1',
         outcome: AgUiProtocol::Core::Events::RunFinishedSuccessOutcome.new
       )
-      expect(JSON.parse(encoder.encode(success).sub(/\Adata: /, ''))['outcome']).to eq('type' => 'success')
+      payload = JSON.parse(encoder.encode(success).sub(/\Adata: /, ''))
+      expect(payload['outcome']).to eq('type' => 'success')
+      expect_valid_event(payload)
 
       interrupt = RubyLLM::AgUI::Protocol::RunFinishedEvent.new(
         thread_id: 't1', run_id: 'r1',
@@ -60,8 +70,9 @@ RSpec.describe RubyLLM::AgUI::Protocol do
           interrupts: [AgUiProtocol::Core::Types::Interrupt.new(id: 'i1', reason: 'tool_approval')]
         )
       )
-      expect(JSON.parse(encoder.encode(interrupt).sub(/\Adata: /, ''))['outcome'])
-        .to include('type' => 'interrupt')
+      payload = JSON.parse(encoder.encode(interrupt).sub(/\Adata: /, ''))
+      expect(payload['outcome']).to include('type' => 'interrupt')
+      expect_valid_event(payload)
     end
   end
 
