@@ -1,0 +1,13 @@
+/.bundle/
+/.yardoc
+/_yardoc/
+/coverage/
+/doc/
+/pkg/
+/tmp/
+*.gem
+*.rbc
+.bundler.lock
+.byebug_history
+.rspec_status
+Gemfile.lock
