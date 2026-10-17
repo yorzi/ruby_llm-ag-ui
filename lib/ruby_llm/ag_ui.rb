@@ -48,7 +48,10 @@ end
 
 loader = Zeitwerk::Loader.new
 loader.tag = 'ruby_llm-ag_ui'
-loader.inflector.inflect('sse' => 'SSE', 'ag_ui' => 'AgUI', 'ui' => 'UI', 'api' => 'API')
+# Zeitwerk inflections match a whole basename, so each entry names a file:
+# sse_writer.rb -> SSEWriter. Acronyms inside a longer name (ui, api) are not
+# inflected and would need their own entry.
+loader.inflector.inflect('sse_writer' => 'SSEWriter')
 loader.push_dir(File.expand_path('ag_ui', __dir__), namespace: RubyLLM::AgUI)
 # Errors are part of the boot contract: hosts rescue them without a lazy load.
 loader.ignore(File.expand_path('ag_ui/error.rb', __dir__))
