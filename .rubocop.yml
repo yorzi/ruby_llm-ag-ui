@@ -69,6 +69,8 @@ RSpec/DescribeClass:
 RSpec/SpecFilePathFormat:
   Exclude:
     - "spec/ruby_llm/ag_ui/configuration_spec.rb"
+    # The live checks are grouped by "needs a provider", not by class.
+    - "spec/live/**/*"
 
 Style/Documentation:
   Enabled: false

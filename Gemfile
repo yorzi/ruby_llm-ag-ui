@@ -16,9 +16,11 @@ group :development, :test do
   gem 'webmock'
 
   # Rails is optional at runtime. It is loaded only by the adapter specs and the
-  # examples, so the pure-Ruby core is verified without Rails.
-  gem 'actionpack', '>= 8.0'
-  gem 'activerecord', '>= 8.0'
-  gem 'railties', '>= 8.0'
+  # examples, so the pure-Ruby core is verified without Rails. RAILS_VERSION
+  # lets CI run the same suite against every supported Rails line.
+  rails_version = ENV.fetch('RAILS_VERSION', '>= 8.0')
+  gem 'actionpack', rails_version
+  gem 'activerecord', rails_version
+  gem 'railties', rails_version
   gem 'sqlite3'
 end

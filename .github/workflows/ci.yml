@@ -39,8 +39,8 @@ jobs:
       - name: Install the pinned Rails version
         run: |
           bundle update --conservative railties actionpack activerecord
-      - name: Run the Rails adapter specs
-        run: bundle exec rspec spec/ruby_llm/ag_ui/rails
+      - name: Run the test suite against that Rails version
+        run: bundle exec rspec
 
   lint:
     runs-on: ubuntu-latest
