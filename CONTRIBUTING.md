@@ -39,8 +39,24 @@ in spec descriptions. Offline CI uses fakes; live provider tests are opt-in and
 never required:
 
 ```bash
-RUBY_LLM_LIVE=1 OPENAI_API_KEY=... bundle exec rspec spec/live
+RUBY_LLM_LIVE=1 bundle exec rspec spec/live
 ```
+
+Load provider credentials through your environment or an untracked env file,
+never through command-line arguments. See the
+[compatibility guide](https://rubyllm-ag-ui.wangyaodi.com/compatibility/) for
+what each check establishes.
+
+## Documentation
+
+- Keep README to the project introduction, installation, one example, and links.
+- Keep usage, configuration, compatibility, and API details in `docs/`, the
+  source of the documentation site. Link to a guide instead of copying it.
+- Keep contributor rules here, shipped changes in [CHANGELOG.md](CHANGELOG.md),
+  and proposed work in [ROADMAP.md](ROADMAP.md).
+- Change a public API's guide in the same commit. Follow [AGENTS.md](AGENTS.md)
+  and build with `docs/bin/build.sh` before submitting documentation changes.
+- Keep example READMEs specific to running or adapting that example.
 
 ## Commit style
 

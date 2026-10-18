@@ -30,6 +30,13 @@ The package check installs dependencies in a fresh temporary gem home and requir
 
 These checks make no live provider call. Keep provider and client interoperability evidence in [Compatibility]({% link _reference/compatibility.md %}).
 
+## Review Release Scope
+
+Use the repository's [roadmap](https://github.com/yorzi/ruby_llm-ag-ui/blob/main/ROADMAP.md)
+for proposed iterations and the 1.0 release conditions. Guides describe available
+behavior; the roadmap describes planned work. Check the release's conditions
+before preparing its tag.
+
 ## Configure Trusted Publishing
 
 Before the first tag, register a pending trusted publisher on RubyGems with gem name `ruby_llm-ag_ui`, GitHub owner `yorzi`, repository `ruby_llm-ag-ui`, workflow `release.yml`, and environment `release`. The workflow uses a short-lived GitHub OIDC identity instead of a stored RubyGems API key.

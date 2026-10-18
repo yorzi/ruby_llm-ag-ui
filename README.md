@@ -2,145 +2,69 @@
 
 [![CI](https://github.com/yorzi/ruby_llm-ag-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/yorzi/ruby_llm-ag-ui/actions/workflows/ci.yml)
 
-Run [RubyLLM](https://rubyllm.com) 2.x chats as [AG-UI](https://github.com/ag-ui-protocol/ag-ui) 1.0 agent runs.
+Connect [RubyLLM](https://rubyllm.com) chats to [AG-UI](https://docs.ag-ui.com)
+clients over Server-Sent Events. The gem handles streaming text, tool calls, approval and resume,
+cancellation outcomes, and run identity. Use it from plain Ruby or with the
+optional Rails adapter.
 
-`ruby_llm-ag_ui` turns one RubyLLM chat turn into one AG-UI run: it validates the
-inbound `RunAgentInput`, maps RubyLLM streaming, tool and lifecycle behavior onto
-schema-valid AG-UI events, turns `requires_approval` pauses into interrupt
-outcomes with host-authorized resume, reports `Chat#cancel` as the cancelled
-outcome, and writes the stream as Server-Sent Events. A pure-Ruby core comes
-with an optional Rails adapter.
+Your application provides authentication, tool permissions, chat history, and
+the model. This is an unofficial community project, independent of the
+RubyLLM and AG-UI maintainers.
 
-> **Unofficial community project.** This gem is not affiliated with, endorsed
-> by, or maintained by the RubyLLM maintainers or the AG-UI protocol
-> maintainers. `RubyLLM::` and "AG-UI" appear here because this gem extends
-> those projects, not because it speaks for them.
+**[Documentation](https://rubyllm-ag-ui.wangyaodi.com/)** ·
+[Getting started](https://rubyllm-ag-ui.wangyaodi.com/getting-started/) ·
+[Rails guide](https://rubyllm-ag-ui.wangyaodi.com/rails-integration/) ·
+[Compatibility](https://rubyllm-ag-ui.wangyaodi.com/compatibility/)
 
-## Why
-
-If your agent already runs on RubyLLM and you want an AG-UI client (CopilotKit,
-`@ag-ui/client`, or another AG-UI consumer) in front of it, you currently have
-to hand-map RubyLLM callbacks, approval pauses and cancellation onto the AG-UI
-run lifecycle, and you have to parse and authorize `RunAgentInput` yourself:
-the community Ruby SDK builds outbound events but has no inbound parser. The
-usual results are wrong terminal events, duplicate runs on retry, approvals that
-are not bound to the call they approve, and cancellations reported as success.
-This gem removes that mapping work.
-
-## What it does and does not do
-
-It owns the RubyLLM → AG-UI mapping, input parsing, event ordering, run identity
-and terminal correctness. It is **not** an AG-UI core SDK, a schema fork, a chat
-UI, a CopilotKit runtime clone, or a second agent framework. RubyLLM owns the
-agent loop, tool execution, approval pauses and cancellation checkpoints. Your
-application owns identity, authorization, which tools and model a run may use,
-and persistence.
-
-## Status
-
-Version `0.1.0` is the first release. The pure-Ruby core, run store, approval/resume, cancel
-handling and the Rails adapter are implemented and covered by an offline test
-suite. Compatibility claims for real AG-UI clients and live providers are
-tracked in the [compatibility guide](https://rubyllm-ag-ui.wangyaodi.com/compatibility/) and are
-**not** asserted until recorded there.
-
-Read the [documentation site](https://rubyllm-ag-ui.wangyaodi.com/) for the
-guides, protocol coverage, compatibility matrix and security model. Its source
-is in [docs/](https://github.com/yorzi/ruby_llm-ag-ui/tree/main/docs).
-
-## Installation
+## Install
 
 ```ruby
-# Gemfile
 gem 'ruby_llm-ag_ui', '~> 0.1.0'
 ```
 
-```bash
-bundle install
-```
+Requires Ruby >= 3.2, RubyLLM >= 2.1 and < 3.0, and `ag-ui-protocol` 0.2.x.
+Run `bundle install` after adding the gem.
 
-Requires Ruby >= 3.2, RubyLLM >= 2.1 and `ag-ui-protocol` ~> 0.2.0.
-Runtime dependencies also select patched `cgi`, `resolv`, `uri` and `zlib` gems.
+## Stream a run
 
-## Quick start (pure Ruby)
-
-The host authenticates, authorizes and builds the chat; the gem writes the
-stream.
+Pass a chat authorized for the current actor, a shared run store, and an
+IO-like response stream from your application:
 
 ```ruby
-require 'ruby_llm'
 require 'ruby_llm/ag_ui'
 
-input = RubyLLM::AgUI::Input.parse(request_body)   # bounds, validates, digests
-chat  = host_chat_for(actor, input.thread_id)     # your RubyLLM::Chat
+input = RubyLLM::AgUI::Input.parse(request_body)
+chat = authorized_chat_for(current_user, input.thread_id)
 
 RubyLLM::AgUI::Run.new(
   chat: chat,
   input: input,
-  scope: "tenant:#{tenant.id}:actor:#{actor.id}", # from authenticated identity
+  scope: "actor:#{current_user.id}",
   store: run_store
-).stream(to: sse_io)
+).stream(to: response_stream)
 ```
 
-`scope` is what the run is reserved under: it must be a non-empty String the host
-builds from authenticated identity, never anything from the request body.
-
-`examples/pure_ruby/app.rb` is a runnable Rack endpoint that streams a complete
-run (a tool call, an approval pause and the run that answers it) with no
-provider and no credentials (`rake example`, or
-`rackup examples/pure_ruby/config.ru`). Set `RUBY_LLM_AG_UI_EXAMPLE_MODEL` to
-drive a real `RubyLLM::Chat` through the same code.
-
-## Rails
-
-The optional adapter provides a controller concern, a durable run store keyed
-by the actor's scope, and reconnect snapshots. It loads only when
-`Rails::Railtie` is already defined.
-
-```ruby
-class AgentRunsController < ApplicationController
-  include RubyLLM::AgUI::Rails::Streaming
-
-  def create
-    stream_ag_ui_run { |input| current_user.chats.find_or_create_by!(ag_ui_thread_id: input.thread_id) }
-  end
-
-  def ag_ui_scope
-    "actor:#{current_user.id}"
-  end
-end
-```
-
-See the [Rails integration guide](https://rubyllm-ag-ui.wangyaodi.com/rails-integration/) and `examples/rails_8`.
+Build `scope` from authenticated identity. See the
+[streaming guide](https://rubyllm-ag-ui.wangyaodi.com/streaming-runs/) for setup
+and the [examples](examples/) for integration code.
 
 ## Development
 
-```bash
+```sh
 bundle install
 bundle exec rspec
 bundle exec rubocop
-rake example        # prints a full AG-UI run as SSE
+bundle exec rake example # offline approval and resume demo, no API key needed
 ```
 
-The suite is offline: fakes instead of a provider, no network, no credentials.
-The only test that talks to a model is opt-in:
+The default suite is offline. Real client and provider verification is tracked
+in the [compatibility guide](https://rubyllm-ag-ui.wangyaodi.com/compatibility/).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development and documentation rules,
+[ROADMAP.md](ROADMAP.md) for the proposed path to 1.0, and
+[CHANGELOG.md](CHANGELOG.md) for shipped changes.
 
-```bash
-RUBY_LLM_LIVE=1 OPENAI_API_KEY=... bundle exec rspec spec/live
-```
+## License and security
 
-## Documentation
-
-- [Architecture](https://rubyllm-ag-ui.wangyaodi.com/overview/) - the components, run, and invariants.
-- [Protocol coverage](https://rubyllm-ag-ui.wangyaodi.com/protocol-coverage/) - all 31 AG-UI 1.0 event types
-  and what this gem does with each.
-- [Compatibility](https://rubyllm-ag-ui.wangyaodi.com/compatibility/) - what this repository verifies.
-- [Rails](https://rubyllm-ag-ui.wangyaodi.com/rails-integration/) - the controller concern, store, and transport.
-- [Security](https://rubyllm-ag-ui.wangyaodi.com/security-and-deployment/) - the threat model and deployment checklist.
-
-## License
-
-MIT. See [LICENSE.txt](LICENSE.txt). Read the [third-party notices](https://rubyllm-ag-ui.wangyaodi.com/third-party-notices/).
-
-This is an unofficial community project and is not affiliated with the RubyLLM or
-AG-UI maintainers. Report security issues privately. See [SECURITY.md](SECURITY.md).
+[MIT](LICENSE.txt). See the
+[third-party notices](https://rubyllm-ag-ui.wangyaodi.com/third-party-notices/)
+and report vulnerabilities through [SECURITY.md](SECURITY.md).
