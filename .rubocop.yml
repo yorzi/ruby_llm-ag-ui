@@ -20,10 +20,15 @@ Metrics/BlockLength:
     - "**/*.gemspec"
     - "tasks/**/*"
 
+# The mapper is one state machine: its methods are small, but the ordering rules
+# it enforces (text before tools, one open step, everything closed before the
+# terminal event) only make sense read together. Splitting the state across
+# objects would hide the transitions this class exists to make explicit.
 Metrics/ClassLength:
   Max: 110
   Exclude:
     - "spec/**/*"
+    - "lib/ruby_llm/ag_ui/mapper.rb"
 
 Metrics/MethodLength:
   Max: 15
