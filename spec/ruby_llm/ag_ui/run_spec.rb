@@ -494,4 +494,57 @@ RSpec.describe RubyLLM::AgUI::Run do
       end.not_to raise_error
     end
   end
+
+  describe 'a second turn on the same chat (FR-05-AC-01)' do
+    # RubyLLM's callbacks are additive: the callbacks the first run registered
+    # are still attached when that chat completes a second time, which is the
+    # normal shape of a conversation.
+    let(:chat) do
+      FakeChat.new do |fake|
+        fake.stream(content: 'Hello')
+        fake.reply(content: 'Hello')
+      end
+    end
+
+    def input_for(run_id)
+      RubyLLM::AgUI::Input.parse(
+        {
+          'threadId' => 'thread-1', 'runId' => run_id,
+          'messages' => [{ 'id' => 'm1', 'role' => 'user', 'content' => 'Hello' }]
+        }
+      )
+    end
+
+    def stream_turn(run_id, to:)
+      described_class.new(
+        chat: chat, input: input_for(run_id), scope: scope, store: store,
+        redact: RubyLLM::AgUI::Redaction.method(:none), clock: clock
+      ).stream(to: to)
+    end
+
+    it 'writes nothing more to the first run stream' do
+      first = StringIO.new
+      stream_turn('run-1', to: first)
+      finished = first.string
+
+      stream_turn('run-2', to: StringIO.new)
+
+      expect(first.string).to eq(finished)
+    end
+
+    it 'streams the second run as its own run, with its own ids' do
+      stream_turn('run-1', to: StringIO.new)
+
+      second = StringIO.new
+      record = stream_turn('run-2', to: second)
+
+      expect(record).to be_succeeded
+      expect(event_types(second)).to eq(
+        %w[RUN_STARTED STEP_STARTED TEXT_MESSAGE_START TEXT_MESSAGE_CONTENT TEXT_MESSAGE_END STEP_FINISHED
+           RUN_FINISHED]
+      )
+      expect(record.sequence).to eq(7)
+      expect(decode_sse(second).filter_map { |event| event['messageId'] }).to all(include('run-2'))
+    end
+  end
 end

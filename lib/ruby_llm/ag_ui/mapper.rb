@@ -56,10 +56,13 @@ module RubyLLM
         @open_step = nil
         @step_kind = nil
         @warned_redaction = false
+        @closed = false
       end
 
       # One streamed Chunk from Chat#complete.
       def chunk(chunk)
+        return [] if @closed
+
         events = text_events(chunk.content)
         events.concat(tool_call_events(chunk.tool_calls, streamed: true))
         events.concat(close_events) if chunk.finish_reason
@@ -73,6 +76,7 @@ module RubyLLM
       # reported only in the final message, still produces a valid AG-UI
       # sequence instead of a run that silently says nothing.
       def message(message)
+        return [] if @closed
         return tool_result_events(message) if message.role == :tool
 
         assistant_events(message)
@@ -84,17 +88,27 @@ module RubyLLM
       # provider streamed them, so this only opens a call the stream never
       # reported and closes the call so the client knows the arguments ended.
       def before_tool_call(tool_call)
+        return [] if @closed
+
         events = tool_call_events({ tool_call.id => tool_call }, streamed: false)
         events.concat(close_tool_calls)
         events
       end
 
-      # Closes any open text message, tool call and step.
+      # Closes any open text message, tool call and step, and closes the mapper.
       #
       # The caller writes these before the terminal event: AG-UI has no way to
       # close a run whose content is still open, and a client that never sees
       # TEXT_MESSAGE_END waits for a message that will not grow.
+      #
+      # Closing is final, and it is the reason a second turn on the same chat is
+      # safe. RubyLLM's callbacks are additive: the callbacks this run registered
+      # stay attached after the run ends, so the next `complete` on that chat
+      # fires this mapper again. A closed mapper maps nothing — the content it
+      # would open belongs to a run that is already over, and writing it would
+      # report the previous run's ids and steps inside the next run's stream.
       def close
+        @closed = true
         close_events
       end
 

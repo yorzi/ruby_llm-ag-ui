@@ -245,4 +245,28 @@ RSpec.describe RubyLLM::AgUI::Mapper do
       schema_valid!(events)
     end
   end
+
+  describe 'a closed mapper (a second turn on the same chat)' do
+    it 'maps nothing after the run it projected has ended' do
+      mapper.chunk(chunk(content: 'First turn.'))
+      mapper.message(assistant_message(content: 'First turn.'))
+      mapper.close
+
+      expect(mapper.chunk(chunk(content: 'Second turn.'))).to eq([])
+      expect(mapper.message(assistant_message(content: 'Second turn.'))).to eq([])
+      expect(mapper.message(tool_message(content: 'result', tool_call_id: 'call_1'))).to eq([])
+      expect(mapper.before_tool_call(tool_call(id: 'call_1', name: 'search', arguments: {}))).to eq([])
+      expect(mapper.close).to eq([])
+    end
+
+    it 'does not leak the previous run ids into the next run stream' do
+      first = mapper.chunk(chunk(content: 'First turn.')) + mapper.close
+
+      mapper.chunk(chunk(content: 'Second turn.'))
+
+      expect(types(first)).to eq(
+        %w[STEP_STARTED TEXT_MESSAGE_START TEXT_MESSAGE_CONTENT TEXT_MESSAGE_END STEP_FINISHED]
+      )
+    end
+  end
 end
