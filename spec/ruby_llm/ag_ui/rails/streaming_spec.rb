@@ -64,7 +64,7 @@ RSpec.describe RubyLLM::AgUI::Rails::Streaming do
       controller.stream_ag_ui_run { |_input| raise 'the chat must not be built' }
 
       code, message = controller.refusals.first
-      expect(code).to eq(:not_acceptable)
+      expect(code).to eq(406)
       expect(message).to include('text/event-stream')
       expect(controller.response.stream.string).to be_empty
       expect(store.latest_run(scope: 'tenant-1:actor-1', thread_id: 'thread-1')).to be_nil
@@ -75,7 +75,7 @@ RSpec.describe RubyLLM::AgUI::Rails::Streaming do
 
       controller.stream_ag_ui_run { |_input| chat }
 
-      expect(controller.refusals.first.first).to eq(:bad_request)
+      expect(controller.refusals.first.first).to eq(400)
       expect(controller.response.stream.string).to be_empty
     end
 
@@ -84,7 +84,7 @@ RSpec.describe RubyLLM::AgUI::Rails::Streaming do
 
       controller.stream_ag_ui_run { |_input| chat }
 
-      expect(controller.refusals.first.first).to eq(:bad_request)
+      expect(controller.refusals.first.first).to eq(400)
     end
 
     it 'refuses a body larger than the configured limit' do
@@ -94,7 +94,7 @@ RSpec.describe RubyLLM::AgUI::Rails::Streaming do
       controller.stream_ag_ui_run { |_input| chat }
 
       code, message = controller.refusals.first
-      expect(code).to eq(:bad_request)
+      expect(code).to eq(413)
       expect(message).to include('exceeds 32 bytes')
     end
 
@@ -104,7 +104,7 @@ RSpec.describe RubyLLM::AgUI::Rails::Streaming do
 
       second.stream_ag_ui_run { |_input| chat }
 
-      expect(second.refusals.first.first).to eq(:conflict)
+      expect(second.refusals.first.first).to eq(409)
       expect(second.response.stream.string).to be_empty
     end
 

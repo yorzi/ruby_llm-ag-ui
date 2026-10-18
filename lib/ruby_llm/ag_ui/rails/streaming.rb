@@ -33,6 +33,14 @@ module RubyLLM
       module Streaming
         extend ::ActiveSupport::Concern
 
+        # A client that cannot read an event stream, and tells us so.
+        NOT_ACCEPTABLE = 406
+        # `resolve_chat` found no chat for the thread this actor owns.
+        NOT_FOUND = 404
+        # The run cannot be served: a live run already has a stream, or the
+        # transport is gone.
+        CONFLICT = 409
+
         included do
           include ::ActionController::Live
         end
@@ -45,20 +53,23 @@ module RubyLLM
             raise ConfigurationError, 'stream_ag_ui_run needs a block that returns the chat for the input'
           end
 
-          return reject_ag_ui_request(:not_acceptable, accept_message) unless ag_ui_accept?
+          return reject_ag_ui_request(NOT_ACCEPTABLE, accept_message) unless ag_ui_accept?
 
           input = ag_ui_input
           chat = resolve_chat.call(input)
           run = ag_ui_run(chat, input)
 
           ag_ui_stream(run)
-        rescue ::RubyLLM::AgUI::InvalidInputError => e
-          reject_ag_ui_request(:bad_request, e.message)
+        rescue ::RubyLLM::AgUI::InputError => e
+          # Every refusal the gem itself decides carries the status it should be
+          # answered with: 400 for an input that cannot be accepted, 409 for an
+          # identity claimed with different input or a resume that answers
+          # nothing, 413 for a body past the configured bound.
+          reject_ag_ui_request(e.http_status, e.message)
         rescue ::ActiveRecord::RecordNotFound
-          reject_ag_ui_request(:not_found, 'There is no such thread.')
-        rescue ::RubyLLM::AgUI::RunConflictError, ::RubyLLM::AgUI::ResumeRejectedError,
-               ::RubyLLM::AgUI::StreamError => e
-          reject_ag_ui_request(:conflict, e.message)
+          reject_ag_ui_request(NOT_FOUND, 'There is no such thread.')
+        rescue ::RubyLLM::AgUI::StreamError => e
+          reject_ag_ui_request(CONFLICT, e.message)
         end
 
         # The tenant/actor key every reservation is bounded by.
@@ -94,17 +105,17 @@ module RubyLLM
         end
 
         # The request body, bounded before it is parsed: an agent input is small,
-        # and a host must not read an unbounded body from an unauthenticated
-        # request into memory.
+        # and a host must not read an unbounded body from a request into memory.
+        # The errors name the status a client should be answered with.
         def ag_ui_body
           limit = RubyLLM::AgUI.config.max_input_bytes
           body = request.body.read(limit + 1)
-          raise InvalidInputError, 'the request body is empty.' if body.nil? || body.strip.empty?
-          raise InvalidInputError, "the request body exceeds #{limit} bytes." if body.bytesize > limit
+          raise MalformedInputError, 'the request body is empty.' if body.nil? || body.strip.empty?
+          raise InputTooLargeError, "the request body exceeds #{limit} bytes." if body.bytesize > limit
 
           JSON.parse(body)
         rescue JSON::ParserError
-          raise InvalidInputError, 'the request body is not JSON.'
+          raise MalformedInputError, 'the request body is not JSON.'
         end
 
         def ag_ui_run(chat, input)
