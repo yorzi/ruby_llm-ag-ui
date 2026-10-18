@@ -29,6 +29,12 @@ The store reserves a run before any provider work. It keys the record by authent
 
 Reconnect does not replay text or tool deltas. Replaying deltas could display text twice or repeat a side effect. The host can publish a state snapshot for a finished run, but the gem does not reconstruct conversation history.
 
+The same rule applies to a completed approval-resume run. Resend its exact
+input, including `resume`, with the original run id to receive the recorded
+outcome without applying the decision again. A new run id that tries to answer
+an already answered interrupt is refused. Changing the input under an existing
+run id is a conflict.
+
 ## Choose a Store
 
 `MemoryStore` is suitable for tests and a single process. Its records disappear on restart and are not shared between workers. The Rails adapter's `ActiveRecordStore` persists records and redeems interrupts under a database lock.

@@ -32,9 +32,13 @@ module RubyLLM
         @input.resume?
       end
 
-      # Checks every entry and builds the plan. Writes nothing, so a rejected
-      # resume is rejected before the run opens a stream.
+      # Checks a new resume and builds its plan before the run opens a stream.
+      # An existing identity is left to reservation and reconnect: an exact
+      # retry reports its recorded outcome, never redeems the decision twice.
       def plan(now:)
+        existing = @store.find(scope: @scope, thread_id: @input.thread_id, run_id: @input.run_id)
+        return self if existing
+
         source = interrupted_run
         @plan = @input.resume.map { |entry| plan_entry(source, entry, now) }
         self

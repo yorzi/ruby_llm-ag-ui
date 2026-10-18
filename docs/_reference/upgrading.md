@@ -40,3 +40,10 @@ bin/rails generate ruby_llm:ag_ui:install
 ```
 
 Existing generated tables and initializers do not need to be regenerated for this command-name correction.
+
+## Completed Resume Retries in 0.2
+
+An exact retry of a completed resume run now returns its recorded outcome.
+Keep the original run id and full input, including `resume`. A new run id that
+tries to answer an already answered interrupt is still refused, and changed
+input under the original id is a conflict. No approval or tool is executed again.

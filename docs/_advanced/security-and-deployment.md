@@ -52,7 +52,7 @@ responsibility.
 - **Redeclare a run id.** The same identity with a *different* input is refused
   as `RunConflictError` (409 in the Rails adapter) rather than executed
   ("refuses the same identity with a changed input as a conflict").
-- **Run the same tool twice.** A resume is recorded once; a second answer to the
+- **Run the same tool twice.** A resume is recorded once; a new run that answers the
   same interrupt is refused without executing the tool ("refuses a decision
   another resume already recorded, without executing the tool").
 - **Widen what an approval covers.** An interrupt pins the tool call and the

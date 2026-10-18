@@ -15,6 +15,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Reconnect an exact completed resume request without redeeming its approval
+  again. Changed input still conflicts, and a new run cannot reuse an answered
+  interrupt.
+
 - Supply the required actor scope in the opt-in live-provider check and exercise
   its run setup offline, before provider verification.
 

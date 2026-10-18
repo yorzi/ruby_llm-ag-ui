@@ -238,9 +238,9 @@ RSpec.describe RubyLLM::AgUI::Run do
       end
     end
 
-    def resume(chat, interrupt_id, status: 'resolved')
+    def resume(chat, interrupt_id, status: 'resolved', run_id: 'run-2')
       body = {
-        'threadId' => 'thread-1', 'runId' => 'run-2',
+        'threadId' => 'thread-1', 'runId' => run_id,
         'messages' => [{ 'id' => 'm1', 'role' => 'user', 'content' => 'Hello' }],
         'resume' => [{ 'interruptId' => interrupt_id, 'status' => status }]
       }
@@ -322,12 +322,29 @@ RSpec.describe RubyLLM::AgUI::Run do
         .to raise_error(RubyLLM::AgUI::ResumeRejectedError, /expired/)
     end
 
+    it 'reconnects the exact completed resume without applying its decision again' do
+      interrupt = paused_run.pending_interrupts.first
+      resume(resuming_chat, interrupt.id)
+      chat = resuming_chat
+      target = resume(chat, interrupt.id)
+      expect(event_types(target)).to eq(%w[RUN_STARTED STATE_SNAPSHOT RUN_FINISHED])
+      expect(decode_sse(target).last['outcome']).to eq('type' => 'success')
+      expect(chat.decisions).to be_empty
+    end
+
+    it 'refuses changed input under a completed resume identity' do
+      interrupt = paused_run.pending_interrupts.first
+      resume(resuming_chat, interrupt.id)
+      expect { resume(resuming_chat, interrupt.id, status: 'cancelled') }
+        .to raise_error(RubyLLM::AgUI::RunConflictError)
+    end
+
     it 'refuses a decision another resume already recorded, without executing the tool' do
       interrupt = paused_run.pending_interrupts.first
       resume(resuming_chat, interrupt.id)
 
       chat = resuming_chat
-      expect { resume(chat, interrupt.id) }
+      expect { resume(chat, interrupt.id, run_id: 'run-3') }
         .to raise_error(RubyLLM::AgUI::ResumeRejectedError, /already been answered/)
       expect(chat.decisions).to be_empty
     end

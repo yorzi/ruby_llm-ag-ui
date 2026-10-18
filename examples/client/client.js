@@ -79,7 +79,7 @@ byId('reconnect').onclick = async () => {
   try {
     const replay = createAgent(input.messages, input.state);
     await replay.runAgent({ runId: input.runId, tools: input.tools, context: input.context,
-      forwardedProps: input.forwardedProps }, subscriber(true));
+      forwardedProps: input.forwardedProps, resume: input.resume }, subscriber(true));
   } catch (error) { status(`error: ${error.message}`); }
   finally { busy = false; }
 };
