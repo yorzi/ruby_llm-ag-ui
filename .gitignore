@@ -12,3 +12,7 @@
 .rspec_status
 Gemfile.lock
 !docs/Gemfile.lock
+
+/node_modules/
+/playwright-report/
+/test-results/

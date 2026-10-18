@@ -12,6 +12,9 @@ end
 # 'english' does not resolve to the stdlib.
 require 'English'
 require 'ruby_llm/ag_ui'
+require 'webmock/rspec'
+
+WebMock.disable_net_connect! unless ENV['RUBY_LLM_LIVE'] == '1'
 
 Dir[File.join(__dir__, 'support', '**', '*.rb')].each { |file| require file }
 

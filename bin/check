@@ -1,0 +1,10 @@
+#!/bin/sh
+# Fast deterministic checks. Add --browser for the real client/browser suite.
+set -eu
+cd "$(dirname "$0")/.."
+export RUBOCOP_CACHE_ROOT="${RUBOCOP_CACHE_ROOT:-$PWD/tmp/rubocop-cache}"
+bundle exec rake
+bundle exec rake example > /dev/null
+if [ "${1:-}" = "--browser" ]; then
+  bin/check-browser
+fi

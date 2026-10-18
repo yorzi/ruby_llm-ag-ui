@@ -8,6 +8,7 @@ group :development, :test do
   gem 'bundler-audit', '~> 0.9', require: false
   gem 'dotenv'
   gem 'json_schemer'
+  gem 'puma', '>= 7', '< 9'
   gem 'rake'
   gem 'rspec'
   gem 'rubocop'

@@ -1,0 +1,5 @@
+#!/bin/sh
+# Uses pinned development dependencies and an automatically stopped demo host.
+set -eu
+cd "$(dirname "$0")/.."
+exec node scripts/check-browser.mjs

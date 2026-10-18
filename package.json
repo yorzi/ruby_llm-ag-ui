@@ -1,0 +1,14 @@
+{
+  "name": "ruby-llm-ag-ui-development",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:demo": "node scripts/build-demo.mjs",
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {
+    "@ag-ui/client": "1.0.3",
+    "@playwright/test": "1.64.1",
+    "esbuild": "0.28.2"
+  }
+}

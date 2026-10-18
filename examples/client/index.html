@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RubyLLM AG-UI offline demo</title>
+  <style>
+    * { box-sizing: border-box; } body { margin: 0; background: #f4f6f9; color: #203047; font: 16px/1.55 system-ui,sans-serif; }
+    main { max-width: 880px; margin: auto; padding: 28px 20px; } h1 { line-height: 1.2; } section { background: white; border: 1px solid #d7dfeb; border-radius: 10px; padding: 20px; margin: 16px 0; }
+    label { display: inline-block; margin: 6px 12px 8px 0; } select,input,button { font: inherit; padding: 8px; max-width: 100%; } button { cursor: pointer; background: #294e85; color: white; border: 0; border-radius: 5px; margin: 4px 6px 4px 0; } button:disabled { opacity: .5; cursor: default; }
+    input { width: 100%; } pre,li { white-space: pre-wrap; overflow-wrap: anywhere; } pre { font-size: 13px; } output { font-weight: 700; } :focus-visible { outline: 3px solid #a65f00; outline-offset: 3px; } ul { padding-left: 22px; } .muted { color: #52647c; }
+  </style>
+</head>
+<body><main>
+  <h1>RubyLLM AG-UI</h1>
+  <p>Offline client demo · <code>@ag-ui/client 1.0.3</code></p>
+  <p class="muted">Synthetic chats and tool effects. No provider call, credentials, or real order.</p>
+  <section aria-label="Fixture settings">
+    <label>Backend <select id="backend"><option value="rails">Rails + SQLite</option><option value="core">Plain Ruby</option></select></label>
+    <label>Actor <select id="actor"><option>alice</option><option>bob</option></select></label>
+    <label>Scenario <select id="scenario"><option value="approval">Tool approval</option><option value="text">Text</option><option value="failure">Failure</option><option value="cancelled">Cancelled</option></select></label>
+    <button id="reset">New conversation</button>
+  </section>
+  <section aria-label="Conversation">
+    <p>Run status: <output id="status" aria-live="polite">idle</output></p>
+    <ul id="messages" aria-label="Messages"></ul>
+    <form id="turn"><label for="prompt">Message</label><input id="prompt" value="Cancel order 42." required><button id="run">Run turn</button></form>
+    <div id="approval" hidden><p>A tool needs your decision.</p><button id="approve">Approve</button><button id="deny">Deny</button></div>
+    <button id="reconnect" disabled>Reconnect completed run</button>
+    <p id="tool" aria-live="polite"></p><p id="progress" aria-live="polite"></p>
+  </section>
+  <details><summary>Event trace</summary><pre id="events"></pre></details>
+  <script type="module" src="/client.js"></script>
+</main></body>
+</html>

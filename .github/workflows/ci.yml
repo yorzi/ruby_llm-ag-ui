@@ -63,3 +63,25 @@ jobs:
           bundler-cache: true
       - name: Build the gem
         run: gem build ruby_llm-ag_ui.gemspec
+
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: bin/check-browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-fixtures
+          path: tmp/browser/
+          retention-days: 7

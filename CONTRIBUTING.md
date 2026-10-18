@@ -7,8 +7,7 @@ with tests are the easiest to accept.
 
 ```bash
 bundle install
-bundle exec rspec
-bundle exec rubocop
+bin/check
 ```
 
 ## Ground rules
@@ -32,6 +31,11 @@ bundle exec rubocop
   CHANGELOG entry for user-visible changes.
 
 ## Tests
+
+Run focused specs first, then `bin/check`. For client or demo changes, also run
+`bin/check-browser` and inspect its screenshots. The browser suite uses synthetic
+fixtures, a real AG-UI client, and a temporary local server. Keep artifacts in
+ignored `tmp/`; shut down all task-owned processes when the check finishes.
 
 Every behavior change needs a test, and lifecycle, identity and security changes
 need their negative case too. The acceptance IDs (FR-01..FR-08) are referenced

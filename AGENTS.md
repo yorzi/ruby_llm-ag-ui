@@ -13,3 +13,17 @@ The documentation site lives in `docs/`: Jekyll with the jekyll-vitepress-theme,
 - Cross-link with `{% link _collection/page.md %}`, never hard-coded URLs. Keep values that change between releases in `_config.yml` and read them as `site.*` variables.
 - Never edit generated pages; regenerate them.
 - Public methods and classes get doc comments; mark internal code as internal.
+
+## Development and validation
+
+- Start each behavior change with a focused failing test. Run `bin/check` after
+  focused tests pass. Commit one verified unit at a time.
+- Use the maintained offline example for client and browser tests. Test the
+  packaged gem in a temporary host for generator or installation changes.
+- Run `bin/check-browser` for demo or client changes. Inspect its screenshots;
+  add an assertion when a reproducible regression can be automated.
+- Keep generated logs, screenshots, databases, and browser traces under ignored
+  `tmp/`. Use synthetic fixtures and no provider credentials in browser tests.
+- Run database suites sequentially or with independent temporary databases.
+  Keep offline, real-client, live-provider, local, and remote-CI results distinct.
+- All task-owned servers and browser processes bind loopback and stop on exit.
