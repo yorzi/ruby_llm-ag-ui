@@ -86,6 +86,27 @@ RSpec.describe RubyLLM::AgUI::Interrupt do
     end
   end
 
+  describe '#to_storage (a durable store round trip)' do
+    it 'keeps the arguments digest and creation time #to_h leaves out' do
+      stored = described_class.from_storage(build.to_storage)
+
+      expect(stored.id).to eq('i1')
+      expect(stored.arguments_digest).to eq('digest-1')
+      expect(stored.created_at).to eq(now)
+      expect(stored).to be_pending
+      expect(stored.message).to eq('Approve cancelling order 42?')
+    end
+
+    it 'round-trips a decision and its time through JSON' do
+      decided = build.decide(RubyLLM::AgUI::Interrupt::DENIED, now: now + 3)
+      stored = described_class.from_storage(JSON.parse(JSON.generate(decided.to_storage)))
+
+      expect(stored).to be_denied
+      expect(stored.decided_at).to eq(now + 3)
+      expect(stored.expires_at).to eq(expires_at)
+    end
+  end
+
   describe 'argument binding' do
     it 'exposes the arguments digest for the pre-execution comparison' do
       expect(build.arguments_digest).to eq('digest-1')

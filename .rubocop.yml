@@ -24,11 +24,18 @@ Metrics/BlockLength:
 # it enforces (text before tools, one open step, everything closed before the
 # terminal event) only make sense read together. Splitting the state across
 # objects would hide the transitions this class exists to make explicit.
+#
+# Interrupt and RunRecord are frozen value objects: nearly every line is a
+# field or a one-line transition over those fields, and their length grows with
+# the data a run has to keep, not with branching. Their transitions are unit
+# tested one by one.
 Metrics/ClassLength:
   Max: 110
   Exclude:
     - "spec/**/*"
+    - "lib/ruby_llm/ag_ui/interrupt.rb"
     - "lib/ruby_llm/ag_ui/mapper.rb"
+    - "lib/ruby_llm/ag_ui/run_record.rb"
 
 Metrics/MethodLength:
   Max: 15

@@ -158,13 +158,44 @@ module RubyLLM
           'toolCallId' => tool_call_id,
           'reason' => reason,
           'message' => message,
-          'expiresAt' => expires_at&.utc&.iso8601,
+          'expiresAt' => iso8601(expires_at),
           'status' => status.to_s,
-          'decidedAt' => decided_at&.utc&.iso8601
+          'decidedAt' => iso8601(decided_at)
         }
       end
 
+      # The interrupt in the form a durable store keeps, which #to_h is not: a
+      # store that dropped the arguments digest could not re-verify that a
+      # resume answers the call it approved, and one that dropped the creation
+      # time could not order two interrupts on a thread.
+      def to_storage
+        to_h.merge(
+          'argumentsDigest' => arguments_digest,
+          'createdAt' => iso8601(created_at)
+        )
+      end
+
+      # Rebuilds an interrupt stored by #to_storage.
+      def self.from_storage(hash)
+        new(
+          id: hash.fetch('id'), tool_call_id: hash.fetch('toolCallId'),
+          arguments_digest: hash.fetch('argumentsDigest'), reason: hash.fetch('reason'),
+          message: hash['message'], expires_at: parse_time(hash['expiresAt']),
+          status: hash.fetch('status').to_sym, decided_at: parse_time(hash['decidedAt']),
+          created_at: parse_time(hash['createdAt'])
+        )
+      end
+
+      # The time +value+ names, or nil. Storage writes ISO 8601 strings.
+      def self.parse_time(value)
+        value.nil? ? nil : Time.iso8601(value)
+      end
+
       private
+
+      def iso8601(time)
+        time&.utc&.iso8601
+      end
 
       def assert_status!(value)
         return value if STATUSES.include?(value)

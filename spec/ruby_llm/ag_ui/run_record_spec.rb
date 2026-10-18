@@ -142,4 +142,40 @@ RSpec.describe RubyLLM::AgUI::RunRecord do
       expect(record.to_h).to include('scope' => 'tenant-1:user-1', 'status' => 'started', 'sequence' => 0)
     end
   end
+
+  describe '#to_storage (a durable store round trip)' do
+    it 'keeps every field a resume has to re-verify, including the arguments digest' do
+      record = build.start(now: later).interrupted([interrupt], now: later).replace_interrupt(
+        interrupt.decide(:approved, now: later + 1), now: later + 1
+      )
+
+      stored = described_class.from_storage(record.to_storage)
+
+      expect(stored.to_h).to eq(record.to_h)
+      expect(stored.interrupts.first.arguments_digest).to eq('d1')
+      expect(stored.interrupts.first).to be_approved
+      expect(stored.interrupts.first.decided_at).to eq(later + 1)
+    end
+
+    it 'survives a round trip through JSON, which a column would impose' do
+      failure = { 'message' => 'Sanitized.', 'code' => 'internal_error' }
+      record = build.finish(described_class::FAILED, now: later, failure: failure)
+
+      stored = described_class.from_storage(JSON.parse(JSON.generate(record.to_storage)))
+
+      expect(stored.to_h).to eq(record.to_h)
+      expect(stored.failure).to eq(failure)
+      expect(stored.created_at).to eq(created_at)
+      expect(stored.updated_at).to eq(later)
+    end
+
+    it 'leaves an unanswered interrupt pending, not decided' do
+      record = build.start(now: later).interrupted([interrupt], now: later)
+
+      stored = described_class.from_storage(record.to_storage)
+
+      expect(stored.interrupts.first).to be_pending
+      expect(stored.pending_interrupts.map(&:id)).to eq(['i1'])
+    end
+  end
 end

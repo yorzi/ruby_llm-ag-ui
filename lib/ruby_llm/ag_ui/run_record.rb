@@ -174,6 +174,29 @@ module RubyLLM
         }
       end
 
+      # The record in the form a durable store keeps. #to_h is the reporting
+      # shape; it leaves out what an interrupt needs to be re-verified, so a
+      # store round-trips this instead.
+      def to_storage
+        to_h.merge('interrupts' => interrupts.map(&:to_storage))
+      end
+
+      # Rebuilds a record stored by #to_storage.
+      def self.from_storage(hash)
+        new(
+          scope: hash.fetch('scope'), thread_id: hash.fetch('threadId'), run_id: hash.fetch('runId'),
+          digest: hash.fetch('digest'), status: hash.fetch('status').to_sym,
+          sequence: hash.fetch('sequence'), snapshot: hash['snapshot'], failure: hash['failure'],
+          interrupts: interrupts_from_storage(hash['interrupts']),
+          created_at: Interrupt.parse_time(hash.fetch('createdAt')),
+          updated_at: Interrupt.parse_time(hash.fetch('updatedAt'))
+        )
+      end
+
+      def self.interrupts_from_storage(list)
+        (list || []).map { |interrupt| Interrupt.from_storage(interrupt) }
+      end
+
       private
 
       # rubocop:disable-next Metrics/ParameterLists -- one keyword per field, each defaulted to the record's own
