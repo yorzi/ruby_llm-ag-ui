@@ -21,7 +21,19 @@ module RubyLLM
     module Store
       # The interface every store implements. Subclass it to get the documented
       # contract in one place, or duck-type it.
+      #
+      # The private helpers below are not part of the interface: they are the
+      # parts of the contract two stores would otherwise implement twice (the
+      # scope key, the clock, the replay rule). A store that duck-types the
+      # public methods has to satisfy them itself.
       class Base
+        # Raised when a host passes a scope that cannot identify a tenant.
+        SCOPE_MESSAGE = 'scope must be a non-empty String built from authenticated identity'
+
+        def initialize(clock: nil)
+          @clock = clock || RubyLLM::AgUI.config.clock
+        end
+
         # Claims (scope, thread_id, run_id) for +digest+.
         #
         # Returns a Reservation whose record is the run's authoritative state.
@@ -72,6 +84,38 @@ module RubyLLM
         # recorded and nothing is executed.
         def redeem_interrupt(scope:, thread_id:, interrupt_id:, decision:, now:)
           raise NotImplementedError
+        end
+
+        private
+
+        # The host's scope must be a canonical string. An arbitrary object would
+        # make two requests from the same tenant hash differently, so a retry
+        # would not attach and the run would execute twice.
+        def scope_key(scope)
+          raise ConfigurationError, SCOPE_MESSAGE unless scope.is_a?(String) && !scope.empty?
+
+          scope
+        end
+
+        def now
+          @clock.call
+        end
+
+        def blank?(value)
+          value.nil? || (value.respond_to?(:empty?) && value.empty?)
+        end
+
+        # A repeat of the stored decision is a replay: the caller is told the
+        # answer already given and must not execute the tool again. A second
+        # answer that disagrees rescinds nothing and is refused.
+        def replay(interrupt, decision)
+          return Redemption.new(interrupt: interrupt, replayed: true) if interrupt.status == decision
+
+          raise ResumeRejectedError, "interrupt #{interrupt.id} was already #{interrupt.status}"
+        end
+
+        def conflict_message(record)
+          "run #{record.run_id} on thread #{record.thread_id} was already reserved with a different input"
         end
       end
     end

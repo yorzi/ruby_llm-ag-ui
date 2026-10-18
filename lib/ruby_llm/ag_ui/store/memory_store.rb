@@ -16,12 +16,8 @@ module RubyLLM
       # answer an interrupt is the only one that records a decision. The private
       # helpers assume the lock is already held and never take it themselves.
       class MemoryStore < Base
-        # Raised when a host passes a scope that cannot identify a tenant.
-        SCOPE_MESSAGE = 'scope must be a non-empty String built from authenticated identity'
-
         def initialize(clock: nil)
-          super()
-          @clock = clock || RubyLLM::AgUI.config.clock
+          super
           @records = {}
           @threads = {}
           @lock = Mutex.new
@@ -99,12 +95,6 @@ module RubyLLM
 
         # A repeat of the stored decision is a replay: the caller is told the
         # answer already given and must not execute the tool again.
-        def replay(interrupt, decision)
-          return Redemption.new(interrupt: interrupt, replayed: true) if interrupt.status == decision
-
-          raise ResumeRejectedError, "interrupt #{interrupt.id} was already #{interrupt.status}"
-        end
-
         def record_for_interrupt(scope, thread_id, interrupt_id)
           records_for(scope, thread_id).reverse.find { |record| record.interrupt(interrupt_id) }
         end
@@ -113,10 +103,6 @@ module RubyLLM
           raise RunConflictError, conflict_message(existing) if existing.digest != digest
 
           Reservation.new(record: existing, status: Reservation::ATTACHED)
-        end
-
-        def conflict_message(record)
-          "run #{record.run_id} on thread #{record.thread_id} was already reserved with a different input"
         end
 
         def records_for(scope, thread_id)
@@ -130,23 +116,6 @@ module RubyLLM
 
         def thread_key(scope, thread_id)
           [scope_key(scope), thread_id]
-        end
-
-        # The host's scope must be a canonical string. An arbitrary object would
-        # make two requests from the same tenant hash differently, so a retry
-        # would not attach and the run would execute twice.
-        def scope_key(scope)
-          raise ConfigurationError, SCOPE_MESSAGE unless scope.is_a?(String) && !scope.empty?
-
-          scope
-        end
-
-        def blank?(value)
-          value.nil? || (value.respond_to?(:empty?) && value.empty?)
-        end
-
-        def now
-          @clock.call
         end
       end
     end
