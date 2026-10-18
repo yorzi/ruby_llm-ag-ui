@@ -1,6 +1,6 @@
 # ruby_llm-ag_ui
 
-[![CI](https://github.com/yorzi/ruby_llm-ag_ui/actions/workflows/ci.yml/badge.svg)](https://github.com/yorzi/ruby_llm-ag_ui/actions/workflows/ci.yml)
+[![CI](https://github.com/yorzi/ruby_llm-ag-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/yorzi/ruby_llm-ag-ui/actions/workflows/ci.yml)
 
 Run [RubyLLM](https://rubyllm.com) 2.x chats as [AG-UI](https://github.com/ag-ui-protocol/ag-ui) 1.0 agent runs.
 
@@ -44,8 +44,8 @@ suite. Compatibility claims for real AG-UI clients and live providers are
 tracked in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) and are
 **not** asserted until recorded there.
 
-See [docs/](docs) for the architecture, the protocol coverage map and the
-compatibility matrix.
+See [docs/](docs) for the architecture, the protocol coverage map, the
+compatibility matrix and the security model.
 
 ## Installation
 
@@ -69,21 +69,47 @@ stream.
 require 'ruby_llm'
 require 'ruby_llm/ag_ui'
 
-input = RubyLLM::AgUI::Input.parse(request_body, max_bytes: 256_000)
-chat  = host_chat_for(actor, input.thread_id) # your RubyLLM::Chat
+input = RubyLLM::AgUI::Input.parse(request_body)   # bounds, validates, digests
+chat  = host_chat_for(actor, input.thread_id)     # your RubyLLM::Chat
 
-RubyLLM::AgUI::Run.new(chat: chat, input: input, actor: actor, store: run_store)
-                   .stream(to: sse_io)
+RubyLLM::AgUI::Run.new(
+  chat: chat,
+  input: input,
+  scope: "tenant:#{tenant.id}:actor:#{actor.id}", # from authenticated identity
+  store: run_store
+).stream(to: sse_io)
 ```
 
+`scope` is what the run is reserved under: it must be a non-empty String the host
+builds from authenticated identity, never anything from the request body.
+
 `examples/pure_ruby/app.rb` is a runnable Rack endpoint that streams a complete
-run, including a tool call and an approval pause, against a fake provider.
+run — a tool call, an approval pause and the run that answers it — with no
+provider and no credentials (`rake example`, or
+`rackup examples/pure_ruby/config.ru`). Set `RUBY_LLM_AG_UI_EXAMPLE_MODEL` to
+drive a real `RubyLLM::Chat` through the same code.
 
 ## Rails
 
-The optional adapter provides a controller concern, a thread mapping for
-`acts_as_chat` records, a run store and reconnect snapshots. See
-[docs/RAILS.md](docs/RAILS.md) and `examples/rails_8`.
+The optional adapter provides a controller concern, a durable run store keyed
+by the actor's scope, and reconnect snapshots. It loads only when
+`Rails::Railtie` is already defined.
+
+```ruby
+class AgentRunsController < ApplicationController
+  include RubyLLM::AgUI::Rails::Streaming
+
+  def create
+    stream_ag_ui_run { |input| current_user.chats.find_or_create_by!(ag_ui_thread_id: input.thread_id) }
+  end
+
+  def ag_ui_scope
+    "actor:#{current_user.id}"
+  end
+end
+```
+
+See [docs/RAILS.md](docs/RAILS.md) and `examples/rails_8`.
 
 ## Development
 
@@ -94,7 +120,28 @@ bundle exec rubocop
 rake example        # prints a full AG-UI run as SSE
 ```
 
+The suite is offline: fakes instead of a provider, no network, no credentials.
+The only test that talks to a model is opt-in:
+
+```bash
+RUBY_LLM_LIVE=1 OPENAI_API_KEY=... bundle exec rspec spec/live
+```
+
+## Documentation
+
+- [Architecture](docs/ARCHITECTURE.md) — the components, the run, the invariants.
+- [Protocol coverage](docs/PROTOCOL_COVERAGE.md) — all 31 AG-UI 1.0 event types
+  and what this gem does with each.
+- [Compatibility](docs/COMPATIBILITY.md) — what is asserted and what is not.
+- [Rails](docs/RAILS.md) — the controller concern, the store, resume, transport.
+- [Security](docs/SECURITY.md) — the threat model and the deployment checklist.
+- [Upstream issue drafts](docs/upstream/ag-ui-protocol-0.2.0.md) — the five gaps
+  in `ag-ui-protocol` 0.2.0 this gem works around.
+
 ## License
 
 MIT. See [LICENSE.txt](LICENSE.txt). Third-party notices are in
 [docs/LICENSES.md](docs/LICENSES.md).
+
+This is an unofficial community project and is not affiliated with the RubyLLM or
+AG-UI maintainers. Report security issues privately — see [SECURITY.md](SECURITY.md).

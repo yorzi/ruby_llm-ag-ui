@@ -16,7 +16,7 @@ module RubyLLM
       # The statuses an entry may have.
       #   :produced     — emitted from real RubyLLM data on the supported path
       #   :optional     — emitted only when the host opts in and real data exists
-      #   :host_owned   — the host supplies the payload; the gem only encodes it
+      #   :host_owned   — the host owns the payload; the gem does not produce it
       #   :not_produced — the producer has no data for it and never fabricates it
       STATUSES = %i[produced optional host_owned not_produced].freeze
 
@@ -63,9 +63,9 @@ module RubyLLM
         'TOOL_CALL_END' => [:produced, 'Closed before the call runs or the run ends.'],
         'TOOL_CALL_RESULT' => [:produced, 'Tool result after the host redaction policy.'],
         'TOOL_CALL_CHUNK' => [:not_produced, 'Convenience form; the gem emits the explicit triad.'],
-        'MESSAGES_SNAPSHOT' => [:host_owned, "Reconnect: the host's own history; the gem never re-synthesizes ids."],
+        'MESSAGES_SNAPSHOT' => [:host_owned, 'Not produced: history is the host\'s; ids are never re-synthesized.'],
         'STATE_SNAPSHOT' => [:produced, 'Reconnect: the state the host gave the run, never replayed deltas.'],
-        'STATE_DELTA' => [:host_owned, 'Only schema-checked patches from the host.'],
+        'STATE_DELTA' => [:host_owned, 'Not produced: patches are the host\'s to describe; the gem invents none.'],
         'ACTIVITY_SNAPSHOT' => [:not_produced, 'No ACTIVITY_* projection yet; after_tool_progress is not mapped.'],
         'ACTIVITY_DELTA' => [:not_produced, 'No ACTIVITY_* projection yet; the gem does not invent patches.'],
         'REASONING_START' => [:not_produced, 'Private reasoning is not emitted until a host opts in.'],
