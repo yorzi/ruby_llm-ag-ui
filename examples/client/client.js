@@ -35,6 +35,11 @@ function subscriber(replay = false) {
     },
   };
 }
+function setBusy(value) {
+  busy = value;
+  byId('run').disabled = value || interrupts.length > 0;
+  for (const id of ['reset', 'backend', 'actor', 'scenario', 'approve', 'deny']) byId(id).disabled = value;
+}
 function createAgent(initialMessages = [], initialState = {}) {
   const { backend, actor, scenario } = settings();
   return new HttpAgent({
@@ -51,21 +56,22 @@ function reset() {
   threadId = crypto.randomUUID();
   agent = createAgent();
   interrupts = []; lastInput = undefined; events.length = 0;
+  setBusy(false);
   render([]); status('idle');
   byId('approval').hidden = true;
   byId('reconnect').disabled = true;
   for (const name of ['events', 'tool', 'progress']) byId(name).textContent = '';
 }
 async function execute(resume) {
-  if (busy) return;
-  busy = true; status('running'); byId('run').disabled = true;
+  if (busy || (!resume && interrupts.length > 0)) return;
+  setBusy(true); status('running'); byId('approval').hidden = true;
   try {
     if (!resume) agent.addMessage({ id: crypto.randomUUID(), role: 'user', content: byId('prompt').value });
     await agent.runAgent({ runId: crypto.randomUUID(), ...(resume ? { resume } : {}) }, subscriber());
     byId('reconnect').disabled = interrupts.length > 0;
   } catch (error) {
     status(`error: ${error.message}`);
-  } finally { busy = false; byId('run').disabled = false; }
+  } finally { setBusy(false); }
 }
 byId('turn').addEventListener('submit', (event) => { event.preventDefault(); execute(); });
 byId('approve').onclick = () => execute(interrupts.map((i) => ({ interruptId: i.id, status: 'resolved' })));
@@ -74,14 +80,14 @@ byId('reset').onclick = reset;
 for (const name of ['backend', 'actor', 'scenario']) byId(name).onchange = reset;
 byId('reconnect').onclick = async () => {
   if (busy || !lastInput) return;
-  busy = true;
+  setBusy(true); status('reconnecting');
   const input = structuredClone(lastInput);
   try {
     const replay = createAgent(input.messages, input.state);
     await replay.runAgent({ runId: input.runId, tools: input.tools, context: input.context,
       forwardedProps: input.forwardedProps, resume: input.resume }, subscriber(true));
   } catch (error) { status(`error: ${error.message}`); }
-  finally { busy = false; }
+  finally { setBusy(false); }
 };
 window.demo = { get events() { return events; }, get threadId() { return threadId; }, get input() { return lastInput; } };
 reset();

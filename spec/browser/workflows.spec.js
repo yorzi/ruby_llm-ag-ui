@@ -76,6 +76,21 @@ for (const backend of ['core', 'rails']) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   });
 
+  test(`${backend}: an interrupt blocks another turn and a new conversation restores controls`, async ({ page }) => {
+    await page.goto(`/?backend=${backend}`);
+    await page.getByRole('button', { name: 'Run turn', exact: true }).click();
+    await expect(page.locator('#status')).toHaveText('interrupt');
+    await expect(page.getByRole('button', { name: 'Run turn', exact: true })).toBeDisabled();
+    const before = await page.evaluate(() => window.demo.threadId);
+    await page.getByRole('button', { name: 'New conversation' }).click();
+    await expect(page.locator('#status')).toHaveText('idle');
+    await expect(page.getByRole('button', { name: 'Run turn', exact: true })).toBeEnabled();
+    expect(await page.evaluate(() => window.demo.threadId)).not.toBe(before);
+    await page.getByLabel('Scenario', { exact: true }).selectOption('text');
+    await page.getByRole('button', { name: 'Run turn', exact: true }).click();
+    await expect(page.locator('#status')).toHaveText('success');
+  });
+
   test(`${backend}: failure is sanitized`, async ({ page }) => {
     await page.goto(`/?backend=${backend}&scenario=failure`);
     await page.getByRole('button', { name: 'Run turn', exact: true }).click();
