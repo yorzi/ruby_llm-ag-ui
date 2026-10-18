@@ -3,6 +3,7 @@
 
 # Install the artifact outside the checkout. Only dependency installation uses the network.
 require 'digest'
+require 'fileutils'
 require 'json'
 require 'open3'
 require 'rbconfig'
@@ -12,6 +13,10 @@ require_relative '../lib/ruby_llm/ag_ui/version'
 artifact = File.expand_path("../pkg/ruby_llm-ag_ui-#{RubyLLM::AgUI::VERSION}.gem", __dir__)
 abort 'Build the artifact first: bundle exec rake build' unless File.file?(artifact)
 home = Dir.mktmpdir('ag-ui-package-')
+frozen_artifact = File.join(home, File.basename(artifact))
+FileUtils.cp(artifact, frozen_artifact)
+artifact = frozen_artifact
+puts "VERIFYING_SHA256=#{Digest::SHA256.file(artifact).hexdigest}"
 environment = {
   'GEM_HOME' => home, 'GEM_PATH' => home, 'RUBYOPT' => nil, 'RUBYLIB' => nil,
   'BUNDLE_GEMFILE' => nil, 'BUNDLE_BIN_PATH' => nil,

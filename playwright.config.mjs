@@ -1,5 +1,6 @@
 import { defineConfig } from '@playwright/test';
 import { existsSync } from 'node:fs';
+if (!process.env.BROWSER_ARTIFACTS) throw new Error('Use bin/check-browser for disposable browser checks');
 const localChrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const executablePath = process.env.CHROME_BIN || (existsSync(localChrome) ? localChrome : undefined);
 const port = Number(process.env.PORT || 3199);

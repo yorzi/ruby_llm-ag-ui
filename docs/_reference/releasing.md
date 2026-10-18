@@ -20,10 +20,14 @@ After reading this guide, you will know:
 
 ```bash
 bundle exec rake
+npm ci
+bin/check-browser
 bundle exec bundle-audit check --update
 bundle exec rake build
+bundle exec ruby scripts/check_package_host.rb --built
 bundle exec ruby bin/verify-package --rails --audit
 docs/bin/build.sh
+python3 scripts/check_docs_links.py
 ```
 
 The package check installs dependencies in a fresh temporary gem home and requires the installed artifact from outside the checkout. It verifies the core entrypoint, shipped templates and guides, and input parsing. With `--rails`, it invokes the documented generator and migrates its table up and down in SQLite. With `--audit`, it checks the actually activated core dependencies against the advisory database.

@@ -62,7 +62,7 @@ jobs:
           ruby-version: '3.3'
           bundler-cache: true
       - name: Build the gem
-        run: gem build ruby_llm-ag_ui.gemspec
+        run: bundle exec ruby scripts/check_package_host.rb
 
   browser:
     runs-on: ubuntu-latest

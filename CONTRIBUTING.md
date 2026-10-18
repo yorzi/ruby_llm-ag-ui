@@ -35,7 +35,11 @@ bin/check
 Run focused specs first, then `bin/check`. For client or demo changes, also run
 `bin/check-browser` and inspect its screenshots. The browser suite uses synthetic
 fixtures, a real AG-UI client, and a temporary local server. Keep artifacts in
-ignored `tmp/`; shut down all task-owned processes when the check finishes.
+ignored `tmp/`. Use `bin/check --package --browser` for the full local check,
+or `bin/check-browser --grep "rails: approval"` for one browser workflow.
+The package probe installs the artifact outside the checkout using available
+development dependencies; `bin/verify-package` separately tests clean dependency
+resolution. Shut down all task-owned processes when the check finishes.
 
 Every behavior change needs a test, and lifecycle, identity and security changes
 need their negative case too. The acceptance IDs (FR-01..FR-08) are referenced

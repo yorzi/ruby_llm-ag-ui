@@ -34,12 +34,15 @@ for (const backend of ['core', 'rails']) {
     expect((await stats(page, request)).turns).toBe(2);
   });
 
-  test(`${backend}: approval resumes the original tool once`, async ({ page, request }) => {
+  test(`${backend}: approval resumes the original tool once`, async ({ page, request }, testInfo) => {
     await page.goto(`/?backend=${backend}`);
     await page.getByRole('button', { name: 'Run turn', exact: true }).click();
     await expect(page.locator('#status')).toHaveText('interrupt');
     expect((await stats(page, request)).effects).toBe(0);
     await page.getByRole('button', { name: 'Approve', exact: true }).click();
+    await expect(page.locator('#progress')).toContainText('"value":1');
+    await expect(page.locator('#status')).toHaveText('running');
+    await page.screenshot({ path: testInfo.outputPath('progress-running.png'), fullPage: true });
     await expect(page.locator('#status')).toHaveText('success');
     await expect(page.locator('#tool')).toContainText('[redacted]');
     expect((await stats(page, request)).effects).toBe(1);

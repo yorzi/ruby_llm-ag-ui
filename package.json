@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build:demo": "node scripts/build-demo.mjs",
-    "test:browser": "playwright test"
+    "test:browser": "node scripts/check-browser.mjs"
   },
   "devDependencies": {
     "@ag-ui/client": "1.0.3",

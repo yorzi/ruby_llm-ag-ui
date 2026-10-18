@@ -65,6 +65,19 @@ server and browser. It validates the captured events against the pinned JSON
 schema. Failures retain traces and screenshots. Inspect those artifacts before
 retrying; a screenshot alone is not an assertion.
 
+## Verify an Installed Gem
+
+```sh
+bin/check --package
+```
+
+The package probe builds a gem, installs that artifact outside the checkout,
+and checks both run paths, generated migration, approval, progress, and
+reconnect. It also generates RubyLLM's models and tables, applies the Rails
+example migrations in order, and checks actor-scoped chat persistence. It uses
+available development dependencies. Use `bin/verify-package --rails --audit`
+after `bundle exec rake build` to resolve dependencies in a clean gem home.
+
 ## Adapt to a Real Host
 
 The example's actor header is a synthetic identity selector. It does not

@@ -5,16 +5,27 @@ const artifacts = path.resolve(`tmp/browser/${new Date().toISOString().replaceAl
 await mkdir(artifacts, { recursive: true });
 const pidFile = path.join(artifacts, 'server.pid');
 console.log(`Browser artifacts: ${artifacts}`);
+let activeChild;
+let interrupted;
+for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => {
+  interrupted = signal;
+  activeChild?.kill(signal);
+});
 function run(command, args, env = process.env) {
   return new Promise((resolve, reject) => {
+    if (interrupted) return reject(new Error(`Interrupted: ${interrupted}`));
     const child = spawn(command, args, { env, stdio: 'inherit' });
+    activeChild = child;
     child.on('error', reject);
-    child.on('exit', (code, signal) => code === 0 ? resolve() : reject(new Error(`${command}: ${signal || code}`)));
+    child.on('exit', (code, signal) => {
+      activeChild = undefined;
+      code === 0 ? resolve() : reject(new Error(`${command}: ${signal || code}`));
+    });
   });
 }
 try {
   await run('node', ['scripts/build-demo.mjs']);
-  await run('node', ['node_modules/@playwright/test/cli.js', 'test'], {
+  await run('node', ['node_modules/@playwright/test/cli.js', 'test', ...process.argv.slice(2)], {
     ...process.env, BROWSER_ARTIFACTS: artifacts, DEMO_PID_FILE: pidFile,
   });
   await run('bundle', ['exec', 'ruby', 'scripts/check_browser_events.rb', artifacts]);

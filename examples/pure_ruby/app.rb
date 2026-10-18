@@ -10,8 +10,9 @@
 # callback contract offline, so the example runs with no credentials and no
 # network. With one, it drives a real RubyLLM::Chat:
 #
-#   RUBY_LLM_AG_UI_EXAMPLE_MODEL=gpt-4o-mini OPENAI_API_KEY=... \
-#     ruby examples/pure_ruby/app.rb
+#   RUBY_LLM_AG_UI_EXAMPLE_MODEL=gpt-4o-mini ruby examples/pure_ruby/app.rb
+#
+# Load provider credentials through the environment or an untracked env file.
 #
 # What a real host adds to this: authentication, the scope built from the
 # authenticated actor, the chat (and its history) for the thread, a durable run

@@ -60,12 +60,33 @@ jobs:
       - name: Run specs and lint
         run: bundle exec rake
 
+      - name: Set up browser checks
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Verify the real client in a browser
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          bin/check-browser
+
+      - name: Keep browser fixture evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-browser-fixtures
+          path: tmp/browser/
+          retention-days: 7
+
       - name: Check dependency advisories
         run: bundle exec bundle-audit check --update
 
       - name: Build and verify the package
         run: |
           bundle exec rake build
+          bundle exec ruby scripts/check_package_host.rb --built
           bundle exec ruby bin/verify-package --rails --audit
 
   publish:

@@ -8,10 +8,12 @@ on:
       - 'lib/**'
       - '.rdoc_options'
       - '.github/workflows/docs.yml'
+      - 'scripts/check_docs_links.py'
   pull_request:
     paths:
       - 'docs/**'
       - '.github/workflows/docs.yml'
+      - 'scripts/check_docs_links.py'
   release:
     types: [published]
   workflow_run:
@@ -53,6 +55,9 @@ jobs:
         env:
           JEKYLL_ENV: production
           BASE: ${{ steps.pages.outputs.base_path }}
+
+      - name: Check rendered links
+        run: python3 scripts/check_docs_links.py
 
       - name: Upload artifact
         if: github.event_name != 'pull_request'

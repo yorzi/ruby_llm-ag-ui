@@ -37,7 +37,8 @@ curl -N http://127.0.0.1:3000/agent \
 
 `-N` disables curl buffering. Stop the Rails server with `Ctrl-C` when finished.
 
-The repository's offline integration spec covers the Rails request path. It
-does not establish that these files form a bootable app or that this example
-works with a live provider. Fresh-app and client verification are planned in
-[the 0.2.0 roadmap](../../ROADMAP.md#020-client-example-and-tool-progress).
+Run the maintained [offline browser demo](../client/) for a complete local
+workflow. `bin/check --package` verifies the installed gem's generator and run
+paths, and generates RubyLLM's tables before applying these example migrations
+and checking actor-scoped chat persistence. This does not verify a live provider
+or a production authentication setup.
