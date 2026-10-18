@@ -90,6 +90,41 @@ module RubyLLM
           super.merge(thread_id: @thread_id, run_id: @run_id, result: @result, outcome: @outcome, usage: @usage)
         end
       end
+
+      module_function
+
+      # The RUN_STARTED this producer emits: the SDK's shape plus the protocol
+      # version only 1.0 carries.
+      def run_started(thread_id:, run_id:, parent_run_id: nil, input: nil)
+        RunStartedEvent.new(thread_id: thread_id, run_id: run_id, parent_run_id: parent_run_id, input: input)
+      end
+
+      # A RUN_FINISHED carrying +outcome+.
+      def run_finished(thread_id:, run_id:, outcome:)
+        RunFinishedEvent.new(thread_id: thread_id, run_id: run_id, outcome: outcome)
+      end
+
+      # The outcome of a run that ended without a human in the loop.
+      def success_outcome
+        ::AgUiProtocol::Core::Events::RunFinishedSuccessOutcome.new
+      end
+
+      # The 1.0 cancelled outcome 0.2.0 cannot express.
+      def cancelled_outcome
+        CancelledOutcome.new
+      end
+
+      # The outcome of a run that paused, carrying the interrupts that still
+      # wait for an answer. The schema requires at least one, so a run whose
+      # interrupts were all answered is not closed with this outcome.
+      def interrupt_outcome(interrupts)
+        ::AgUiProtocol::Core::Events::RunFinishedInterruptOutcome.new(interrupts: interrupts.map(&:to_protocol))
+      end
+
+      # The complete state a reconnect serves instead of replaying deltas.
+      def state_snapshot(state)
+        ::AgUiProtocol::Core::Events::StateSnapshotEvent.new(snapshot: state)
+      end
     end
   end
 end

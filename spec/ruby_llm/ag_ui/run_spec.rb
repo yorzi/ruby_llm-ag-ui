@@ -333,24 +333,12 @@ RSpec.describe RubyLLM::AgUI::Run do
     end
   end
 
-  describe 'retry identity (FR-05-AC-01, no duplicate execution)' do
+  describe 'a changed input under an already-reserved identity (FR-05-AC-01)' do
     let(:chat) do
       FakeChat.new do |chat|
         chat.stream(content: 'done')
         chat.reply(content: 'done')
       end
-    end
-
-    it 'refuses to execute an identity that is already reserved' do
-      stream(chat)
-      first = sse.string.dup
-
-      second = StringIO.new
-      expect do
-        described_class.new(chat: chat, input: input, scope: scope, store: store).stream(to: second)
-      end.to raise_error(RubyLLM::AgUI::StreamError, /already succeeded/)
-      expect(second.string).to be_empty
-      expect(sse.string).to eq(first)
     end
 
     it 'refuses the same identity with a changed input as a conflict' do
@@ -365,6 +353,113 @@ RSpec.describe RubyLLM::AgUI::Run do
       expect do
         described_class.new(chat: chat, input: changed, scope: scope, store: store).stream(to: StringIO.new)
       end.to raise_error(RubyLLM::AgUI::RunConflictError)
+    end
+  end
+
+  describe 'reconnecting to a run that ended (FR-05-AC-01)' do
+    # A chat that must never be driven: a reconnect reports an outcome, it does
+    # not execute the turn again.
+    def unrunnable
+      @unrunnable ||= FakeChat.new { |_chat| raise 'a reconnect must not drive the chat' }
+    end
+
+    def reconnect(target = StringIO.new)
+      described_class.new(
+        chat: unrunnable, input: input, scope: scope, store: store,
+        redact: RubyLLM::AgUI::Redaction.method(:none), clock: clock
+      ).stream(to: target)
+    end
+
+    def succeeding_chat
+      FakeChat.new do |chat|
+        chat.stream(content: 'Hello')
+        chat.reply(content: 'Hello')
+      end
+    end
+
+    it 'serves the recorded outcome and a state snapshot instead of the deltas' do
+      stream(succeeding_chat)
+      recorded = sse.string.dup
+
+      target = StringIO.new
+      record = reconnect(target)
+
+      expect(record).to be_succeeded
+      expect(event_types(target)).to eq(%w[RUN_STARTED STATE_SNAPSHOT RUN_FINISHED])
+      expect(decode_sse(target).last['outcome']).to eq('type' => 'success')
+      expect(sse.string).to eq(recorded)
+    end
+
+    it 'writes only schema-valid events on a reconnect' do
+      stream(succeeding_chat)
+
+      target = StringIO.new
+      reconnect(target)
+
+      decode_sse(target).each { |event| expect_valid_event(event) }
+    end
+
+    it 'reports a cancelled run as cancelled' do
+      stream(
+        FakeChat.new do |chat|
+          chat.stream(content: 'half a th')
+          chat.cancel!
+        end
+      )
+
+      target = StringIO.new
+      reconnect(target)
+
+      expect(decode_sse(target).last['outcome']).to eq('type' => 'cancelled')
+    end
+
+    it 'reports the recorded failure without the exception text' do
+      stream(FakeChat.new { |chat| chat.fail!(RubyLLM::RateLimitError.new('key sk-live-secret leaked')) })
+
+      target = StringIO.new
+      reconnect(target)
+
+      error = decode_sse(target).last
+      expect(error['type']).to eq('RUN_ERROR')
+      expect(error['code']).to eq('provider_rate_limited')
+      expect(target.string).not_to include('sk-live-secret')
+    end
+
+    it 'reports the interrupt a paused run still waits for' do
+      stream(
+        FakeChat.new do |chat|
+          chat.stream(tool_calls: { 0 => RubyLLM::ToolCall.new(id: 'c1', name: 'search', arguments: '{}') })
+          chat.reply(tool_calls: { 'c1' => RubyLLM::ToolCall.new(id: 'c1', name: 'search', arguments: {}) })
+          chat.await([{ id: 'c1', name: 'search', arguments: { 'q' => 'x' } }])
+        end
+      )
+      interrupt = store.latest_interrupted(scope: scope, thread_id: 'thread-1').pending_interrupts.first
+
+      target = StringIO.new
+      reconnect(target)
+
+      outcome = decode_sse(target).last['outcome']
+      expect(outcome['type']).to eq('interrupt')
+      expect(outcome['interrupts'].map { |entry| entry['id'] }).to eq([interrupt.id])
+    end
+
+    it 'publishes the state the host gave the run, not the client input' do
+      described_class.new(
+        chat: succeeding_chat, input: input, scope: scope, store: store, state: { 'step' => 3 }
+      ).stream(to: StringIO.new)
+
+      target = StringIO.new
+      reconnect(target)
+
+      expect(decode_sse(target)[1]['snapshot']).to eq('step' => 3)
+    end
+
+    it 'refuses to attach a second stream to a run that has not ended' do
+      record = store.reserve(scope: scope, thread_id: 'thread-1', run_id: 'run-1', digest: input.digest).record
+      store.save(record.start(now: now))
+
+      expect { reconnect }
+        .to raise_error(RubyLLM::AgUI::StreamError, /still started/)
     end
   end
 

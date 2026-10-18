@@ -121,11 +121,15 @@ RSpec.describe RubyLLM::AgUI::RunRecord do
     end
   end
 
-  describe '#store_snapshot (FR-05)' do
+  describe '#start and the reconnect snapshot (FR-05)' do
     it 'keeps host-owned state for a reconnect without touching the status' do
-      record = build.start(now: created_at).store_snapshot({ 'step' => 2 }, now: later)
+      record = build.start(now: created_at, snapshot: { 'step' => 2 })
       expect(record.snapshot).to eq('step' => 2)
       expect(record).to be_started
+    end
+
+    it 'starts without a snapshot when the host publishes no state' do
+      expect(build.start(now: created_at).snapshot).to be_nil
     end
   end
 
@@ -133,7 +137,7 @@ RSpec.describe RubyLLM::AgUI::RunRecord do
     it 'serializes the identity, status and interrupts' do
       record = build.start(now: created_at)
       expect(record.to_h.keys).to eq(
-        %w[scope threadId runId digest status sequence snapshot interrupts createdAt updatedAt]
+        %w[scope threadId runId digest status sequence snapshot failure interrupts createdAt updatedAt]
       )
       expect(record.to_h).to include('scope' => 'tenant-1:user-1', 'status' => 'started', 'sequence' => 0)
     end

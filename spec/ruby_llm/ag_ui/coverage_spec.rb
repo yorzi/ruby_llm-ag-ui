@@ -37,6 +37,11 @@ RSpec.describe RubyLLM::AgUI::Coverage do
       entry_types = described_class.entries.map { |entry| entry[:type] }
       expect(entry_types).not_to include(*described_class::LEGACY_SDK_ONLY)
     end
+
+    it 'reports STATE_SNAPSHOT as produced, because a reconnect serves it (FR-05)' do
+      entry = described_class.entries.find { |candidate| candidate[:type] == 'STATE_SNAPSHOT' }
+      expect(entry[:status]).to eq(:produced)
+    end
   end
 
   describe 'the SDK gap list' do

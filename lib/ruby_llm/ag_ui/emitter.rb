@@ -28,9 +28,10 @@ module RubyLLM
         @logger = logger
       end
 
-      # Moves the run to started, then opens it on the wire with +event+.
-      def start(event)
-        @record = persist(@record.start(now: now))
+      # Moves the run to started, records +state+ as the host-owned state a
+      # reconnect serves, then opens the run on the wire with +event+.
+      def start(event, state: nil)
+        @record = persist(@record.start(now: now, snapshot: state))
         write(event)
         @record
       end
@@ -39,15 +40,22 @@ module RubyLLM
       # by one per event.
       def write(events)
         Array(events).each do |event|
-          @writer.write(event)
+          emit(event)
           @record = @record.advance(now: now)
         end
+      end
+
+      # Writes a reconnect's events without advancing or persisting the record.
+      # The run already ended; a reconnect reports it rather than changing it.
+      def replay(events)
+        Array(events).each { |event| emit(event) }
+        @record
       end
 
       # Closes the run as succeeded.
       def succeed
         @record = persist(@record.finish(RunRecord::SUCCEEDED, now: now))
-        close(run_finished(::AgUiProtocol::Core::Events::RunFinishedSuccessOutcome.new))
+        close(run_finished(Protocol.success_outcome))
         @record
       end
 
@@ -56,7 +64,7 @@ module RubyLLM
       # discriminator, which 0.2.0 cannot express.
       def cancel
         @record = persist(@record.finish(RunRecord::CANCELLED, now: now))
-        close(run_finished(Protocol::CancelledOutcome.new))
+        close(run_finished(Protocol.cancelled_outcome))
         @record
       end
 
@@ -64,11 +72,8 @@ module RubyLLM
       # answer them by id. At least one must be unresolved, which RunRecord
       # enforces.
       def interrupt(interrupts)
-        outcome = ::AgUiProtocol::Core::Events::RunFinishedInterruptOutcome.new(
-          interrupts: interrupts.map(&:to_protocol)
-        )
         @record = persist(@record.interrupted(interrupts, now: now))
-        close(run_finished(outcome))
+        close(run_finished(Protocol.interrupt_outcome(interrupts)))
         @record
       end
 
@@ -79,13 +84,18 @@ module RubyLLM
       # never sent: it may carry prompts, keys or paths.
       def fail(error)
         message, code = ErrorSanitizer.sanitize(error)
+        failure = { 'message' => message, 'code' => code }
         @logger&.warn("[ruby_llm_ag_ui] run #{@record.run_id} failed: #{error.class}")
-        @record = persist(@record.finish(RunRecord::FAILED, now: now))
+        @record = persist(@record.finish(RunRecord::FAILED, now: now, failure: failure))
         close(::AgUiProtocol::Core::Events::RunErrorEvent.new(message: message, code: code))
         @record
       end
 
       private
+
+      def emit(event)
+        @writer.write(event)
+      end
 
       # Closes whatever content is still open, then writes the terminal event.
       def close(terminal_event)
@@ -94,7 +104,7 @@ module RubyLLM
       end
 
       def run_finished(outcome)
-        Protocol::RunFinishedEvent.new(thread_id: @record.thread_id, run_id: @record.run_id, outcome: outcome)
+        Protocol.run_finished(thread_id: @record.thread_id, run_id: @record.run_id, outcome: outcome)
       end
 
       def persist(record)

@@ -24,7 +24,8 @@ module RubyLLM
       attr_reader :record
 
       # rubocop:disable-next Metrics/ParameterLists -- one keyword per host-supplied or overridable value
-      def initialize(chat:, input:, scope:, store: nil, logger: nil, redact: nil, clock: nil, expires_in: nil)
+      def initialize(chat:, input:, scope:, store: nil, logger: nil, redact: nil, clock: nil, expires_in: nil,
+                     state: nil)
         @chat = chat
         @input = input
         @scope = scope
@@ -35,20 +36,23 @@ module RubyLLM
         @expires_in = expires_in || RubyLLM::AgUI.config.interrupt_ttl
         @mutex = Mutex.new
         validate!
+        @state = state.nil? ? @input.state : state
       end
 
       # Reserves the run and streams it to +to+, an IO-like stream. Returns the
       # run's record, which carries the status the run ended with.
       #
-      # The reservation happens before any provider work: a duplicate request
-      # whose input digest matches attaches instead of executing, and a changed
-      # input under the same key is refused by the store.
+      # The reservation happens before any provider work: a request whose input
+      # digest matches an identity already reserved attaches instead of
+      # executing, and a changed input under the same key is refused by the
+      # store. A reserved run that already ended is served as a reconnect — its
+      # outcome and state snapshot — never as a second execution.
       def stream(to:)
         resume.plan(now: @clock.call) if resume.needed?
         reservation = reserve
         return execute(reservation.record, to) if reservation.created?
 
-        refuse_duplicate(reservation.record)
+        reconnect(reservation.record, to)
       end
 
       private
@@ -63,25 +67,26 @@ module RubyLLM
         )
       end
 
-      # An identity that is already reserved is never executed again. A changed
-      # input under the same key was already refused by the store, so anything
-      # that reaches here is an identical retry of a run that exists.
+      # An identity that is already reserved is never executed a second time.
+      # A run that ended is served as a reconnect: its outcome and state
+      # snapshot, without replaying the deltas or running anything again.
       #
-      # Reporting the recorded run instead of refusing it is the reconnect path
-      # (FR-05); until that exists, the retry fails closed rather than running
-      # the turn twice.
-      def refuse_duplicate(record)
-        raise StreamError, "run #{record.run_id} on thread #{record.thread_id} is already #{record.status}; " \
-                           'a reserved run is never executed twice under the same identity'
+      # A run that has not ended cannot be served here. A second stream cannot
+      # join a live one without a relay the gem does not own, and pretending it
+      # did would either hang or duplicate the work, so it fails closed.
+      def reconnect(record, to)
+        unless Reconnect.serves?(record)
+          raise StreamError, "run #{record.run_id} on thread #{record.thread_id} is still #{record.status}; " \
+                             'a live run cannot be joined by a second stream'
+        end
+
+        build_emitter(record, to).replay(Reconnect.new(record: record, input: @input).events)
       end
 
       def execute(record, to)
         @mapper = build_mapper(record)
-        @emitter = Emitter.new(
-          writer: SSEWriter.new(to, logger: @logger), mapper: @mapper,
-          store: @store, record: record, clock: @clock, logger: @logger
-        )
-        @emitter.start(run_started_event(record))
+        @emitter = build_emitter(record, to, mapper: @mapper)
+        @emitter.start(run_started_event(record), state: @state)
         resume.apply(now: @clock.call) if resume.needed?
         drive
         @record = finish
@@ -89,6 +94,13 @@ module RubyLLM
         @record = @emitter.cancel
       rescue StandardError => e
         @record = @emitter.fail(e)
+      end
+
+      def build_emitter(record, to, mapper: build_mapper(record))
+        Emitter.new(
+          writer: SSEWriter.new(to, logger: @logger), mapper: mapper,
+          store: @store, record: record, clock: @clock, logger: @logger
+        )
       end
 
       # Drives RubyLLM and projects what it reports.
@@ -140,7 +152,7 @@ module RubyLLM
       end
 
       def run_started_event(record)
-        Protocol::RunStartedEvent.new(
+        Protocol.run_started(
           thread_id: record.thread_id, run_id: record.run_id,
           parent_run_id: @input.parent_run_id, input: @input.to_h
         )

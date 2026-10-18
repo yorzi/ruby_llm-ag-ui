@@ -13,9 +13,9 @@ module RubyLLM
     # A record is host bookkeeping, not business truth. The host still owns the
     # conversation, the messages and whatever the tool calls actually did.
     class RunRecord
-      # Identity is claimed; no work has been scheduled.
+      # The statuses a run moves through: identity is claimed (RESERVED), the run
+      # streams (STARTED), and it ends in exactly one of the terminal statuses.
       RESERVED = :reserved
-      # The run is streaming.
       STARTED = :started
       # The run ended normally.
       SUCCEEDED = :succeeded
@@ -55,18 +55,19 @@ module RubyLLM
       # The host-owned run state kept for a reconnect snapshot, or nil.
       attr_reader :snapshot
 
+      # The sanitized failure a reconnect reports for a run that failed, as
+      # `{"message" =>, "code" =>}`, or nil. Never the exception itself: a
+      # reconnect must not re-leak what the original RUN_ERROR withheld.
+      attr_reader :failure
+
       # The interrupts raised by this run, oldest first.
       attr_reader :interrupts
 
-      # When the identity was reserved.
-      attr_reader :created_at
-
-      # When the record last changed.
-      attr_reader :updated_at
+      attr_reader :created_at, :updated_at
 
       # rubocop:disable-next Metrics/ParameterLists -- one keyword per field the record owns
       def initialize(scope:, thread_id:, run_id:, digest:, created_at:, status: RESERVED, sequence: 0,
-                     snapshot: nil, interrupts: [], updated_at: nil)
+                     snapshot: nil, interrupts: [], failure: nil, updated_at: nil)
         @scope = scope
         @thread_id = thread_id
         @run_id = run_id
@@ -75,6 +76,7 @@ module RubyLLM
         @sequence = sequence
         @snapshot = snapshot
         @interrupts = interrupts.freeze
+        @failure = failure
         @created_at = created_at
         @updated_at = updated_at || created_at
         freeze
@@ -107,11 +109,12 @@ module RubyLLM
         interrupts.find { |interrupt| interrupt.id == id }
       end
 
-      # Moves a reserved run to :started. Idempotent for an already-started run.
-      def start(now:)
+      # Moves a reserved run to :started, remembering the host-owned state a
+      # reconnect serves. Idempotent for an already-started run.
+      def start(now:, snapshot: nil)
         return self if started?
 
-        transition_to(STARTED, now: now)
+        transition_to(STARTED, now: now, snapshot: snapshot)
       end
 
       # Hands out the next event sequence number.
@@ -120,16 +123,17 @@ module RubyLLM
       end
 
       # Closes the run with +status+: :succeeded, :interrupted, :cancelled or
-      # :failed. Re-applying the same terminal status is an idempotent no-op;
-      # any other terminal status is a protocol violation, because a run has
-      # exactly one outcome.
-      def finish(status, now:)
+      # :failed, and, for a failure, the sanitized error a reconnect reports.
+      # Re-applying the same terminal status is an idempotent no-op — so the
+      # first failure wins rather than being replaced by a second, possibly
+      # different, explanation — and any other terminal status is a protocol
+      # violation, because a run has exactly one outcome.
+      def finish(status, now:, failure: nil)
         raise ConfigurationError, "cannot finish a run as #{status.inspect}" unless TERMINAL_STATUSES.include?(status)
-
         return self if terminal? && self.status == status
         raise StreamError, "run #{run_id} already ended as #{self.status}, not #{status}" if terminal?
 
-        transition_to(status, now: now)
+        transition_to(status, now: now, failure: failure)
       end
 
       # Closes the run as interrupted and records the interrupts it raised.
@@ -154,12 +158,6 @@ module RubyLLM
         with(now: now, interrupts: replaced)
       end
 
-      # Stores the host-owned state a reconnect serves instead of replaying
-      # deltas.
-      def store_snapshot(state, now:)
-        with(now: now, snapshot: state)
-      end
-
       def to_h
         {
           'scope' => scope.to_s,
@@ -169,6 +167,7 @@ module RubyLLM
           'status' => status.to_s,
           'sequence' => sequence,
           'snapshot' => snapshot,
+          'failure' => failure,
           'interrupts' => interrupts.map(&:to_h),
           'createdAt' => iso8601(created_at),
           'updatedAt' => iso8601(updated_at)
@@ -177,11 +176,12 @@ module RubyLLM
 
       private
 
+      # rubocop:disable-next Metrics/ParameterLists -- one keyword per field, each defaulted to the record's own
       def with(now:, status: self.status, sequence: self.sequence, snapshot: self.snapshot,
-               interrupts: self.interrupts)
+               interrupts: self.interrupts, failure: self.failure)
         self.class.new(
           scope: scope, thread_id: thread_id, run_id: run_id, digest: digest, status: status,
-          sequence: sequence, snapshot: snapshot, interrupts: interrupts,
+          sequence: sequence, snapshot: snapshot, interrupts: interrupts, failure: failure,
           created_at: created_at, updated_at: now
         )
       end
