@@ -14,10 +14,22 @@ RSpec.describe RubyLLM::AgUI do
 
     it 'defaults to conservative, opt-in behavior' do
       expect(config.interrupt_ttl).to eq(900)
-      expect(config.emit_tool_progress).to be(false)
       expect(config.allow_client_history).to be(false)
-      expect(config.redact).to be_nil
       expect(config.run_store).to be_nil
+      expect(config.redaction).to eq(:default)
+    end
+
+    it 'never hands out a nil redaction policy, which would publish raw payloads' do
+      config.redact = nil
+      expect(config.redaction).to eq(:default)
+    end
+
+    it 'reports an opted-out or custom redaction policy' do
+      config.redact = RubyLLM::AgUI::Redaction.method(:none)
+      expect(config.redaction).to eq(:none)
+
+      config.redact = ->(_kind, payload) { payload }
+      expect(config.redaction).to eq(:custom)
     end
 
     it 'refuses to hand out a missing run store' do
@@ -32,9 +44,9 @@ RSpec.describe RubyLLM::AgUI do
     it 'reports a snapshot without secrets' do
       expect(config.to_h.keys).to eq(
         %i[run_store redact protocol_version max_input_bytes max_messages max_tools
-           max_context emit_tool_progress interrupt_ttl allow_client_history]
+           max_context interrupt_ttl allow_client_history]
       )
-      expect(config.to_h[:redact]).to be(false)
+      expect(config.to_h[:redact]).to eq(:default)
     end
   end
 

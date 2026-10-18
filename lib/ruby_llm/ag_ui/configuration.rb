@@ -18,11 +18,15 @@ module RubyLLM
       # or a durable store for multi-process deployment.
       attr_accessor :run_store
 
-      # A callable (kind, payload) invoked before tool results, state and
-      # activity payloads reach the wire. Return the redacted payload. The
-      # default keeps the payload unchanged; hosts should override it to strip
-      # secrets and personal data.
-      attr_accessor :redact
+      # A callable (kind, payload) — or (payload) — invoked before a tool result
+      # or activity payload reaches the wire. Return the value to publish.
+      #
+      # It defaults to RubyLLM::AgUI::Redaction.default, which keeps the
+      # payload's shape and withholds its content: the gem cannot know which
+      # part of a tool result is a secret, so it does not publish the raw value
+      # until a host says it is safe. Opt out with
+      # RubyLLM::AgUI::Redaction.method(:none), or replace it with your policy.
+      attr_writer :redact
 
       # A Logger used for host-side diagnostics. Never receives prompts, raw
       # tool payloads or credentials.
@@ -44,11 +48,6 @@ module RubyLLM
       # Maximum number of context entries accepted in RunAgentInput.
       attr_accessor :max_context
 
-      # Whether RubyLLM after_tool_progress callbacks are projected as AG-UI
-      # activity events. Off by default: the mapping is only enabled when the
-      # host has real, safe progress data to publish.
-      attr_accessor :emit_tool_progress
-
       # How long an interrupt stays answerable, in seconds.
       attr_accessor :interrupt_ttl
 
@@ -62,17 +61,30 @@ module RubyLLM
 
       def initialize
         @run_store = nil
-        @redact = nil
+        @redact = Redaction.method(:default)
         @logger = nil
         @protocol_version = '1.0'
         @max_input_bytes = 256_000
         @max_messages = 500
         @max_tools = 64
         @max_context = 64
-        @emit_tool_progress = false
         @interrupt_ttl = 900
         @clock = -> { Time.now.utc }
         @allow_client_history = false
+      end
+
+      # The redaction policy in force. Never nil: an unset or nil policy falls
+      # back to the default rather than publishing raw payloads.
+      def redact
+        @redact || Redaction.method(:default)
+      end
+
+      # Which policy is in force, for diagnostics: :default, :none or :custom.
+      def redaction
+        return :default if redact == Redaction.method(:default)
+        return :none if redact == Redaction.method(:none)
+
+        :custom
       end
 
       # The run store, or nil when the host has not configured one.
@@ -86,13 +98,12 @@ module RubyLLM
       def to_h
         {
           run_store: run_store&.class&.name,
-          redact: !redact.nil?,
+          redact: redaction,
           protocol_version: protocol_version,
           max_input_bytes: max_input_bytes,
           max_messages: max_messages,
           max_tools: max_tools,
           max_context: max_context,
-          emit_tool_progress: emit_tool_progress,
           interrupt_ttl: interrupt_ttl,
           allow_client_history: allow_client_history
         }
