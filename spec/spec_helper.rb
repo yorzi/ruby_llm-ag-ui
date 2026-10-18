@@ -8,7 +8,9 @@ if ENV['COVERAGE']
   end
 end
 
-require 'english'
+# 'English' is capitalized: on a case-sensitive filesystem (CI's Linux)
+# 'english' does not resolve to the stdlib.
+require 'English'
 require 'ruby_llm/ag_ui'
 
 Dir[File.join(__dir__, 'support', '**', '*.rb')].each { |file| require file }
