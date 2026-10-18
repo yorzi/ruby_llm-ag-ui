@@ -38,6 +38,14 @@ RSpec.describe RubyLLM::AgUI::Rails::ActiveRecordStore do
       expect(find.created_at).to eq(now)
     end
 
+    it 'stores the record as JSON text the gem encoded' do
+      reserve
+
+      payload = RubyLLM::AgUI::Rails::Record.last.payload
+      expect(payload).to be_a(String)
+      expect(JSON.parse(payload)).to include('scope' => scope, 'threadId' => thread, 'runId' => 'run-1')
+    end
+
     it 'attaches an identical retry instead of executing the turn twice' do
       reserve
 

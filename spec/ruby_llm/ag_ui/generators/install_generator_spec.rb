@@ -23,6 +23,8 @@ RSpec.describe RubyLLM::AgUI::Generators::InstallGenerator do
     %w[scope thread_id run_id digest status sequence payload].each do |column|
       expect(migration).to include(":#{column}")
     end
+    # JSON text, not a database JSON type: the gem owns the encoding.
+    expect(migration).to include('t.text :payload')
   end
 
   it 'points the host at the durable store it just installed' do

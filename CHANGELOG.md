@@ -34,3 +34,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   past the configured limit, not 400).
 - The generated migration targets the host's Rails version instead of a
   hardcoded `7.1`.
+- The durable store writes the run record as JSON text the gem encodes, so it no
+  longer depends on the host's ActiveSupport JSON encoder (which breaks on
+  Rails 8.0 with `json` 3.x).

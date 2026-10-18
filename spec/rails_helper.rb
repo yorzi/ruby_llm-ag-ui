@@ -23,7 +23,7 @@ ActiveRecord::Schema.define do
     t.string :digest, null: false
     t.string :status, null: false
     t.integer :sequence, null: false, default: 0
-    t.json :payload, null: false
+    t.text :payload, null: false
   end
   add_index :ruby_llm_ag_ui_runs, %i[scope thread_id run_id], unique: true
   add_index :ruby_llm_ag_ui_runs, %i[scope thread_id status]

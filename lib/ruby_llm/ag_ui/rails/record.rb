@@ -14,13 +14,18 @@ module RubyLLM
       # written whole because a record is immutable: there is no partial update
       # to make.
       #
+      # The payload is JSON *text*, not a database JSON column. The record is
+      # never queried by content, and encoding it here keeps the stored shape
+      # exactly `RunRecord#to_storage` on every database and every Rails version,
+      # instead of inheriting whichever encoder the host's ActiveSupport picks.
+      #
       # Create the table with `bin/rails generate ruby_llm:ag_ui:install`.
       class Record < ::ActiveRecord::Base
         self.table_name = 'ruby_llm_ag_ui_runs'
 
         # The core record this row stores.
         def as_run_record
-          ::RubyLLM::AgUI::RunRecord.from_storage(payload)
+          ::RubyLLM::AgUI::RunRecord.from_storage(::JSON.parse(payload))
         end
 
         # Writes +record+ onto this row and returns the record.
@@ -29,7 +34,7 @@ module RubyLLM
         # reserved with, so a record cannot be stored under another run's key.
         def write_run_record(record)
           update!(digest: record.digest, status: record.status.to_s, sequence: record.sequence,
-                  payload: record.to_storage)
+                  payload: ::JSON.generate(record.to_storage))
           record
         end
 
@@ -37,7 +42,7 @@ module RubyLLM
         def self.from_run_record(record)
           new(
             scope: record.scope, thread_id: record.thread_id, run_id: record.run_id, digest: record.digest,
-            status: record.status.to_s, sequence: record.sequence, payload: record.to_storage
+            status: record.status.to_s, sequence: record.sequence, payload: ::JSON.generate(record.to_storage)
           )
         end
       end

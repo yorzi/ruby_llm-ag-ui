@@ -96,8 +96,10 @@ what makes run identity survive a worker:
   interrupt id is not a global key.
 
 `scope`, `thread_id` and `run_id` are strings; the record itself is stored as
-JSON in `payload`, because a record is immutable — there is no partial update to
-model.
+JSON **text** in `payload`, because a record is immutable — there is no partial
+update to model. The gem does the encoding, so the stored shape is exactly
+`RunRecord#to_storage` on every database and Rails version, rather than whatever
+the host's ActiveSupport JSON encoder produces.
 
 Use `MemoryStore` only for a single process (development, tests, one Puma worker
 with no restarts). It is per-process, and a retry after a restart is a new run.
