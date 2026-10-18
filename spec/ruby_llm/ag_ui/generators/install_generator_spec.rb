@@ -31,4 +31,11 @@ RSpec.describe RubyLLM::AgUI::Generators::InstallGenerator do
     expect(initializer).to include('RubyLLM::AgUI.configure')
     expect(initializer).to include('config.run_store = RubyLLM::AgUI::Rails::ActiveRecordStore.new')
   end
+
+  it 'targets the Rails version the host is running, not a pinned one' do
+    migration = File.read(File.join(described_class.source_root, 'create_ruby_llm_ag_ui_runs.rb.tt'))
+
+    # A hardcoded [7.1] silently downgrades every host that generates it.
+    expect(migration).to include('ActiveRecord::Migration[<%= ActiveRecord::Migration.current_version %>]')
+  end
 end

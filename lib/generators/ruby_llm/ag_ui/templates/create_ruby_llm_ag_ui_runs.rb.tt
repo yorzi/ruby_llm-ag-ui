@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateRubyLlmAgUiRuns < ActiveRecord::Migration[7.1]
+class CreateRubyLlmAgUiRuns < ActiveRecord::Migration[<%= ActiveRecord::Migration.current_version %>]
   def change
     create_table :ruby_llm_ag_ui_runs do |t|
       t.string :scope, null: false
