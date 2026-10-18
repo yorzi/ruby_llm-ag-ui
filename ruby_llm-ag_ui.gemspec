@@ -18,19 +18,20 @@ Gem::Specification.new do |spec|
     ships an SSE writer for plain Ruby plus an optional Rails adapter.
   DESCRIPTION
 
-  spec.homepage = 'https://github.com/yorzi/ruby_llm-ag_ui'
+  spec.homepage = 'https://github.com/yorzi/ruby_llm-ag-ui'
   spec.license = 'MIT'
   spec.required_ruby_version = '>= 3.2.0'
 
-  spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = spec.homepage
   spec.metadata['changelog_uri'] = "#{spec.homepage}/blob/main/CHANGELOG.md"
   spec.metadata['bug_tracker_uri'] = "#{spec.homepage}/issues"
-  spec.metadata['documentation_uri'] = 'https://rubydoc.info/gems/ruby_llm-ag_ui'
+  spec.metadata['documentation_uri'] = "#{spec.homepage}#readme"
   spec.metadata['rubygems_mfa_required'] = 'true'
 
   spec.files = Dir.chdir(__dir__) do
-    Dir['lib/**/*.rb', 'LICENSE.txt', 'README.md', 'CHANGELOG.md']
+    # The generator templates are .rb.tt, so `lib/**/*.rb` would leave an
+    # installed gem with no migration to install.
+    Dir['lib/**/*.rb', 'lib/**/*.tt', 'LICENSE.txt', 'README.md', 'CHANGELOG.md']
   end
   spec.require_paths = ['lib']
 

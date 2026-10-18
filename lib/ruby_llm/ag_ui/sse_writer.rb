@@ -64,6 +64,13 @@ module RubyLLM
 
       # The response headers a host should send before the first event.
       def headers
+        self.class.headers(content_type)
+      end
+
+      # The response headers a host should send before the first event, for the
+      # default media type. A host that mounts a run from a controller merges
+      # these without having a stream yet.
+      def self.headers(content_type = CONTENT_TYPE)
         {
           'Content-Type' => "#{content_type}; charset=utf-8",
           'Cache-Control' => CACHE_CONTROL,

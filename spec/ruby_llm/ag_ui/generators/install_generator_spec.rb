@@ -1,0 +1,34 @@
+# frozen_string_literal: true
+
+require 'rails_helper'
+require 'rails/generators'
+require 'generators/ruby_llm/ag_ui/install_generator'
+
+RSpec.describe RubyLLM::AgUI::Generators::InstallGenerator do
+  it 'is reachable as `bin/rails generate ruby_llm:ag_ui:install`' do
+    expect(described_class.namespace).to eq('ruby_llm:ag_ui')
+  end
+
+  it 'ships the migration and the initializer it installs' do
+    %w[create_ruby_llm_ag_ui_runs.rb.tt initializer.rb.tt].each do |template|
+      expect(File).to exist(File.join(described_class.source_root, template))
+    end
+  end
+
+  it 'creates the table the store reads, with the identity index it relies on' do
+    migration = File.read(File.join(described_class.source_root, 'create_ruby_llm_ag_ui_runs.rb.tt'))
+
+    expect(migration).to include('create_table :ruby_llm_ag_ui_runs')
+    expect(migration).to include('add_index :ruby_llm_ag_ui_runs, %i[scope thread_id run_id], unique: true')
+    %w[scope thread_id run_id digest status sequence payload].each do |column|
+      expect(migration).to include(":#{column}")
+    end
+  end
+
+  it 'points the host at the durable store it just installed' do
+    initializer = File.read(File.join(described_class.source_root, 'initializer.rb.tt'))
+
+    expect(initializer).to include('RubyLLM::AgUI.configure')
+    expect(initializer).to include('config.run_store = RubyLLM::AgUI::Rails::ActiveRecordStore.new')
+  end
+end

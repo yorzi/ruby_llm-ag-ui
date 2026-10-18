@@ -1,0 +1,24 @@
+# frozen_string_literal: true
+
+# An unofficial RubyLLM ecosystem extension. Rails is optional and the core is
+# pure Ruby, so this initializer is only about the choices a Rails host makes.
+RubyLLM::AgUI.configure do |config|
+  # Run identity must outlive the worker that reserved it: one run per
+  # (scope, thread_id, run_id), reserved before any provider work happens.
+  # Replace the in-process store, which is correct for one process only.
+  config.run_store = RubyLLM::AgUI::Rails::ActiveRecordStore.new
+
+  # Redaction is on by default and withholds tool result content until a host
+  # says what is safe to publish. Replace it with your own policy, or opt out
+  # with RubyLLM::AgUI::Redaction.method(:none).
+  # config.redact = RubyLLM::AgUI::Redaction.method(:none)
+
+  # How long an interrupt stays answerable, in seconds.
+  # config.interrupt_ttl = 900
+
+  # The largest request body the adapter will read, in bytes.
+  # config.max_input_bytes = 256_000
+
+  # Host-side diagnostics. Never receives prompts, tool payloads or credentials.
+  # config.logger = Rails.logger
+end

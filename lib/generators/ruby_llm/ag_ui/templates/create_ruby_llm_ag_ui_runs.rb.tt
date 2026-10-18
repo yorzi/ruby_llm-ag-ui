@@ -1,0 +1,22 @@
+# frozen_string_literal: true
+
+class CreateRubyLlmAgUiRuns < ActiveRecord::Migration[7.1]
+  def change
+    create_table :ruby_llm_ag_ui_runs do |t|
+      t.string :scope, null: false
+      t.string :thread_id, null: false
+      t.string :run_id, null: false
+      t.string :digest, null: false
+      t.string :status, null: false
+      t.integer :sequence, null: false, default: 0
+      # The whole core record, which is immutable: there is no partial update.
+      t.json :payload, null: false
+    end
+
+    # The identity a run is reserved under, and the guard that stops two workers
+    # from reserving it at once.
+    add_index :ruby_llm_ag_ui_runs, %i[scope thread_id run_id], unique: true
+    # Listing one thread's runs, newest first.
+    add_index :ruby_llm_ag_ui_runs, %i[scope thread_id status]
+  end
+end
