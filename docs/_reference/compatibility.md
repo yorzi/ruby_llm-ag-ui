@@ -46,10 +46,11 @@ adapter is only loaded when `Rails::Railtie` is already defined.
 | `requires_approval` → interrupt → resume executes the tool once | run specs drive a fake chat through the pause, approve, deny, replay and expiry cases |
 | Identity is reserved, replayed and never re-executed | store specs (memory and ActiveRecord), run specs for conflict, reconnect and live-run refusal |
 | The Rails adapter serves a run and refuses invalid requests before committing | adapter specs with a controller double, and an end-to-end `spec/integration/rails_adapter_spec.rb` |
-| The installer generates a working migration and initializer | `spec/ruby_llm/ag_ui/generators/install_generator_spec.rb` |
-| `ruby_llm-ag_ui` builds as a gem | `gem build` in CI |
+| The installer resolves the documented command | `spec/ruby_llm/ag_ui/generators/install_generator_spec.rb` |
+| The installed gem generates a working migration and initializer | `bin/verify-package --rails` generates files and migrates the table up and down in SQLite |
+| `ruby_llm-ag_ui` installs outside the checkout | `bin/verify-package` resolves dependencies in a fresh gem home and loads the packaged core |
 
-All of it runs offline, with fakes: no provider, no network, no credentials.
+The RSpec suite runs offline with fakes and no provider credentials. Package verification uses the network only to install dependencies, then runs its core and Rails checks without a provider. Its advisory check includes the actual default-library gem versions activated by the isolated core install.
 
 ## What is not asserted
 

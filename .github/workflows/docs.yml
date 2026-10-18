@@ -14,6 +14,9 @@ on:
       - '.github/workflows/docs.yml'
   release:
     types: [published]
+  workflow_run:
+    workflows: ["Release Gem"]
+    types: [completed]
   workflow_dispatch:
 
 concurrency:
@@ -22,6 +25,7 @@ concurrency:
 
 jobs:
   build:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -42,7 +46,7 @@ jobs:
       - name: Setup Pages
         id: pages
         if: github.event_name != 'pull_request'
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Build
         run: docs/bin/build.sh
@@ -52,12 +56,12 @@ jobs:
 
       - name: Upload artifact
         if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: docs/_site
 
   deploy:
-    if: github.event_name != 'pull_request'
+    if: ${{ github.event_name != 'pull_request' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') }}
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -69,4 +73,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

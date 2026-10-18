@@ -5,6 +5,7 @@ source 'https://rubygems.org'
 gemspec
 
 group :development, :test do
+  gem 'bundler-audit', '~> 0.9', require: false
   gem 'dotenv'
   gem 'json_schemer'
   gem 'rake'

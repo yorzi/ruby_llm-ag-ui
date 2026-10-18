@@ -24,8 +24,9 @@ maintained by the RubyLLM maintainers or the AG-UI protocol maintainers.
 | [RubyLLM](https://github.com/crmne/ruby_llm) | MIT | The agent loop this gem projects: `Chat#complete`, the streaming block, `before_tool_call`, `after_message`, approval state and cancellation. |
 | [ag-ui-protocol](https://github.com/ag-ui-protocol/ag-ui) (Ruby SDK, `~> 0.2.0`) | MIT | Event models, `BaseEvent`, the encoder and the event-type constants. |
 | [Zeitwerk](https://github.com/fxn/zeitwerk) | MIT | Autoloading the gem's own files. |
+| Ruby standard-library gems `cgi`, `resolv`, `uri`, `zlib` | Ruby or BSD-2-Clause | Patched CGI, DNS resolution, URL, and compression dependencies used by the runtime dependency chain. |
 
-The gem's direct runtime dependencies are `ruby_llm` and `ag-ui-protocol`.
+The gem's direct runtime dependencies are `ruby_llm`, `ag-ui-protocol`, `cgi`, `resolv`, `uri`, and `zlib`.
 Zeitwerk arrives through RubyLLM and is used directly.
 
 ## Optional: Rails
@@ -64,6 +65,7 @@ None of these are shipped to users.
 | SimpleCov | MIT |
 | dotenv | MIT |
 | Rake | MIT |
+| bundler-audit | GPL-3.0-or-later |
 
 ## What this gem does not include
 

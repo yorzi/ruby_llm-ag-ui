@@ -17,8 +17,26 @@ After reading this guide, you will know:
 
 ## One Release at a Time
 
-This repository has no release tags yet, so there is no earlier versioned release to upgrade from. Once releases are tagged, each release will document its required code changes here. If an application skips several releases, upgrade one release at a time and resolve deprecation warnings before continuing.
+Version `0.1.0` is the first release. There is no earlier published version to upgrade from. Start with [Getting Started]({% link _getting_started/getting-started.md %}). For future releases, upgrade one release at a time.
 
-## Changes in the Next Release
+## Install Version 0.1
 
-The current development version is `{{ site.version }}`. No breaking-change steps have been recorded for a published release. Each future entry will explain what changed, why, and the code before and after.
+```ruby
+gem 'ruby_llm-ag_ui', '~> 0.1.0'
+```
+
+If you used an untagged development checkout, review [Configuration]({% link _getting_started/configuration.md %}) and [Rails Integration]({% link _advanced/rails-integration.md %}) before changing the dependency. No compatibility with earlier untagged checkouts is promised.
+
+## Use the Full Generator Command
+
+Untagged development checkouts registered the shorter `ruby_llm:ag_ui` namespace. Version 0.1 registers the documented installation command:
+
+```bash
+# Before, on an untagged checkout
+bin/rails generate ruby_llm:ag_ui
+
+# Version 0.1
+bin/rails generate ruby_llm:ag_ui:install
+```
+
+Existing generated tables and initializers do not need to be regenerated for this command-name correction.

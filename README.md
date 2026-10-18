@@ -38,7 +38,7 @@ and persistence.
 
 ## Status
 
-Pre-release (`0.1.0`). The pure-Ruby core, run store, approval/resume, cancel
+Version `0.1.0` is the first release. The pure-Ruby core, run store, approval/resume, cancel
 handling and the Rails adapter are implemented and covered by an offline test
 suite. Compatibility claims for real AG-UI clients and live providers are
 tracked in the [compatibility guide](https://rubyllm-ag-ui.wangyaodi.com/compatibility/) and are
@@ -52,7 +52,7 @@ is in [docs/](https://github.com/yorzi/ruby_llm-ag-ui/tree/main/docs).
 
 ```ruby
 # Gemfile
-gem 'ruby_llm-ag_ui'
+gem 'ruby_llm-ag_ui', '~> 0.1.0'
 ```
 
 ```bash
@@ -60,6 +60,7 @@ bundle install
 ```
 
 Requires Ruby >= 3.2, RubyLLM >= 2.1 and `ag-ui-protocol` ~> 0.2.0.
+Runtime dependencies also select patched `cgi`, `resolv`, `uri` and `zlib` gems.
 
 ## Quick start (pure Ruby)
 

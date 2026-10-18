@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-18
+
 ### Added
 
 - Initial gem skeleton: gemspec, Zeitwerk loader, configuration, errors and the
@@ -23,9 +25,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - An opt-in live-provider spec (`RUBY_LLM_LIVE=1 bundle exec rspec spec/live`).
 - Documentation: architecture, protocol coverage, compatibility, Rails, security,
   licenses and upstream `ag-ui-protocol` issue drafts.
+- Versioned GitHub Pages guides and an RDoc API reference.
+- Tag-triggered RubyGems trusted publishing with dependency audits, isolated
+  package installation checks, and GitHub Release assets.
 
 ### Fixed
 
+- Register the install generator under `ruby_llm:ag_ui:install` so Rails can
+  resolve the documented command.
+- Require patched CGI, DNS resolution, URI and zlib runtime gems so an isolated
+  install does not activate older vulnerable Ruby default libraries.
 - A second turn on the same chat no longer leaks the previous run's message ids,
   steps and text into its own stream. RubyLLM's callbacks are additive, so the
   callbacks a finished run registered stay attached; a mapper is now final after

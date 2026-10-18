@@ -1,0 +1,103 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Install the artifact outside the checkout. Only dependency installation uses the network.
+require 'digest'
+require 'json'
+require 'open3'
+require 'rbconfig'
+require 'tmpdir'
+require_relative '../lib/ruby_llm/ag_ui/version'
+
+artifact = File.expand_path("../pkg/ruby_llm-ag_ui-#{RubyLLM::AgUI::VERSION}.gem", __dir__)
+abort 'Build the artifact first: bundle exec rake build' unless File.file?(artifact)
+home = Dir.mktmpdir('ag-ui-package-')
+environment = {
+  'GEM_HOME' => home, 'GEM_PATH' => home, 'RUBYOPT' => nil, 'RUBYLIB' => nil,
+  'BUNDLE_GEMFILE' => nil, 'BUNDLE_BIN_PATH' => nil,
+  'EXPECTED_VERSION' => RubyLLM::AgUI::VERSION
+}
+run = lambda do |label, *arguments|
+  stdout, stderr, result = Open3.capture3(environment, RbConfig.ruby, *arguments, chdir: home)
+  File.write(File.join(home, "#{label}.log"), stdout + stderr)
+  abort "#{label} failed (#{home}):\n#{stdout}\n#{stderr}" unless result.success?
+
+  stdout
+end
+
+# Keep the isolated subprocess checks next to their installation steps.
+# rubocop:disable-next Metrics/BlockLength
+verification = lambda do
+  run.call('install', '-S', 'gem', 'install', artifact, '--no-document')
+  puts run.call('core', '-e', <<~'RUBY')
+    require 'json'
+    require 'ruby_llm/ag_ui'
+    raise 'wrong version' unless RubyLLM::AgUI::VERSION == ENV.fetch('EXPECTED_VERSION')
+    loaded = $LOADED_FEATURES.grep(%r{/(?:active_record|active_job|railties|actionpack)/})
+    raise 'core loaded Rails' unless loaded.empty?
+    specification = Gem.loaded_specs.fetch('ruby_llm-ag_ui')
+    gem_home = File.realpath(ENV.fetch('GEM_HOME'))
+    gem_path = File.realpath(specification.full_gem_path)
+    raise 'loaded from outside isolated GEM_HOME' unless gem_path.start_with?("#{gem_home}#{File::SEPARATOR}")
+    %w[lib/generators/ruby_llm/ag_ui/templates/create_ruby_llm_ag_ui_runs.rb.tt
+       lib/generators/ruby_llm/ag_ui/templates/initializer.rb.tt
+       docs/_getting_started/getting-started.md docs/_reference/third-party-notices.md].each do |path|
+      raise "missing #{path}" unless File.file?(File.join(gem_path, path))
+    end
+    raise 'generated docs in package' unless specification.files.grep(%r{\Adocs/(?:_site|\.internal)/}).empty?
+    input = RubyLLM::AgUI::Input.parse({ 'threadId' => 'package-thread', 'runId' => 'package-run', 'messages' => [] })
+    raise 'input parser failed' unless input.thread_id == 'package-thread'
+    File.write(File.join(gem_home, 'activated-versions.json'),
+               JSON.pretty_generate(Gem.loaded_specs.transform_values { |spec| spec.version.to_s }))
+    puts 'CORE_PACKAGE_PASS'
+  RUBY
+
+  if ARGV.include?('--audit')
+    require 'bundler/audit/database'
+    database = Bundler::Audit::Database.new
+    vulnerable = []
+    JSON.parse(File.read(File.join(home, 'activated-versions.json'))).each do |name, version|
+      specification = Gem::Specification.new do |spec|
+        spec.name = name
+        spec.version = version
+      end
+      database.check_gem(specification) { |advisory| vulnerable << "#{name} #{version}: #{advisory.id}" }
+    end
+    abort vulnerable.join("\n") unless vulnerable.empty?
+
+    puts 'CLEAN_RUNTIME_ADVISORIES_PASS'
+  end
+
+  if ARGV.include?('--rails')
+    run.call('install-rails', '-S', 'gem', 'install', 'railties:8.1.4', 'actionpack:8.1.4',
+             'activerecord:8.1.4', 'sqlite3:2.10.0', '--no-document')
+    puts run.call('rails', '-e', <<~RUBY)
+      require 'rails'
+      require 'active_record'
+      require 'action_controller'
+      require 'ruby_llm/ag_ui'
+      require 'rails/generators'
+      require 'rails/generators/active_record'
+      generator = Rails::Generators.find_by_namespace('ruby_llm:ag_ui:install')
+      raise 'documented generator not discoverable' unless generator
+      generated = File.join(ENV.fetch('GEM_HOME'), 'generated')
+      generator.start([], destination_root: generated, quiet: true)
+      raise 'initializer missing' unless File.file?(File.join(generated, 'config/initializers/ruby_llm_ag_ui.rb'))
+      ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ':memory:')
+      load Dir[File.join(generated, 'db/migrate/*.rb')].fetch(0)
+      migration = CreateRubyLlmAgUiRuns.new
+      migration.suppress_messages { migration.migrate(:up) }
+      raise 'run table missing' unless ActiveRecord::Base.connection.table_exists?('ruby_llm_ag_ui_runs')
+      migration.suppress_messages { migration.migrate(:down) }
+      puts 'RAILS_PACKAGE_PASS'
+    RUBY
+  end
+end
+
+if defined?(Bundler)
+  Bundler.with_unbundled_env(&verification)
+else
+  verification.call
+end
+puts "SHA256=#{Digest::SHA256.file(artifact).hexdigest}"
+puts "EVIDENCE=#{home}"

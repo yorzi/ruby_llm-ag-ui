@@ -41,4 +41,11 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'ag-ui-protocol', '~> 0.2.0'
   spec.add_dependency 'ruby_llm', '>= 2.1', '< 3.0'
+
+  # Old Ruby default gems can otherwise satisfy transitive dependencies while
+  # retaining known URL, CGI, DNS and compression vulnerabilities.
+  spec.add_dependency 'cgi', '>= 0.4.2', '< 1'
+  spec.add_dependency 'resolv', '>= 0.7.2', '< 1'
+  spec.add_dependency 'uri', '>= 1.0.4', '< 2'
+  spec.add_dependency 'zlib', '>= 3.2.3', '< 4'
 end

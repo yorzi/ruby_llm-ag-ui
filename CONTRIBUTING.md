@@ -49,5 +49,8 @@ one coherent change per commit.
 
 ## Releasing
 
-Maintainer only. Bump `lib/ruby_llm/ag_ui/version.rb`, update the CHANGELOG,
-then `bundle exec rake release`.
+Maintainer only. Match `lib/ruby_llm/ag_ui/version.rb` and the documentation
+version, add the version to CHANGELOG, and run the package checks in
+[Releasing](docs/_reference/releasing.md). Push the completed commit and its
+matching `vX.Y.Z` tag. The `Release Gem` workflow verifies the tag, publishes
+through RubyGems trusted publishing, and creates the GitHub Release.

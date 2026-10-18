@@ -6,7 +6,7 @@ require 'generators/ruby_llm/ag_ui/install_generator'
 
 RSpec.describe RubyLLM::AgUI::Generators::InstallGenerator do
   it 'is reachable as `bin/rails generate ruby_llm:ag_ui:install`' do
-    expect(described_class.namespace).to eq('ruby_llm:ag_ui')
+    expect(Rails::Generators.find_by_namespace('ruby_llm:ag_ui:install')).to eq(described_class)
   end
 
   it 'ships the migration and the initializer it installs' do

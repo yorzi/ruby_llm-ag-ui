@@ -12,7 +12,7 @@ description: Install ruby_llm-ag_ui and validate an AG-UI request before connect
 
 After reading this guide, you will know:
 
-* How to install the gem from its current development branch.
+* How to install the release or the current development branch.
 * How to parse a `RunAgentInput` into validated Ruby values.
 * How to run the included offline end-to-end example.
 
@@ -23,6 +23,8 @@ After reading this guide, you will know:
 ```
 
 The gem requires Ruby 3.2 or newer, RubyLLM 2.1 or newer, and `ag-ui-protocol` 0.2.x. The Rails adapter is optional. Provider credentials belong to your RubyLLM application; the parser example below needs none.
+
+The runtime dependencies select patched `cgi`, `resolv`, `uri`, and `zlib` gems. An older Ruby installation's default library versions do not override those dependency requirements.
 
 ## Parse a Request
 

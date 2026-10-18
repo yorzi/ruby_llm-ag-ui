@@ -15,7 +15,7 @@ module RubyLLM
       class InstallGenerator < ::Rails::Generators::Base
         include ::Rails::Generators::Migration
 
-        namespace 'ruby_llm:ag_ui'
+        namespace 'ruby_llm:ag_ui:install'
         desc 'Create the ruby_llm-ag_ui run store table and its initializer.'
         source_root File.expand_path('templates', __dir__)
 

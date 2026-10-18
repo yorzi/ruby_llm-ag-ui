@@ -1,0 +1,131 @@
+name: Release Gem
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify tagged package
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Match the tag to the gem version
+        run: |
+          ruby -Ilib -ryaml - <<'RUBY'
+          require "ruby_llm/ag_ui/version"
+
+          version = RubyLLM::AgUI::VERSION
+          expected = "v#{version}"
+          tag = ENV.fetch("GITHUB_REF_NAME")
+          abort "Tag #{tag} does not match #{expected}" unless tag == expected
+
+          docs_version = YAML.load_file("docs/_config.yml").fetch("version").to_s
+          abort "Docs version #{docs_version} does not match gem version #{version}" unless docs_version == version
+          abort "Docs are not marked for release" unless YAML.load_file("docs/_config.yml")["released"] == true
+          RUBY
+
+      - name: Require a changelog section for this version
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          version = os.environ["GITHUB_REF_NAME"].removeprefix("v")
+          heading = f"## [{version}]"
+          if not any(line.startswith(heading) for line in Path("CHANGELOG.md").read_text().splitlines()):
+              raise SystemExit(f"CHANGELOG.md has no release section for {version}")
+          PY
+
+      - name: Run specs and lint
+        run: bundle exec rake
+
+      - name: Check dependency advisories
+        run: bundle exec bundle-audit check --update
+
+      - name: Build and verify the package
+        run: |
+          bundle exec rake build
+          bundle exec ruby bin/verify-package --rails --audit
+
+  publish:
+    name: Publish to RubyGems
+    needs: verify
+    runs-on: ubuntu-24.04
+    environment:
+      name: release
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Publish the gem with RubyGems trusted publishing
+        uses: rubygems/release-gem@v1
+        with:
+          # The action's experimental attestation patch preloads RubyGems before Bundler.
+          # That activates Ruby 3.3's default zlib and conflicts with the locked zlib gem.
+          attestations: false
+
+      - name: Prepare release assets and notes
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          gem_path="pkg/ruby_llm-ag_ui-${version}.gem"
+          test -f "$gem_path"
+          ( cd pkg && sha256sum "ruby_llm-ag_ui-${version}.gem" > SHA256SUMS )
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          version = os.environ["GITHUB_REF_NAME"].removeprefix("v")
+          changelog = Path("CHANGELOG.md").read_text()
+          heading = f"## [{version}]"
+          start = changelog.find(heading)
+          if start < 0:
+              raise SystemExit(f"CHANGELOG.md has no release section for {version}")
+          next_section = changelog.find("\n## [", start + len(heading))
+          section = changelog[start:next_section if next_section >= 0 else None].strip()
+          Path("release-notes.md").write_text(section + "\n")
+          PY
+
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" \
+            --verify-tag \
+            --title "ruby_llm-ag_ui $GITHUB_REF_NAME" \
+            --notes-file release-notes.md \
+            "pkg/ruby_llm-ag_ui-${version}.gem" \
+            pkg/SHA256SUMS
