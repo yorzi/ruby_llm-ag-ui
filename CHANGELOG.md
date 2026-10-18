@@ -6,6 +6,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- Supply the required actor scope in the opt-in live-provider check and exercise
+  its run setup offline, before provider verification.
+
 ## [0.1.0] - 2026-10-18
 
 ### Added
