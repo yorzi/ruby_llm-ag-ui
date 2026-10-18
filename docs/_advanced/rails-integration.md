@@ -1,4 +1,20 @@
-# Rails
+---
+layout: default
+title: "Rails Integration"
+nav_order: 1
+description: Serve AG-UI runs from Rails with the optional controller concern and durable ActiveRecord store.
+---
+
+# {{ page.title }}
+
+{{ page.description }}
+{: .fs-6 .fw-300 }
+
+After reading this guide, you will know:
+
+* How to install the Rails adapter files.
+* How to authenticate, select a chat, and stream a run.
+* What the durable store and reconnect path provide.
 
 The adapter is optional. It is what a Rails host gets for free: a controller
 concern that serves the event stream, a durable run store backed by ActiveRecord,
@@ -17,10 +33,10 @@ bin/rails db:migrate
 
 The generator writes two files:
 
-- `db/migrate/*_create_ruby_llm_ag_ui_runs.rb` — one row per run, with a unique
+- `db/migrate/*_create_ruby_llm_ag_ui_runs.rb`: one row per run, with a unique
   index on `(scope, thread_id, run_id)` and one on
   `(scope, thread_id, status)`.
-- `config/initializers/ruby_llm_ag_ui.rb` — points `config.run_store` at
+- `config/initializers/ruby_llm_ag_ui.rb`: points `config.run_store` at
   `RubyLLM::AgUI::Rails::ActiveRecordStore` and lists the choices worth making.
 
 The migration targets the host's own Rails version
@@ -61,7 +77,7 @@ than quietly reserving every run under one shared scope. It bounds every store
 lookup, so two actors using the same `threadId` cannot reach each other's runs.
 
 `ag_ui_state` is only published when a completed run is served to a client that
-reconnects. It is not replayed as deltas, and the gem never computes it — your
+reconnects. It is not replayed as deltas, and the gem never computes it; your
 app knows what the client is looking at.
 
 ## What the client gets, and when
@@ -96,7 +112,7 @@ what makes run identity survive a worker:
   interrupt id is not a global key.
 
 `scope`, `thread_id` and `run_id` are strings; the record itself is stored as
-JSON **text** in `payload`, because a record is immutable — there is no partial
+JSON **text** in `payload`, because a record is immutable and has no partial
 update to model. The gem does the encoding, so the stored shape is exactly
 `RunRecord#to_storage` on every database and Rails version, rather than whatever
 the host's ActiveSupport JSON encoder produces.
@@ -175,3 +191,9 @@ what `spec/support/fake_chat.rb` in this repository does.
 | `409` on a second tab of the same run | A live run has one stream; serve the second client from your own relay |
 | Tool results are `[redacted]` | Redaction is the default; configure `config.redact` |
 | A run succeeds but the client shows nothing | The client was not sent the interrupt/resume flow it expected, or it re-sent a `runId` whose run had already ended |
+
+## Next Steps
+
+* [Approval and Resume]({% link _core_features/approval-and-resume.md %}) - answer a tool approval pause.
+* [Reconnects and Run Identity]({% link _core_features/reconnects.md %}) - understand durable run records.
+* [Security and Deployment]({% link _advanced/security-and-deployment.md %}) - review host authorization duties.

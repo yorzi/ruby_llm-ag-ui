@@ -1,0 +1,117 @@
+title: "RubyLLM AG-UI"
+description: "Run RubyLLM chats as AG-UI 1.0 streams with validated input, approval pauses, cancellation, and optional Rails integration."
+tagline: "Run RubyLLM chats as AG-UI agent runs"
+url: https://rubyllm-ag-ui.wangyaodi.com
+baseurl: ""
+lang: en-US
+repository: yorzi/ruby_llm-ag-ui
+
+theme: jekyll-vitepress-theme
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
+permalink: pretty
+
+collections:
+  getting_started:
+    permalink: "/:name/"
+    output: true
+  core_features:
+    permalink: "/:name/"
+    output: true
+  advanced:
+    permalink: "/:name/"
+    output: true
+  reference:
+    permalink: "/:name/"
+    output: true
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+      jekyll_vitepress:
+        auto_title: false
+
+jekyll_vitepress:
+  seo:
+    page_type: TechArticle
+    publisher:
+      type: Organization
+      name: "RubyLLM AG-UI"
+      url: https://rubyllm-ag-ui.wangyaodi.com
+      same_as:
+        - https://github.com/yorzi/ruby_llm-ag-ui
+  llms:
+    title: RubyLLM AG-UI Documentation
+    description: "Run RubyLLM chats as AG-UI 1.0 streams with validated input, approval pauses, cancellation, and optional Rails integration."
+    full: true
+  branding:
+    site_title: "RubyLLM AG-UI"
+  typography:
+    body_font_family: "'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
+    code_font_family: "'IBM Plex Mono', ui-monospace, monospace"
+    google_fonts_url: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Inter:wght@300;400;500;600;700;900&display=swap"
+  syntax:
+    light_theme: github
+    dark_theme: github.dark
+  tokens:
+    light:
+      "--vp-c-brand-1": "#365486"
+      "--vp-c-brand-2": "#3F629C"
+      "--vp-c-brand-3": "#2D4670"
+      "--vp-c-brand-soft": "rgba(54, 84, 134, 0.14)"
+    dark:
+      "--vp-c-brand-1": "#486FB2"
+      "--vp-c-brand-2": "#3F629C"
+      "--vp-c-brand-3": "#365486"
+      "--vp-c-brand-soft": "rgba(72, 111, 178, 0.18)"
+  github_star:
+    enabled: true
+    repository: yorzi/ruby_llm-ag-ui
+    text: Star
+    show_count: true
+  footer:
+    enabled: true
+    show_on_docs: false
+    message: "Released under the MIT License."
+    copyright: "Copyright © 2026 Andy Wang"
+  doc_footer:
+    enabled: true
+    previous_label: Previous page
+    next_label: Next page
+  last_updated:
+    enabled: true
+    text: Last updated
+    format: "%-d %b %Y"
+  edit_link:
+    enabled: true
+    pattern: https://github.com/yorzi/ruby_llm-ag-ui/edit/main/docs/:path
+    text: Edit this page on GitHub
+
+plugins:
+  - jekyll-redirect-from
+  - jekyll-vitepress-theme
+
+exclude:
+  - bin
+  - .internal
+  - vendor
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+
+# The language of code examples; `project-docs` uses it for new pages.
+code_language: ruby
+
+# Values that change between releases. Pages read them as {{ site.version }}
+# and {{ site.examples.NAME }}, so one edit here updates every page. Set
+# `released: true` and the new version in the commit you tag for a release.
+released: false
+version: "0.1.0"
+examples: {}

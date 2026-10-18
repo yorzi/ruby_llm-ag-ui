@@ -83,7 +83,7 @@ module RubyLLM
       }.freeze
 
       # The 1.0 shapes `ag-ui-protocol` 0.2.0 cannot express, with the gem's
-      # handling. Upstream issues are drafted in docs/upstream; file them there.
+      # handling. Upstream issues are drafted in docs/.internal/upstream.
       GAPS = [
         {
           id: 'SDK-GAP-01',

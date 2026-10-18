@@ -21,7 +21,7 @@ with an optional Rails adapter.
 If your agent already runs on RubyLLM and you want an AG-UI client (CopilotKit,
 `@ag-ui/client`, or another AG-UI consumer) in front of it, you currently have
 to hand-map RubyLLM callbacks, approval pauses and cancellation onto the AG-UI
-run lifecycle, and you have to parse and authorize `RunAgentInput` yourself —
+run lifecycle, and you have to parse and authorize `RunAgentInput` yourself:
 the community Ruby SDK builds outbound events but has no inbound parser. The
 usual results are wrong terminal events, duplicate runs on retry, approvals that
 are not bound to the call they approve, and cancellations reported as success.
@@ -41,11 +41,12 @@ and persistence.
 Pre-release (`0.1.0`). The pure-Ruby core, run store, approval/resume, cancel
 handling and the Rails adapter are implemented and covered by an offline test
 suite. Compatibility claims for real AG-UI clients and live providers are
-tracked in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) and are
+tracked in the [compatibility guide](https://rubyllm-ag-ui.wangyaodi.com/compatibility/) and are
 **not** asserted until recorded there.
 
-See [docs/](docs) for the architecture, the protocol coverage map, the
-compatibility matrix and the security model.
+Read the [documentation site](https://rubyllm-ag-ui.wangyaodi.com/) for the
+guides, protocol coverage, compatibility matrix and security model. Its source
+is in [docs/](https://github.com/yorzi/ruby_llm-ag-ui/tree/main/docs).
 
 ## Installation
 
@@ -84,7 +85,7 @@ RubyLLM::AgUI::Run.new(
 builds from authenticated identity, never anything from the request body.
 
 `examples/pure_ruby/app.rb` is a runnable Rack endpoint that streams a complete
-run — a tool call, an approval pause and the run that answers it — with no
+run (a tool call, an approval pause and the run that answers it) with no
 provider and no credentials (`rake example`, or
 `rackup examples/pure_ruby/config.ru`). Set `RUBY_LLM_AG_UI_EXAMPLE_MODEL` to
 drive a real `RubyLLM::Chat` through the same code.
@@ -109,7 +110,7 @@ class AgentRunsController < ApplicationController
 end
 ```
 
-See [docs/RAILS.md](docs/RAILS.md) and `examples/rails_8`.
+See the [Rails integration guide](https://rubyllm-ag-ui.wangyaodi.com/rails-integration/) and `examples/rails_8`.
 
 ## Development
 
@@ -129,19 +130,16 @@ RUBY_LLM_LIVE=1 OPENAI_API_KEY=... bundle exec rspec spec/live
 
 ## Documentation
 
-- [Architecture](docs/ARCHITECTURE.md) — the components, the run, the invariants.
-- [Protocol coverage](docs/PROTOCOL_COVERAGE.md) — all 31 AG-UI 1.0 event types
+- [Architecture](https://rubyllm-ag-ui.wangyaodi.com/overview/) - the components, run, and invariants.
+- [Protocol coverage](https://rubyllm-ag-ui.wangyaodi.com/protocol-coverage/) - all 31 AG-UI 1.0 event types
   and what this gem does with each.
-- [Compatibility](docs/COMPATIBILITY.md) — what is asserted and what is not.
-- [Rails](docs/RAILS.md) — the controller concern, the store, resume, transport.
-- [Security](docs/SECURITY.md) — the threat model and the deployment checklist.
-- [Upstream issue drafts](docs/upstream/ag-ui-protocol-0.2.0.md) — the five gaps
-  in `ag-ui-protocol` 0.2.0 this gem works around.
+- [Compatibility](https://rubyllm-ag-ui.wangyaodi.com/compatibility/) - what this repository verifies.
+- [Rails](https://rubyllm-ag-ui.wangyaodi.com/rails-integration/) - the controller concern, store, and transport.
+- [Security](https://rubyllm-ag-ui.wangyaodi.com/security-and-deployment/) - the threat model and deployment checklist.
 
 ## License
 
-MIT. See [LICENSE.txt](LICENSE.txt). Third-party notices are in
-[docs/LICENSES.md](docs/LICENSES.md).
+MIT. See [LICENSE.txt](LICENSE.txt). Read the [third-party notices](https://rubyllm-ag-ui.wangyaodi.com/third-party-notices/).
 
 This is an unofficial community project and is not affiliated with the RubyLLM or
-AG-UI maintainers. Report security issues privately — see [SECURITY.md](SECURITY.md).
+AG-UI maintainers. Report security issues privately. See [SECURITY.md](SECURITY.md).

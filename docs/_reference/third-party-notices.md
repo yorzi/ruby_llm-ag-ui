@@ -1,7 +1,18 @@
-# Licenses and third-party notices
+---
+layout: default
+title: "Third-Party Notices"
+nav_order: 5
+guide: false
+description: Review licenses and provenance for runtime, optional, and development dependencies.
+---
+
+# {{ page.title }}
+
+{{ page.description }}
+{: .fs-6 .fw-300 }
 
 `ruby_llm-ag_ui` is released under the MIT License. See
-[`LICENSE.txt`](../LICENSE.txt).
+[the MIT license in the repository](https://github.com/yorzi/ruby_llm-ag-ui/blob/main/LICENSE.txt).
 
 It is an unofficial community project. It is not affiliated with, endorsed by, or
 maintained by the RubyLLM maintainers or the AG-UI protocol maintainers.
@@ -36,7 +47,7 @@ uses:
 - Upstream: <https://github.com/ag-ui-protocol/ag-ui/blob/89cedd3fd549feeee41e50e1d7c6d373e549241a/docs/spec/1.0/schema.json>
 - License: MIT (the AG-UI repository's `LICENSE` at the same commit)
 - SHA-256: `4b5c93226838a0e72d88e6c5df20633c686c49fcb75d9be2815c6cbf9e48e71a`
-- Provenance note: [`spec/fixtures/schema/README.md`](../spec/fixtures/schema/README.md)
+- Provenance note: [the vendored schema README](https://github.com/yorzi/ruby_llm-ag-ui/blob/main/spec/fixtures/schema/README.md)
 
 It is used only by the test suite and is never served, re-published or modified.
 

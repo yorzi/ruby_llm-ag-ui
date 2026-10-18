@@ -1,4 +1,20 @@
-# Compatibility
+---
+layout: default
+title: "Compatibility"
+nav_order: 2
+description: Check the dependency versions and behaviors that this repository verifies.
+---
+
+# {{ page.title }}
+
+{{ page.description }}
+{: .fs-6 .fw-300 }
+
+After reading this guide, you will know:
+
+* Which runtime and protocol dependency ranges the gem supports.
+* What the local and CI suites assert.
+* Which client and provider claims remain unverified.
 
 What this gem is checked against, what it is not, and what changes when a
 dependency does.
@@ -11,7 +27,7 @@ dependency does.
 | RubyLLM | `>= 2.1`, `< 3.0` | 2.1.1 (callback, approval and cancellation behavior read from its source) |
 | `ag-ui-protocol` | `~> 0.2.0` | 0.2.0 |
 | Rails (adapter only) | `railties`, `actionpack`, `activerecord` `>= 8.0` | 8.0.x and 8.1.x in CI |
-| AG-UI schema | pinned commit `89cedd3fd549feeee41e50e1d7c6d373e549241a` | vendored, SHA-256 recorded in [PROTOCOL_COVERAGE.md](PROTOCOL_COVERAGE.md) |
+| AG-UI schema | pinned commit `89cedd3fd549feeee41e50e1d7c6d373e549241a` | vendored, SHA-256 recorded in [AG-UI Protocol Coverage]({% link _reference/protocol-coverage.md %}) |
 
 The pure-Ruby core depends only on `ruby_llm` and `ag-ui-protocol`. Rails,
 `ToolViews`, `OpenUI` and `OddlyDock` are not runtime dependencies, and the Rails
@@ -86,7 +102,7 @@ deliberately, with a status and a reason.
 **`ag-ui-protocol` 0.3+** would need `Protocol` re-checked first: the gem
 subclasses `Model` and `BaseEvent` for the cancelled outcome, the versioned
 `RUN_STARTED` and the run-finished shape. The gaps listed in
-[PROTOCOL_COVERAGE.md](PROTOCOL_COVERAGE.md) may be closed upstream, in which case
+the [protocol coverage guide]({% link _reference/protocol-coverage.md %}) may be closed upstream, in which case
 the local subclasses should be removed rather than kept.
 
 **A new RubyLLM 2.x minor** can change the callback contract (`before_tool_call`,
@@ -98,7 +114,7 @@ layer; the gemspec refuses it.
 
 **A new AG-UI schema commit** is a deliberate change: vendor the file, update
 `Protocol::SCHEMA_COMMIT` and the SHA-256 in
-[PROTOCOL_COVERAGE.md](PROTOCOL_COVERAGE.md), then let the coverage and schema
+the [protocol coverage guide]({% link _reference/protocol-coverage.md %}), then let the coverage and schema
 specs tell you what moved.
 
 ## Reporting an incompatibility
@@ -106,3 +122,8 @@ specs tell you what moved.
 Open an issue with the versions from `RubyLLM::AgUI.config.to_h`, the event types
 that went wrong, and whether a real client or a live provider was involved. A
 redacted trace is enough; do not paste credentials or raw tool payloads.
+
+## Next Steps
+
+* [AG-UI Protocol Coverage]({% link _reference/protocol-coverage.md %}) - inspect event support.
+* [Upgrading]({% link _reference/upgrading.md %}) - record breaking dependency changes.

@@ -6,7 +6,7 @@
 `RubyLLM::AgUI::Protocol::SCHEMA_COMMIT`).
 
 - Upstream: <https://github.com/ag-ui-protocol/ag-ui/blob/89cedd3fd549feeee41e50e1d7c6d373e549241a/docs/spec/1.0/schema.json>
-- License: MIT (see `docs/LICENSES.md`)
+- License: MIT (see `docs/_reference/third-party-notices.md`)
 - SHA-256: `4b5c93226838a0e72d88e6c5df20633c686c49fcb75d9be2815c6cbf9e48e71a`
 
 It is never edited here. To move to a newer schema commit, copy the file

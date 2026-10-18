@@ -89,4 +89,4 @@ a provider key, so the remaining check is yours:
 Concurrency is the other thing to decide before production: `ActionController::Live`
 holds a thread for the length of the run, and a web server with a handful of
 workers will run out of them before it runs out of requests. See
-`docs/RAILS.md` for the job-backed transport.
+`docs/_advanced/rails-integration.md` for the job-backed transport.

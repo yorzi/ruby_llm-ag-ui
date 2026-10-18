@@ -1,4 +1,20 @@
-# Protocol coverage — AG-UI 1.0
+---
+layout: default
+title: "AG-UI Protocol Coverage"
+nav_order: 1
+description: See how this producer handles each event in the pinned AG-UI 1.0 schema.
+---
+
+# {{ page.title }}
+
+{{ page.description }}
+{: .fs-6 .fw-300 }
+
+After reading this guide, you will know:
+
+* Which event types the gem produces, leaves to the host, or does not emit.
+* How success, interruption, cancellation, failure, and reconnect map to events.
+* Which protocol gaps the pinned Ruby SDK does not express.
 
 `ruby_llm-ag_ui` speaks AG-UI 1.0. This page is the audit of what it produces
 against that schema: every one of the 31 event types the 1.0 `Event` union
@@ -27,10 +43,10 @@ emitted event against the vendored file.
 
 Legend:
 
-- **produced** — emitted from real RubyLLM data on the supported path.
-- **optional** — emitted only when the host opts in and real data exists.
-- **host-owned** — the host owns the payload; this gem does not produce it.
-- **not produced** — the producer has no data for it and never fabricates it.
+- **produced:** emitted from real RubyLLM data on the supported path.
+- **optional:** emitted only when the host opts in and real data exists.
+- **host-owned:** the host owns the payload; this gem does not produce it.
+- **not produced:** the producer has no data for it and never fabricates it.
 
 ### Produced (13)
 
@@ -99,8 +115,8 @@ written:
 | The chat paused on something the protocol cannot express | `RUN_ERROR` (`unsupported_run_state`), never a success |
 
 A paused run is never a success. A cancelled run is never a success. A transport
-that dies mid-run reports nothing on the wire — the record stays non-terminal and
-the client can reconnect — and it is never evidence that the work finished.
+that dies mid-run reports nothing on the wire; the record stays non-terminal and
+the client can reconnect, and it is never evidence that the work finished.
 
 ## Reconnect
 
@@ -113,14 +129,14 @@ that already ended gets:
 
 It does not get the run's text or tool deltas again: replaying them would draw
 the text twice, and re-running a tool would duplicate the side effect. That is
-also why `MESSAGES_SNAPSHOT` is not used — the client's own conversation is the
+also why `MESSAGES_SNAPSHOT` is not used because the client's own conversation is the
 authority, and the gem will not hand it a second, re-id'd copy.
 
 ## Where this differs from `ag-ui-protocol` 0.2.0
 
 The community Ruby SDK (`ag-ui-protocol` 0.2.0) is what this gem encodes with, so
-its gaps are visible here. Issue drafts are in
-[`docs/upstream/ag-ui-protocol-0.2.0.md`](upstream/ag-ui-protocol-0.2.0.md).
+its gaps are visible here. Issue drafts for these SDK gaps are kept under
+`docs/.internal/upstream/` in the repository.
 
 | ID | Gap | This gem's handling |
 |---|---|---|
@@ -136,18 +152,24 @@ differ by exactly the five `THINKING_*` constants (SDK-only) and the three
 difference at runtime rather than hardcoding it, so an SDK upgrade that closes a
 gap shows up as a failing expectation instead of a stale document.
 
-## Checking it yourself
+## Checking It Yourself
 
 ```ruby
 require 'ruby_llm/ag_ui'
 
-RubyLLM::AgUI::Coverage.report   # => { produced: [...], optional: [...], ... }
-RubyLLM::AgUI::Coverage.entries.size          # => 31
-RubyLLM::AgUI::Coverage.sdk_only_event_types  # => ["THINKING_TEXT_MESSAGE_START", ...]
-RubyLLM::AgUI::Coverage.schema_only_event_types # => ["SUBAGENT_STARTED", ...]
+RubyLLM::AgUI::Coverage.entries.size # => 31
+RubyLLM::AgUI::Coverage.sdk_only_event_types
+# => ["THINKING_TEXT_MESSAGE_START", "THINKING_TEXT_MESSAGE_CONTENT", "THINKING_TEXT_MESSAGE_END", "THINKING_START", "THINKING_END"]
+RubyLLM::AgUI::Coverage.schema_only_event_types
+# => ["SUBAGENT_STARTED", "SUBAGENT_FINISHED", "SUBAGENT_ERROR"]
 ```
 
 Every event the mapper and the run emit is validated against the vendored schema
 in the spec suite (`bundle exec rspec`), including the negative cases: partial
 tool arguments, a nil chunk, a tool that raises, and a thinking-only chunk that
 must produce no event at all.
+
+## Next Steps
+
+* [Streaming Runs]({% link _core_features/streaming-runs.md %}) - follow event order and outcomes.
+* [Compatibility]({% link _reference/compatibility.md %}) - see what this repository verifies.

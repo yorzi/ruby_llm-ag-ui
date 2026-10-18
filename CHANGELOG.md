@@ -12,7 +12,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `RubyLLM::AgUI` namespace.
 - Inbound `RunAgentInput` parsing with size and schema bounds.
 - RubyLLM 2.x to AG-UI 1.0 mapping for text, tool and lifecycle events, audited
-  against the pinned 1.0 schema (31 event types, see `docs/PROTOCOL_COVERAGE.md`).
+  against the pinned 1.0 schema (31 event types, see `docs/_reference/protocol-coverage.md`).
 - Run reservation, approval interrupt/resume and the cancelled outcome.
 - An SSE writer and an optional Rails adapter: a controller concern, a durable
   ActiveRecord run store and an install generator.

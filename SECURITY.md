@@ -23,7 +23,7 @@ prefer to stay anonymous.
 
 ## Security model
 
-The threat model is documented in [docs/SECURITY.md](docs/SECURITY.md). In
+The threat model is documented in the [security and deployment guide](https://rubyllm-ag-ui.wangyaodi.com/security-and-deployment/). In
 short: client-supplied `messages`, `state`, `tools`, `context` and
 `forwardedProps` are untrusted and never grant host privileges or change host
 policy; tool approvals and `resume` payloads are never permission grants; and

@@ -25,16 +25,17 @@ Gem::Specification.new do |spec|
   spec.metadata['source_code_uri'] = spec.homepage
   spec.metadata['changelog_uri'] = "#{spec.homepage}/blob/main/CHANGELOG.md"
   spec.metadata['bug_tracker_uri'] = "#{spec.homepage}/issues"
-  spec.metadata['documentation_uri'] = "#{spec.homepage}#readme"
+  spec.metadata['documentation_uri'] = 'https://rubyllm-ag-ui.wangyaodi.com/'
   spec.metadata['rubygems_mfa_required'] = 'true'
 
   spec.files = Dir.chdir(__dir__) do
     # The generator templates are .rb.tt, so `lib/**/*.rb` would leave an
     # installed gem with no migration to install.
-    # The README links to docs/, so an installed gem ships them too; a link to a
-    # file that only exists in the repository is worse than a slightly larger gem.
+    # The docs site source is shipped as Markdown, but its built `_site/` output
+    # is a deployment artifact and must not enter a gem built after a local site
+    # build.
     Dir['lib/**/*.rb', 'lib/**/*.tt', 'docs/**/*.md', 'LICENSE.txt', 'README.md', 'CHANGELOG.md',
-        'SECURITY.md', 'CONTRIBUTING.md']
+        'SECURITY.md', 'CONTRIBUTING.md'].reject { |path| path.start_with?('docs/_site/') }
   end
   spec.require_paths = ['lib']
 

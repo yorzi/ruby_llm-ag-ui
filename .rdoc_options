@@ -1,0 +1,14 @@
+---
+title: "RubyLLM AG-UI"
+exclude:
+  - lib/tasks/
+  - lib/generators/
+  - \.json$
+footer_content:
+  Documentation:
+    Guides: https://rubyllm-ag-ui.wangyaodi.com/
+    Upgrading: https://rubyllm-ag-ui.wangyaodi.com/upgrading/
+  Resources:
+    GitHub: https://github.com/yorzi/ruby_llm-ag-ui
+    Issues: https://github.com/yorzi/ruby_llm-ag-ui/issues
+    Releases: https://github.com/yorzi/ruby_llm-ag-ui/releases

@@ -17,8 +17,8 @@ bundle exec rubocop
   emit a schema-valid event and open an upstream issue before a PR. The known
   gaps (the JSON input parser, the cancelled outcome, subagent events, the
   `RUN_STARTED` `protocolVersion`) are tracked in
-  [docs/PROTOCOL_COVERAGE.md](docs/PROTOCOL_COVERAGE.md), with issue drafts in
-  [docs/upstream/](docs/upstream).
+  [docs/_reference/protocol-coverage.md](docs/_reference/protocol-coverage.md), with issue drafts in
+  [docs/.internal/upstream/](docs/.internal/upstream).
 - **Never load Rails from the core.** `require 'ruby_llm/ag_ui'` must not load
   Rails, open a network connection, or read provider credentials. There is a
   spec that asserts this.

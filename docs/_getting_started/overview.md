@@ -1,4 +1,20 @@
-# Architecture
+---
+layout: default
+title: "How RubyLLM AG-UI Works"
+nav_order: 2
+description: One RubyLLM chat turn becomes one ordered AG-UI run with a single recorded outcome.
+---
+
+# {{ page.title }}
+
+{{ page.description }}
+{: .fs-6 .fw-300 }
+
+After reading this guide, you will know:
+
+* Which objects parse input, drive a chat, write events, and store run state.
+* How the event stream and terminal outcome are ordered.
+* Which responsibilities stay with the host application.
 
 One RubyLLM chat turn is one AG-UI run. A run has one identity, one ordered
 stream of events and exactly one outcome, and the parts that decide those things
@@ -71,7 +87,7 @@ reason.
 | `Store::Base` / `MemoryStore` / `Rails::ActiveRecordStore` | Run identity, interrupts, redemption. | Chat history, message ids, tool output. |
 | `RunRecord` / `Interrupt` | An immutable value per run and per approval pause, with legal transitions only. | Wire shapes. |
 | `Resume` / `Reconnect` | Answering a previous run's interrupts; serving a run that already ended. | Permission. A resume is a request. |
-| `Redaction` / `ErrorSanitizer` | What may appear on the wire: payload shapes without content, fixed error messages and codes. | Deciding what the host considers secret — that is the host's policy. |
+| `Redaction` / `ErrorSanitizer` | What may appear on the wire: payload shapes without content, fixed error messages and codes. | Deciding what the host considers secret; that is the host's policy. |
 | `Coverage` | The 31-type audit against the pinned schema. | What the SDK supports. |
 
 ## The run, step by step
@@ -134,7 +150,7 @@ order consistent with the mapper's state; it does not make a run parallel.
 Two streams for one live run are refused, not merged: relaying one run to two
 clients is a transport the gem does not own. Two requests for one run identity
 are resolved by the store, and the store's redemption step is the authoritative
-race guard for a resume — the loser is told the answer was already recorded
+race guard for a resume. The loser is told the answer was already recorded
 instead of running the tool twice.
 
 ## Storage
@@ -168,6 +184,6 @@ second agent framework. It does not own conversation history, message ids, tool
 authorization, or the decision to run a tool. It does not open connections, spawn
 jobs or buffer frames.
 
-See [PROTOCOL_COVERAGE.md](PROTOCOL_COVERAGE.md) for what is on the wire,
-[SECURITY.md](SECURITY.md) for the threat model, and [RAILS.md](RAILS.md) for the
-adapter.
+See [Protocol Coverage]({% link _reference/protocol-coverage.md %}) for the wire events,
+[Security and Deployment]({% link _advanced/security-and-deployment.md %}) for the threat model, and
+[Rails Integration]({% link _advanced/rails-integration.md %}) for the adapter.

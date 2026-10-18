@@ -1,4 +1,20 @@
-# Security model
+---
+layout: default
+title: "Security and Deployment"
+nav_order: 2
+description: Keep identity, tool permissions, and sensitive output under the host application's control.
+---
+
+# {{ page.title }}
+
+{{ page.description }}
+{: .fs-6 .fw-300 }
+
+After reading this guide, you will know:
+
+* Which values the gem treats as untrusted.
+* How redaction, error sanitization, and interrupt redemption work.
+* Which security decisions the host application must make.
 
 This gem is a **producer**, not an authorization layer. It decides what a run may
 report on the wire and refuses what it cannot report truthfully. It does not
@@ -131,7 +147,7 @@ of its own beyond the framing. The Rails adapter adds:
 
 - `Accept` negotiation: a client that cannot read `text/event-stream` gets 406
   before any event.
-- Input refusal before the response commits: 400, 404, 409, 413 — never a
+- Input refusal before the response commits: 400, 404, 409, 413, never a
   half-open stream.
 - `Content-Type: text/event-stream`, `Cache-Control: no-cache`,
   `Connection: keep-alive`, `X-Accel-Buffering: no`.
@@ -173,14 +189,16 @@ wrong is outside what this gem can detect.
 - **Host authentication and authorization**, including whether a given actor
   should be allowed to run a given tool.
 - **Provider-side data handling**, retention and training.
-- **Anything the host writes outside the gem's events** — its own log lines,
+- **Anything the host writes outside the gem's events**, such as its own log lines,
   its own extra SSE frames, its own UI.
 - **Denial of service by an authenticated actor** who opens many legitimate
   streams.
 
 ## Reporting
 
-See [../SECURITY.md](../SECURITY.md) for the reporting process. Reports about a
-silent duplicate execution, an approval that widens what it covers, a secret in a
-`RUN_ERROR` or a leak into the log are the ones this model is built to prevent
-and are treated as vulnerabilities, not as documentation bugs.
+See the [repository security policy](https://github.com/yorzi/ruby_llm-ag-ui/blob/main/SECURITY.md) for the reporting process. Reports about a silent duplicate execution, an approval that widens what it covers, a secret in a `RUN_ERROR`, or a leak into the log are treated as vulnerabilities.
+
+## Next Steps
+
+* [Configuration]({% link _getting_started/configuration.md %}) - set safe redaction and storage defaults.
+* [Rails Integration]({% link _advanced/rails-integration.md %}) - apply these boundaries in a controller.
