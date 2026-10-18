@@ -59,5 +59,11 @@ module RubyLLM
     # Raised when the stream cannot be closed in order (for example the
     # transport died mid-run). The run is reported as RUN_ERROR.
     class StreamError < Error; end
+
+    # Raised when RubyLLM paused the run for something the pinned AG-UI shape
+    # cannot express as an interrupt this producer may answer, such as an MCP
+    # input request or a long-running MCP task. Reported as a sanitized
+    # RUN_ERROR rather than a success or a bare interrupt.
+    class UnsupportedRunStateError < Error; end
   end
 end

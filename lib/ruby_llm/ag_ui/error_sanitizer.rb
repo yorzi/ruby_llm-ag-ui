@@ -32,6 +32,10 @@ module RubyLLM
         'RubyLLM::ToolCallParseError' => ['The model produced an unparseable tool call.', 'tool_call_parse_error'],
         'RubyLLM::UnsupportedAttachmentError' => ['An attachment could not be sent.', 'unsupported_attachment'],
         'RubyLLM::ModelNotFoundError' => ['The model is not available.', 'model_not_found'],
+        'RubyLLM::AgUI::UnsupportedRunStateError' => [
+          'The run paused for input this producer cannot express.', 'unsupported_run_state'
+        ],
+        'RubyLLM::AgUI::StreamError' => ['The run could not be streamed to completion.', 'stream_failed'],
         'RubyLLM::Error' => ['The model provider returned an error.', 'provider_error'],
         'Faraday::Error' => ['The model provider request failed.', 'transport_error'],
         'Timeout::Error' => ['The model provider request timed out.', 'transport_timeout'],
