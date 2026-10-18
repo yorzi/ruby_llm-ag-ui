@@ -9,7 +9,7 @@ module RubyLLM
     # already in progress instead of executing twice, and it keeps the
     # interrupts that a later resume has to answer.
     #
-    # Two stores ship with the gem: Store::MemoryStore, which is the default for
+    # Two stores ship with the gem: Store::MemoryStore for
     # a single process, and the optional Rails adapter's ActiveRecord store. A
     # host may implement this interface instead; every method must be safe to
     # call from concurrent threads.

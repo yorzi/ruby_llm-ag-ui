@@ -11,12 +11,13 @@ description: Review RubyLLM AG-UI releases, newest first, with highlights and up
 {{ page.description }}
 {: .fs-6 .fw-300 }
 
-{% if site.docs_unreleased %}This build follows `main`. The latest stable release is `{{ site.version }}`.
+{% if site.docs_unreleased %}This build follows `main` for version `{{ site.version }}` development. Select Stable in the version menu for the published release.
 {% else %}This documentation describes version `{{ site.version }}`. Use its tag and release notes to identify the exact source.
 {% endif %}
 
 | Release | Date | Highlights |
 | --- | --- | --- |
+| 0.2.0 candidate | Unreleased | [Client workflows and tool progress]({% link _getting_started/whats-new-in-0-2.md %}); local validation does not publish a release |
 | [0.1.0](https://github.com/yorzi/ruby_llm-ag-ui/releases/tag/v0.1.0) | 2026-10-18 | [First release]({% link _reference/whats-new-in-0-1.md %}): AG-UI event mapping, approval and resume, cancellation, reconnect, and the optional Rails adapter |
 
 To move an application from one release to the next, follow [Upgrading]({% link _reference/upgrading.md %}).

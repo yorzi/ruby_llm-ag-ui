@@ -6,10 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - Unreleased
+
 ### Added
 
 - Opt-in tool progress as redacted `ACTIVITY_SNAPSHOT` events, with stable
   per-call identity and per-run or global configuration.
+- Installed-artifact host checks for generated migrations, RubyLLM model setup,
+  actor-scoped chat persistence, and Ruby/Rails run paths.
 - A pinned official AG-UI client demo for Ruby and Rails, with browser workflow
   tests, mobile screenshots, and schema validation of consumed events.
 

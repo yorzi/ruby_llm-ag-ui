@@ -23,19 +23,20 @@ approval/resume, run identity, and the memory and ActiveRecord stores. The
 repository defines Ruby and Rails CI matrices and package verification.
 These checks do not establish real client or live provider compatibility.
 
-Three concrete gaps shape the next release:
+The local 0.2.0 candidate is complete as of 2026-10-19. It is not published.
+The initial gaps now have reproducible checks:
 
-- No real AG-UI client verification is recorded in the
-  [compatibility guide](docs/_reference/compatibility.md). Start with a pinned
-  `@ag-ui/client` version and its
-  [official HttpAgent](https://docs.ag-ui.com/sdk/js/client/http-agent).
-  Confirm its wire contract matches the pinned schema before promising support.
-- The [live spec](spec/live/live_run_spec.rb) omits the required `scope:`
-  argument to `Run.new`. Correct it and verify the test reaches the provider;
-  the default suite skips it.
-- The [Rails example](examples/rails_8/) contains integration files, not a
-  bootable app. Verify model setup, migration order, request handling, and the
-  approval round trip in a fresh host before calling it a working demo.
+- `@ag-ui/client` 1.0.3 consumes both plain Ruby and Rails streams in Chrome.
+  Browser workflows and captured-event schema checks run with one command.
+- The live spec now supplies `scope:`; its setup also runs against an offline
+  chat. A live provider session remains unverified and is not a 0.2 claim.
+- The installed-artifact host checks generator/migration and run paths. It also
+  generates RubyLLM's models and tables and verifies the Rails example's ordered
+  migrations and actor-scoped persisted chats. The complete client demo retains
+  synthetic chats per actor/thread in one process.
+
+See [Compatibility](docs/_reference/compatibility.md) for the evidence boundary.
+Remote CI and release publication remain separate from local validation.
 
 ## Release sequence
 
@@ -54,29 +55,29 @@ behavior they describe; future features stay out of the changelog until built.
 
 Keep this to one new gem feature and the example needed to exercise it.
 
-- Fix the live spec setup and verify the Rails example's installation path.
+- [x] Fix the live spec setup and verify the Rails example's installation path.
   Persist the host's chat between requests so a second turn and an approval
   resume use the same conversation.
-- Add a minimal example using a pinned `@ag-ui/client` and a scripted Ruby
+- [x] Add a minimal example using a pinned `@ag-ui/client` and a scripted Ruby
   backend. It runs without provider credentials and shows text, a tool call,
   approval/denial, and a second turn. Record exact versions and commands.
   If the client rejects the pinned protocol shapes, resolve that mismatch
   before expanding the example or claiming interoperability.
-- Add opt-in tool progress from RubyLLM's `after_tool_progress(tool_call,
+- [x] Add opt-in tool progress from RubyLLM's `after_tool_progress(tool_call,
   progress)` callback. The installed RubyLLM 2.1.1 exposes this callback, but
   `Run#drive` currently registers only tool-call, message, and text callbacks.
-  Prefer `ACTIVITY_SNAPSHOT` with stable per-call identity. Decide and document
-  its payload before implementing it; no proposed API here is available yet.
-- Test unknown totals, message-only updates, concurrent tool progress, default
+  The implementation uses replacing `ACTIVITY_SNAPSHOT` events with stable
+  per-call identity. Its payload and redaction policy are documented in
+  [Tool Progress](docs/_core_features/tool-progress.md).
+- [x] Test unknown totals, message-only updates, concurrent tool progress, default
   redaction, and late callbacks after the run closes. Progress must not
   change approval behavior or the single terminal outcome.
-- Add a discoverable progress guide, update protocol coverage and What's New,
+- [x] Add a discoverable progress guide, update protocol coverage and What's New,
   and record the tested client version in Compatibility. A real-client demo
   against a scripted chat is still not live-provider evidence.
 
 Do not add activity deltas, state mutation, a UI framework, or a broker in
-this release. If progress needs a broader design, release the client example
-first and move progress to the next minor version.
+this release. The progress feature remains a small callback mapping.
 
 ### 0.3.0: lifecycle and storage reliability
 
@@ -150,7 +151,7 @@ host need fits this gem's integration boundary.
 
 ## Next action
 
-Start 0.2.0 with the live spec's missing `scope:` and a reproducible pinned-client
-baseline using the existing scripted backend. Then define the progress payload
-and implement its smallest tested mapping. Do not bump the gem version or mark
-these features as released while only this plan exists.
+Review the 0.2.0 local candidate and run remote CI before authorizing publication.
+The gem and docs version are 0.2.0 with `released: false`; no 0.2 tag or upload is
+part of local development. After the release, start 0.3.0 with disconnect and
+worker-loss cases against the existing client and installed-host fixtures.

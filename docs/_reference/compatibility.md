@@ -21,15 +21,16 @@ dependency does.
 
 ## Supported versions
 
-| Component | Range | Verified |
+| Component | Range | Evidence |
 |---|---|---|
-| Ruby | `>= 3.2` | 3.2, 3.3, 3.4 in CI; 3.3.5 locally |
+| Ruby | `>= 3.2` | CI configured for 3.2, 3.3, 3.4; 3.3.5 checked locally |
 | RubyLLM | `>= 2.1`, `< 3.0` | 2.1.1 (callback, approval and cancellation behavior read from its source) |
 | `ag-ui-protocol` | `~> 0.2.0` | 0.2.0 |
-| Rails (adapter only) | `railties`, `actionpack`, `activerecord` `>= 8.0` | 8.0.x and 8.1.x in CI |
+| Rails (adapter only) | `railties`, `actionpack`, `activerecord` `>= 8.0` | CI configured for 8.0.x and 8.1.x; 8.1.4 checked locally |
 | AG-UI schema | pinned commit `89cedd3fd549feeee41e50e1d7c6d373e549241a` | vendored, SHA-256 recorded in [AG-UI Protocol Coverage]({% link _reference/protocol-coverage.md %}) |
 
-The pure-Ruby core depends only on `ruby_llm` and `ag-ui-protocol`. Rails,
+The pure-Ruby core uses `ruby_llm` and `ag-ui-protocol`, plus the patched
+standard-library gems required by the gemspec. Rails,
 `ToolViews`, `OpenUI` and `OddlyDock` are not runtime dependencies, and the Rails
 adapter is only loaded when `Rails::Railtie` is already defined.
 
@@ -52,15 +53,35 @@ adapter is only loaded when `Rails::Railtie` is already defined.
 
 The RSpec suite runs offline with fakes and no provider credentials. Package verification uses the network only to install dependencies, then runs its core and Rails checks without a provider. Its advisory check includes the actual default-library gem versions activated by the isolated core install.
 
+## Recorded Client Verification
+
+On 2026-10-19, the local 0.2.0 candidate passes the maintained browser workflows
+with `@ag-ui/client` 1.0.3, Playwright 1.64.1, and Chrome 155.0.8059.82 on macOS.
+Both the plain Ruby and Rails endpoints use scripted chats. Checks cover text,
+a second turn, approval/denial, incremental progress before completion, default
+tool-result redaction, sanitized failure, cancellation, and exact completed-run
+reconnect, including a completed resume run. Captured events also validate
+against the pinned schema. The progress demo publishes synthetic counts through
+a host policy and withholds messages; unit tests check default progress redaction.
+
+Run `bin/check-browser` to reproduce and inspect screenshots and events under
+`tmp/browser/`. `bin/check --package` separately installs the built artifact
+outside the checkout, checks both endpoints, and generates RubyLLM models and
+ordered example migrations to verify scoped chat persistence. This package
+probe uses available development dependencies; `bin/verify-package` checks a
+clean gem home with freshly resolved dependencies.
+
+These are local, synthetic checks. The browser CI job is configured, and no
+remote CI result or live provider session is recorded by this validation.
+
 ## What is not asserted
 
-- **Real AG-UI clients** (CopilotKit, `@ag-ui/client`, any other consumer). No
-  client has been recorded against this producer. The events are schema-valid and
-  the ordering rules the protocol documents are enforced, but "a specific client
-  renders this correctly" is a separate claim, and it is not made here.
+- **Other clients or versions.** CopilotKit and client versions other than the
+  recorded `@ag-ui/client` version have not been verified. Schema conformance
+  does not establish that every UI renders the events correctly.
 - **Live providers.** `spec/live/live_run_spec.rb` is the opt-in check
-  (`RUBY_LLM_LIVE=1`, plus a provider key); it is skipped in the default suite.
-  Provider behavior in 2.1.1 is derived from its source, not from a recorded
+  (`RUBY_LLM_LIVE=1`, plus a provider key); its provider context is skipped in the default suite. The same run setup
+  is exercised separately with an offline chat. Provider behavior in 2.1.1 is derived from its source, not from a recorded
   session.
 - **Every RubyLLM patch release in the `>= 2.1, < 3.0` range.** The upper bound
   is enforced by the gemspec; the verified version is 2.1.1.

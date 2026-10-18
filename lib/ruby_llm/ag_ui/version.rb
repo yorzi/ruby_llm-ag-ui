@@ -3,6 +3,6 @@
 module RubyLLM
   module AgUI
     # The version of the ruby_llm-ag_ui gem, as a string.
-    VERSION = '0.1.0'
+    VERSION = '0.2.0'
   end
 end

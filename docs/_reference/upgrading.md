@@ -15,31 +15,17 @@ After reading this guide, you will know:
 * How to move between versioned releases.
 * Where to find changes that need code updates.
 
-## One Release at a Time
+## Move from 0.1 to the 0.2 Candidate
 
-Version `0.1.0` is the first release. There is no earlier published version to upgrade from. Start with [Getting Started]({% link _getting_started/getting-started.md %}). For future releases, upgrade one release at a time.
+The 0.2 candidate keeps the 0.1 run, store, and Rails APIs. It does not require
+another migration or installer run. Until the release is published, use the
+`main` checkout for development and keep the latest stable release in production.
+After publication, change the dependency to `~> 0.2.0` and run `bundle update
+ruby_llm-ag_ui`.
 
-## Install Version 0.1
-
-```ruby
-gem 'ruby_llm-ag_ui', '~> 0.1.0'
-```
-
-If you used an untagged development checkout, review [Configuration]({% link _getting_started/configuration.md %}) and [Rails Integration]({% link _advanced/rails-integration.md %}) before changing the dependency. No compatibility with earlier untagged checkouts is promised.
-
-## Use the Full Generator Command
-
-Untagged development checkouts registered the shorter `ruby_llm:ag_ui` namespace. Version 0.1 registers the documented installation command:
-
-```bash
-# Before, on an untagged checkout
-bin/rails generate ruby_llm:ag_ui
-
-# Version 0.1
-bin/rails generate ruby_llm:ag_ui:install
-```
-
-Existing generated tables and initializers do not need to be regenerated for this command-name correction.
+Tool progress is off by default. Set `config.emit_tool_progress = true` only
+when your client handles activity snapshots, and review its redaction policy.
+See [Tool Progress]({% link _core_features/tool-progress.md %}).
 
 ## Completed Resume Retries in 0.2
 
@@ -47,3 +33,8 @@ An exact retry of a completed resume run now returns its recorded outcome.
 Keep the original run id and full input, including `resume`. A new run id that
 tries to answer an already answered interrupt is still refused, and changed
 input under the original id is a conflict. No approval or tool is executed again.
+
+## Older Development Checkouts
+
+For the initial release's generator namespace correction, read the
+[0.1 upgrading guide](https://github.com/yorzi/ruby_llm-ag-ui/blob/v0.1.0/docs/_reference/upgrading.md).
