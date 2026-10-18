@@ -269,4 +269,44 @@ RSpec.describe RubyLLM::AgUI::Mapper do
       )
     end
   end
+
+  describe 'tool progress snapshots' do
+    let(:call) { tool_call(id: 'call_1', name: 'search', arguments: {}) }
+
+    it 'replaces one activity per tool call with the latest reported values' do
+      first = mapper.tool_progress(call, RubyLLM::Progress.new(value: 1, total: 3, message: 'Searching'))
+      second = mapper.tool_progress(call, RubyLLM::Progress.new(value: 2, total: 3))
+      expect(types(first + second)).to eq(%w[ACTIVITY_SNAPSHOT ACTIVITY_SNAPSHOT])
+      expect(first.first.message_id).to eq('run-1:progress:call_1')
+      expect(second.first.message_id).to eq(first.first.message_id)
+      expect(second.first.replace).to be(true)
+      expect(first.first.content).to eq('toolCallId' => 'call_1',
+                                        'progress' => { 'value' => 1, 'total' => 3, 'message' => 'Searching' })
+      schema_valid!(first + second)
+    end
+
+    it 'supports message-only updates without inventing a total or percentage' do
+      events = mapper.tool_progress(call, RubyLLM::Progress.new(message: 'Waiting'))
+      expect(events.first.content['progress']).to eq('message' => 'Waiting')
+      schema_valid!(events)
+    end
+
+    it 'keeps identifiers and redacts progress values through the host policy' do
+      redacted = described_class.new(thread_id: 't', run_id: 'r', redact: RubyLLM::AgUI::Redaction.method(:default))
+      events = redacted.tool_progress(call, RubyLLM::Progress.new(value: 1, message: 'fixture-secret'))
+      expect(events.first.content['toolCallId']).to eq('call_1')
+      expect(events.first.content['progress']).to eq('value' => '[redacted]', 'message' => '[redacted]')
+      expect(JSON.generate(events.map(&:to_h))).not_to include('fixture-secret')
+      schema_valid!(events)
+    end
+
+    it 'does not emit empty updates, completed tool updates, or updates after close' do
+      expect(mapper.tool_progress(call, RubyLLM::Progress.new)).to eq([])
+      mapper.message(tool_message(content: 'done', tool_call_id: call.id))
+      expect(mapper.tool_progress(call, RubyLLM::Progress.new(message: 'too late'))).to eq([])
+      mapper.close
+      other = tool_call(id: 'other', name: 'search', arguments: {})
+      expect(mapper.tool_progress(other, RubyLLM::Progress.new(message: 'too late'))).to eq([])
+    end
+  end
 end

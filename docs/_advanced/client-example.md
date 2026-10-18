@@ -41,7 +41,8 @@ and later turns use the same conversation.
 
 The tool scenario pauses for approval. Approve it to run a synthetic order
 cancellation once, or deny it to leave the order unchanged. Tool results stay
-redacted by default. The text, sanitized failure, and cancelled scenarios show
+redacted by default. Approved tools also publish synthetic progress counts;
+the host policy withholds progress messages. The text, sanitized failure, and cancelled scenarios show
 the other run outcomes.
 
 Use **Reconnect completed run** after a successful turn. The client sends the

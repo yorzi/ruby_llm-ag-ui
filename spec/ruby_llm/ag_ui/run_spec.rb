@@ -547,4 +547,90 @@ RSpec.describe RubyLLM::AgUI::Run do
       expect(decode_sse(second).filter_map { |event| event['messageId'] }).to all(include('run-2'))
     end
   end
+
+  describe 'opt-in tool progress' do
+    def progressing_chat
+      FakeChat.new do |chat|
+        call = RubyLLM::ToolCall.new(id: 'p1', name: 'search', arguments: {})
+        chat.call_tool(id: call.id, name: call.name, arguments: {})
+        chat.progress(call, message: 'fixture-secret')
+        chat.tool_result(content: 'done', tool_call_id: call.id)
+      end
+    end
+
+    def progress_run(chat, **options)
+      described_class.new(chat: chat, input: input, scope: scope, store: store, **options).stream(to: sse)
+    end
+
+    it 'does not publish progress by default' do
+      expect(progress_run(progressing_chat)).to be_succeeded
+      expect(event_types(sse)).not_to include('ACTIVITY_SNAPSHOT')
+    end
+
+    it 'uses global opt-in and redacts progress by default' do
+      RubyLLM::AgUI.config.emit_tool_progress = true
+      expect(progress_run(progressing_chat)).to be_succeeded
+      expect(event_types(sse)).to include('ACTIVITY_SNAPSHOT')
+      expect(sse.string).not_to include('fixture-secret')
+      decode_sse(sse).each { |event| expect_valid_event(event) }
+    end
+
+    it 'lets a run disable globally enabled progress' do
+      RubyLLM::AgUI.config.emit_tool_progress = true
+      progress_run(progressing_chat, emit_tool_progress: false)
+      expect(event_types(sse)).not_to include('ACTIVITY_SNAPSHOT')
+    end
+
+    it 'finishes atomically with respect to a late progress callback' do
+      entered = Queue.new
+      release = Queue.new
+      allow(store).to receive(:save).and_wrap_original do |save, record|
+        saved = save.call(record)
+        if record.terminal?
+          entered << true
+          release.pop
+        end
+        saved
+      end
+      chat = progressing_chat
+      runner = Thread.new { progress_run(chat, emit_tool_progress: true) }
+      entered.pop
+      call = RubyLLM::ToolCall.new(id: 'late', name: 'search', arguments: {})
+      late = Thread.new { chat.progress(call, message: 'after decision') }
+      expect(late.join(0.05)).to be_nil
+      release << true
+      runner.value
+      late.value
+      expect(event_types(sse).count('ACTIVITY_SNAPSHOT')).to eq(1)
+      expect(event_types(sse).last).to eq('RUN_FINISHED')
+    ensure
+      release << true
+      runner&.join
+      late&.join
+    end
+
+    it 'serializes concurrent progress and ignores callbacks after the terminal event' do
+      callbacks = Queue.new
+      chat = FakeChat.new do |fake|
+        threads = 8.times.map do |index|
+          Thread.new do
+            call = RubyLLM::ToolCall.new(id: "p#{index}", name: 'search', arguments: {})
+            fake.call_tool(id: call.id, name: call.name, arguments: {})
+            fake.progress(call, value: 1, total: 2)
+            callbacks << call
+          end
+        end
+        threads.each(&:value)
+      end
+      record = progress_run(chat, emit_tool_progress: true)
+      finished = sse.string.dup
+      8.times { chat.progress(callbacks.pop, message: 'after terminal') }
+      expect(record).to be_succeeded
+      expect(sse.string).to eq(finished)
+      expect(event_types(sse).count('ACTIVITY_SNAPSHOT')).to eq(8)
+      expect(event_types(sse).last).to eq('RUN_FINISHED')
+      expect(event_types(sse).count('RUN_FINISHED')).to eq(1)
+      decode_sse(sse).each { |event| expect_valid_event(event) }
+    end
+  end
 end

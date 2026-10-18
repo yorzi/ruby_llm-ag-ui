@@ -66,11 +66,12 @@ Legend:
 | `TOOL_CALL_RESULT` | tool | The tool result, after the host redaction policy. |
 | `STATE_SNAPSHOT` | state | On a reconnect: the state the host gave the run. |
 
-### Optional (1)
+### Optional (2)
 
 | Event type | Family | When |
 |---|---|---|
 | `CUSTOM` | raw/custom | Only safe, documented host extensions. Nothing in the gem emits one today. |
+| `ACTIVITY_SNAPSHOT` | activity | Local tool progress when `emit_tool_progress` is enabled, after host redaction. |
 
 ### Host-owned, not produced (2)
 
@@ -79,14 +80,13 @@ Legend:
 | `MESSAGES_SNAPSHOT` | state | The conversation belongs to the host. Producing one would mean re-synthesizing message ids the gem did not mint, which a client would then render as new messages. |
 | `STATE_DELTA` | state | Deltas describe a change the host made. The gem never invents a patch, and it has no API that publishes one. |
 
-### Not produced (15)
+### Not produced (14)
 
 | Event type | Family | Why |
 |---|---|---|
 | `TEXT_MESSAGE_CHUNK` | text | Convenience form of the explicit triad; the gem emits `START`/`CONTENT`/`END`. |
 | `TOOL_CALL_CHUNK` | tool | Convenience form; the gem emits the explicit triad. |
-| `ACTIVITY_SNAPSHOT` | activity | No `ACTIVITY_*` projection yet; RubyLLM's progress signals are not mapped. |
-| `ACTIVITY_DELTA` | activity | Same: no progress projection, and no invented patches. |
+| `ACTIVITY_DELTA` | activity | Progress uses full snapshots; no patches are produced. |
 | `RAW` | raw/custom | The gem never passes provider payloads through. |
 | `REASONING_START` | reasoning | Private reasoning is not emitted until a host opts in, and there is no opt-in yet. |
 | `REASONING_MESSAGE_START` | reasoning | A chunk that carries thinking is ignored. |
@@ -99,7 +99,7 @@ Legend:
 | `SUBAGENT_FINISHED` | subagents | Same. |
 | `SUBAGENT_ERROR` | subagents | Same. |
 
-Totals: 13 produced + 1 optional + 2 host-owned + 15 not produced = **31**.
+Totals: 13 produced + 2 optional + 2 host-owned + 14 not produced = **31**.
 
 ## Terminal events
 
@@ -172,4 +172,5 @@ must produce no event at all.
 ## Next Steps
 
 * [Streaming Runs]({% link _core_features/streaming-runs.md %}) - follow event order and outcomes.
+* [Tool Progress]({% link _core_features/tool-progress.md %}) - opt in to activity snapshots.
 * [Compatibility]({% link _reference/compatibility.md %}) - see what this repository verifies.

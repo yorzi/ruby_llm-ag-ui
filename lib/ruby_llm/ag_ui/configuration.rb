@@ -28,6 +28,10 @@ module RubyLLM
       # RubyLLM::AgUI::Redaction.method(:none), or replace it with your policy.
       attr_writer :redact
 
+      # Whether runs publish local tool progress as activity snapshots. Off
+      # unless the host opts in; progress payloads still pass through redaction.
+      attr_accessor :emit_tool_progress
+
       # A Logger used for host-side diagnostics. Never receives prompts, raw
       # tool payloads or credentials.
       attr_accessor :logger
@@ -71,6 +75,7 @@ module RubyLLM
         @interrupt_ttl = 900
         @clock = -> { Time.now.utc }
         @allow_client_history = false
+        @emit_tool_progress = false
       end
 
       # The redaction policy in force. Never nil: an unset or nil policy falls
@@ -105,7 +110,8 @@ module RubyLLM
           max_tools: max_tools,
           max_context: max_context,
           interrupt_ttl: interrupt_ttl,
-          allow_client_history: allow_client_history
+          allow_client_history: allow_client_history,
+          emit_tool_progress: emit_tool_progress
         }
       end
     end

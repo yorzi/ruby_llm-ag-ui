@@ -53,6 +53,7 @@ module RubyLLM
         @last_message_id = nil
         @text_emitted = false
         @calls = {}
+        @completed_tools = {}
         @open_step = nil
         @step_kind = nil
         @warned_redaction = false
@@ -93,6 +94,23 @@ module RubyLLM
         events = tool_call_events({ tool_call.id => tool_call }, streamed: false)
         events.concat(close_tool_calls)
         events
+      end
+
+      # Reports a tool's actual progress as a replacing activity snapshot.
+      # Each call has one run-scoped activity id. Values pass through the host's
+      # :tool_progress redaction policy; the tool call id remains structural.
+      # Empty updates and callbacks for finished tools or runs produce nothing.
+      def tool_progress(tool_call, progress)
+        return [] if @closed || @completed_tools[tool_call.id]
+
+        payload = { 'value' => progress.value, 'total' => progress.total, 'message' => progress.message }.compact
+        return [] if payload.empty?
+
+        [::AgUiProtocol::Core::Events::ActivitySnapshotEvent.new(
+          message_id: "#{@run_id}:progress:#{tool_call.id}", activity_type: 'TOOL_PROGRESS',
+          content: { 'toolCallId' => tool_call.id, 'progress' => redact(Redaction::TOOL_PROGRESS, payload) },
+          replace: true
+        )]
       end
 
       # Closes any open text message, tool call and step, and closes the mapper.
@@ -261,6 +279,7 @@ module RubyLLM
       # --- tool results --------------------------------------------------------
 
       def tool_result_events(message)
+        @completed_tools[message.tool_call_id] = true
         events = close_text_events
         events.concat(close_tool_calls)
         events.concat(ensure_step(STEP_TOOL))
@@ -320,7 +339,7 @@ module RubyLLM
         return if @warned_redaction
 
         @warned_redaction = true
-        @logger&.warn('[ruby_llm_ag_ui] tool results are redacted by default; ' \
+        @logger&.warn('[ruby_llm_ag_ui] tool results and progress are redacted by default; ' \
                       'configure RubyLLM::AgUI.config.redact to publish them')
       end
 

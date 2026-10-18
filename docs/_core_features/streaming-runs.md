@@ -45,5 +45,6 @@ The run record reaches a terminal state before the terminal event is written. If
 ## Next Steps
 
 * [Validating Input]({% link _core_features/input-validation.md %}) - parse untrusted request data.
+* [Tool Progress]({% link _core_features/tool-progress.md %}) - publish local tool updates.
 * [Approval and Resume]({% link _core_features/approval-and-resume.md %}) - answer an interrupt on a new run.
 * [Reconnects and Run Identity]({% link _core_features/reconnects.md %}) - serve a completed run again.

@@ -1,7 +1,8 @@
 ---
 layout: default
 title: "What's New in 0.1"
-nav_order: 0
+nav_order: 1
+parent: Release History
 description: Use the first RubyLLM AG-UI release to stream, resume, cancel, and reconnect agent runs.
 ---
 

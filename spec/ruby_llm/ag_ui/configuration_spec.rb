@@ -16,6 +16,7 @@ RSpec.describe RubyLLM::AgUI do
       expect(config.interrupt_ttl).to eq(900)
       expect(config.allow_client_history).to be(false)
       expect(config.run_store).to be_nil
+      expect(config.emit_tool_progress).to be(false)
       expect(config.redaction).to eq(:default)
     end
 
@@ -44,7 +45,7 @@ RSpec.describe RubyLLM::AgUI do
     it 'reports a snapshot without secrets' do
       expect(config.to_h.keys).to eq(
         %i[run_store redact protocol_version max_input_bytes max_messages max_tools
-           max_context interrupt_ttl allow_client_history]
+           max_context interrupt_ttl allow_client_history emit_tool_progress]
       )
       expect(config.to_h[:redact]).to eq(:default)
     end

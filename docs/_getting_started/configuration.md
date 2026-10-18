@@ -32,12 +32,13 @@ p RubyLLM::AgUI.config.to_h[:redact]
 
 ## Settings
 
-The global configuration supplies defaults. `Run.new` can override the store, logger, redaction policy, clock, and interrupt expiry for one run. `MemoryStore` is process-local, so use a durable store when runs can move between workers.
+The global configuration supplies defaults. `Run.new` can override the store, logger, redaction policy, clock, interrupt expiry, and tool progress for one run. `MemoryStore` is process-local, so use a durable store when runs can move between workers.
 
 | Setting | Default | Purpose |
 | --- | --- | --- |
 | `run_store` | `nil` | Store run records and interrupts. A run needs a store, supplied here or to `Run.new`. |
 | `redact` | `Redaction.default` | Transform tool results before they reach the stream. |
+| `emit_tool_progress` | `false` | Publish tool progress as redacted activity snapshots. |
 | `logger` | `nil` | Receive host-side diagnostics without prompts or raw tool payloads. |
 | `protocol_version` | `"1.0"` | Value reported by `RUN_STARTED`. |
 | `max_input_bytes` | `256_000` | Maximum request body size. |

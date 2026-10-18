@@ -25,15 +25,17 @@ module RubyLLM
 
       # rubocop:disable-next Metrics/ParameterLists -- one keyword per host-supplied or overridable value
       def initialize(chat:, input:, scope:, store: nil, logger: nil, redact: nil, clock: nil, expires_in: nil,
-                     state: nil)
+                     state: nil, emit_tool_progress: RubyLLM::AgUI.config.emit_tool_progress)
+        defaults = RubyLLM::AgUI.config
         @chat = chat
         @input = input
         @scope = scope
-        @store = store || RubyLLM::AgUI.config.run_store!
-        @logger = logger || RubyLLM::AgUI.config.logger
+        @store = store || defaults.run_store!
+        @logger = logger || defaults.logger
         @redact = redact
-        @clock = clock || RubyLLM::AgUI.config.clock
-        @expires_in = expires_in || RubyLLM::AgUI.config.interrupt_ttl
+        @clock = clock || defaults.clock
+        @expires_in = expires_in || defaults.interrupt_ttl
+        @emit_tool_progress = emit_tool_progress
         @mutex = Mutex.new
         validate!
         @state = state.nil? ? @input.state : state
@@ -84,16 +86,20 @@ module RubyLLM
       end
 
       def execute(record, to)
+        start_execution(record, to)
+        resume.apply(now: @clock.call) if resume.needed?
+        drive
+        @record = finalize { finish }
+      rescue RubyLLM::CancelledError
+        @record = finalize { @emitter.cancel }
+      rescue StandardError => e
+        @record = finalize { @emitter.fail(e) }
+      end
+
+      def start_execution(record, to)
         @mapper = build_mapper(record)
         @emitter = build_emitter(record, to, mapper: @mapper)
         @emitter.start(run_started_event(record), state: @state)
-        resume.apply(now: @clock.call) if resume.needed?
-        drive
-        @record = finish
-      rescue RubyLLM::CancelledError
-        @record = @emitter.cancel
-      rescue StandardError => e
-        @record = @emitter.fail(e)
       end
 
       def build_emitter(record, to, mapper: build_mapper(record))
@@ -113,8 +119,13 @@ module RubyLLM
       def drive
         @chat.before_tool_call { |tool_call| project { @mapper.before_tool_call(tool_call) } }
         @chat.after_message { |message| project { @mapper.message(message) } }
+        if @emit_tool_progress == true
+          @chat.after_tool_progress { |call, progress| project { @mapper.tool_progress(call, progress) } }
+        end
         @chat.complete { |chunk| project { @mapper.chunk(chunk) } }
       end
+
+      def finalize(&) = @mutex.synchronize(&)
 
       def project
         @mutex.synchronize { @emitter.write(yield) }

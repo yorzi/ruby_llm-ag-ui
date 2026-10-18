@@ -25,6 +25,7 @@ module RubyLLM
 
       # The kinds a policy is asked about.
       TOOL_RESULT = :tool_result
+      TOOL_PROGRESS = :tool_progress
 
       module_function
 

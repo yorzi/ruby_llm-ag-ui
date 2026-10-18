@@ -83,9 +83,9 @@ These are choices, not gaps, and each has a reason:
   repeating it would duplicate the call in the client's conversation.
 - **`MESSAGES_SNAPSHOT` is never produced.** History is the host's, and the gem
   will not re-id it. `STATE_SNAPSHOT` is produced, on a reconnect.
-- **No `ACTIVITY_*`, `REASONING_*`, `RAW` or `SUBAGENT_*` events.** RubyLLM 2.x
-  exposes no data for them on the supported path, and the gem does not invent
-  events. A thinking-only chunk produces nothing.
+- **Tool progress is opt-in.** `ACTIVITY_SNAPSHOT` carries local tool progress
+  when enabled. `ACTIVITY_DELTA`, `REASONING_*`, `RAW` and `SUBAGENT_*` remain
+  unproduced. A thinking-only chunk produces nothing.
 - **Message ids are the gem's** (`run-<id>:a<n>`), scoped to the run, because
   RubyLLM streaming chunks carry no message id.
 - **Steps are per phase** (`completion`, `tool`), named `step-<n>` per run.

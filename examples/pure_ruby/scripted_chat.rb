@@ -35,6 +35,11 @@ class ScriptedChat
     @callbacks[:after_message] << block
   end
 
+  # Progress callbacks are registered only when the host opts in.
+  def after_tool_progress(&block)
+    @callbacks[:after_tool_progress] << block
+  end
+
   def complete(&stream)
     @stream = stream
     @decisions.empty? ? ask_for_approval : finish_the_answer

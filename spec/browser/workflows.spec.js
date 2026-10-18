@@ -43,8 +43,14 @@ for (const backend of ['core', 'rails']) {
     await expect(page.locator('#status')).toHaveText('success');
     await expect(page.locator('#tool')).toContainText('[redacted]');
     expect((await stats(page, request)).effects).toBe(1);
+    await expect(page.locator('#progress')).toContainText('"value":3');
     const events = await page.evaluate(() => window.demo.events);
     expect(events.filter((e) => e.type === 'TOOL_CALL_START')).toHaveLength(1);
+    const progress = events.filter((e) => e.type === 'ACTIVITY_SNAPSHOT');
+    expect(progress).toHaveLength(2);
+    expect(progress[0].messageId).toBe(progress[1].messageId);
+    expect(progress.every((e) => e.replace && e.activityType === 'TOOL_PROGRESS')).toBe(true);
+    expect(JSON.stringify(events)).not.toContain('fixture-secret');
     expect(events.find((e) => e.type === 'TOOL_CALL_RESULT').toolCallId)
       .toBe(events.find((e) => e.type === 'TOOL_CALL_START').toolCallId);
     await page.getByRole('button', { name: 'Run turn', exact: true }).click();

@@ -36,6 +36,14 @@ class FakeChat
     @callbacks[:after_message] << block
   end
 
+  def after_tool_progress(&block)
+    @callbacks[:after_tool_progress] << block
+  end
+
+  def progress(call, **attributes)
+    fire(:after_tool_progress, call, RubyLLM::Progress.new(**attributes))
+  end
+
   def complete(&stream)
     @stream = stream
     instance_exec(self, &@script)

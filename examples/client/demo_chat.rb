@@ -30,7 +30,11 @@ module AgUiDemo
     private
 
     def finish_the_answer
-      @effects += 1 if @decisions[TOOL_CALL.id] == :approved
+      if @decisions[TOOL_CALL.id] == :approved
+        fire(:after_tool_progress, TOOL_CALL, RubyLLM::Progress.new(value: 1, total: 3, message: 'fixture-secret'))
+        fire(:after_tool_progress, TOOL_CALL, RubyLLM::Progress.new(value: 3, total: 3, message: 'Finished'))
+        @effects += 1
+      end
       super
     end
 
