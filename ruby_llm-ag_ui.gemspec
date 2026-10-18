@@ -31,7 +31,10 @@ Gem::Specification.new do |spec|
   spec.files = Dir.chdir(__dir__) do
     # The generator templates are .rb.tt, so `lib/**/*.rb` would leave an
     # installed gem with no migration to install.
-    Dir['lib/**/*.rb', 'lib/**/*.tt', 'LICENSE.txt', 'README.md', 'CHANGELOG.md']
+    # The README links to docs/, so an installed gem ships them too; a link to a
+    # file that only exists in the repository is worse than a slightly larger gem.
+    Dir['lib/**/*.rb', 'lib/**/*.tt', 'docs/**/*.md', 'LICENSE.txt', 'README.md', 'CHANGELOG.md',
+        'SECURITY.md', 'CONTRIBUTING.md']
   end
   spec.require_paths = ['lib']
 

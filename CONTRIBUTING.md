@@ -17,7 +17,8 @@ bundle exec rubocop
   emit a schema-valid event and open an upstream issue before a PR. The known
   gaps (the JSON input parser, the cancelled outcome, subagent events, the
   `RUN_STARTED` `protocolVersion`) are tracked in
-  [docs/PROTOCOL_COVERAGE.md](docs/PROTOCOL_COVERAGE.md).
+  [docs/PROTOCOL_COVERAGE.md](docs/PROTOCOL_COVERAGE.md), with issue drafts in
+  [docs/upstream/](docs/upstream).
 - **Never load Rails from the core.** `require 'ruby_llm/ag_ui'` must not load
   Rails, open a network connection, or read provider credentials. There is a
   spec that asserts this.
@@ -35,7 +36,11 @@ bundle exec rubocop
 Every behavior change needs a test, and lifecycle, identity and security changes
 need their negative case too. The acceptance IDs (FR-01..FR-08) are referenced
 in spec descriptions. Offline CI uses fakes; live provider tests are opt-in and
-never required.
+never required:
+
+```bash
+RUBY_LLM_LIVE=1 OPENAI_API_KEY=... bundle exec rspec spec/live
+```
 
 ## Commit style
 
