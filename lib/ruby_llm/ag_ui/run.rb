@@ -44,6 +44,7 @@ module RubyLLM
       # whose input digest matches attaches instead of executing, and a changed
       # input under the same key is refused by the store.
       def stream(to:)
+        resume.plan(now: @clock.call) if resume.needed?
         reservation = reserve
         return execute(reservation.record, to) if reservation.created?
 
@@ -51,6 +52,10 @@ module RubyLLM
       end
 
       private
+
+      def resume
+        @resume ||= Resume.new(input: @input, store: @store, scope: @scope, chat: @chat)
+      end
 
       def reserve
         @store.reserve(
@@ -77,6 +82,7 @@ module RubyLLM
           store: @store, record: record, clock: @clock, logger: @logger
         )
         @emitter.start(run_started_event(record))
+        resume.apply(now: @clock.call) if resume.needed?
         drive
         @record = finish
       rescue RubyLLM::CancelledError

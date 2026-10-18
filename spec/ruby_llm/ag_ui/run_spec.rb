@@ -7,7 +7,19 @@ RSpec.describe RubyLLM::AgUI::Run do
     'tenant-1:actor-1'
   end
 
-  let(:clock) { -> { Time.utc(2026, 10, 17, 12, 0, 0) } }
+  # A clock the specs move, so an interrupt's expiry is testable.
+  def clock
+    -> { now }
+  end
+
+  def now
+    @now ||= Time.utc(2026, 10, 17, 12, 0, 0)
+  end
+
+  def advance(seconds)
+    @now = now + seconds
+  end
+
   let(:store) { RubyLLM::AgUI::Store::MemoryStore.new(clock: clock) }
   let(:input) do
     RubyLLM::AgUI::Input.parse(
@@ -200,6 +212,124 @@ RSpec.describe RubyLLM::AgUI::Run do
       expect(event_types(sse).last).to eq('RUN_ERROR')
       expect(decode_sse(sse).last['code']).to eq('unsupported_run_state')
       expect(record).to be_failed
+    end
+  end
+
+  describe 'resuming an interrupted run (FR-06-AC-01)' do
+    def paused_run
+      stream(interrupting_chat)
+      store.latest_interrupted(scope: scope, thread_id: 'thread-1')
+    end
+
+    def interrupting_chat
+      FakeChat.new do |chat|
+        chat.stream(tool_calls: { 0 => RubyLLM::ToolCall.new(id: 'c1', name: 'search', arguments: '{}') })
+        chat.reply(tool_calls: { 'c1' => RubyLLM::ToolCall.new(id: 'c1', name: 'search', arguments: {}) })
+        chat.await([{ id: 'c1', name: 'search', arguments: { 'q' => 'x' } }])
+      end
+    end
+
+    def resuming_chat(arguments: { 'q' => 'x' })
+      FakeChat.new(approvals: [{ id: 'c1', name: 'search', arguments: arguments }]) do |chat|
+        chat.call_tool(id: 'c1', name: 'search', arguments: arguments)
+        chat.tool_result(content: '3 results', tool_call_id: 'c1')
+        chat.stream(content: 'Found three.')
+        chat.reply(content: 'Found three.')
+      end
+    end
+
+    def resume(chat, interrupt_id, status: 'resolved')
+      body = {
+        'threadId' => 'thread-1', 'runId' => 'run-2',
+        'messages' => [{ 'id' => 'm1', 'role' => 'user', 'content' => 'Hello' }],
+        'resume' => [{ 'interruptId' => interrupt_id, 'status' => status }]
+      }
+      target = StringIO.new
+      described_class.new(
+        chat: chat, input: RubyLLM::AgUI::Input.parse(body), scope: scope, store: store,
+        redact: RubyLLM::AgUI::Redaction.method(:none), clock: clock
+      ).stream(to: target)
+      target
+    end
+
+    it 'approves the pending tool call and finishes the resumed run' do
+      interrupt = paused_run.pending_interrupts.first
+      chat = resuming_chat
+      target = resume(chat, interrupt.id)
+
+      expect(chat.decisions).to eq('c1' => :approved)
+      expect(event_types(target)).to include('TOOL_CALL_RESULT')
+      expect(event_types(target).last).to eq('RUN_FINISHED')
+      expect(decode_sse(target).last['outcome']).to eq('type' => 'success')
+    end
+
+    it 'executes an approved tool once' do
+      interrupt = paused_run.pending_interrupts.first
+      target = resume(resuming_chat, interrupt.id)
+
+      expect(event_types(target).count('TOOL_CALL_RESULT')).to eq(1)
+      decode_sse(target).each { |event| expect_valid_event(event) }
+    end
+
+    it 'denies the call when the client cancels the interrupt' do
+      interrupt = paused_run.pending_interrupts.first
+      chat = resuming_chat
+
+      resume(chat, interrupt.id, status: 'cancelled')
+
+      expect(chat.decisions).to eq('c1' => :denied)
+    end
+
+    it 'records the decision on the interrupted run, which stays interrupted' do
+      record = paused_run
+      resume(resuming_chat, record.pending_interrupts.first.id)
+
+      reloaded = store.latest_interrupted(scope: scope, thread_id: 'thread-1')
+      expect(reloaded.run_id).to eq(record.run_id)
+      expect(reloaded).to be_interrupted
+      expect(reloaded.awaiting_approval?).to be(false)
+      expect(reloaded.pending_interrupts).to be_empty
+    end
+
+    it 'refuses an unknown interrupt before the run is reserved or opened' do
+      paused_run
+
+      expect { resume(resuming_chat, 'int-unknown') }
+        .to raise_error(RubyLLM::AgUI::ResumeRejectedError, /latest run's/)
+      expect(store.find(scope: scope, thread_id: 'thread-1', run_id: 'run-2')).to be_nil
+    end
+
+    it 'refuses a resume whose tool call arguments changed since the interrupt' do
+      interrupt = paused_run.pending_interrupts.first
+
+      expect { resume(resuming_chat(arguments: { 'q' => 'y' }), interrupt.id) }
+        .to raise_error(RubyLLM::AgUI::ResumeRejectedError, /changed/)
+    end
+
+    it 'refuses a tool call that is not pending on the host chat' do
+      interrupt = paused_run.pending_interrupts.first
+      chat = FakeChat.new { |fake| fake.reply(content: 'nothing pending') }
+
+      expect { resume(chat, interrupt.id) }
+        .to raise_error(RubyLLM::AgUI::ResumeRejectedError, /not pending/)
+    end
+
+    it 'refuses an expired interrupt' do
+      interrupt = paused_run.pending_interrupts.first
+      advance(901)
+
+      expect { resume(resuming_chat, interrupt.id) }
+        .to raise_error(RubyLLM::AgUI::ResumeRejectedError, /expired/)
+    end
+
+    it 'refuses a decision another resume already recorded, without executing the tool' do
+      interrupt = paused_run.pending_interrupts.first
+      resume(resuming_chat, interrupt.id)
+
+      chat = resuming_chat
+      expect { resume(chat, interrupt.id) }
+        .to raise_error(RubyLLM::AgUI::ResumeRejectedError, /already been answered/)
+      expect(chat.decisions).to be_empty
     end
   end
 

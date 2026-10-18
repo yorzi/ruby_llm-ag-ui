@@ -16,10 +16,14 @@
 #     chat.reply(content: 'Hello')
 #   end
 class FakeChat
-  def initialize(&script)
+  # The decisions the run recorded, by tool call id.
+  attr_reader :decisions
+
+  def initialize(approvals: [], &script)
     @callbacks = Hash.new { |all, name| all[name] = [] }
     @script = script
-    @approvals = []
+    @approvals = approvals.map { |call| RubyLLM::ToolCall.new(**call) }
+    @decisions = {}
     @paused = false
     @cancelled = false
   end
@@ -48,6 +52,17 @@ class FakeChat
 
   def pending_approvals
     @approvals
+  end
+
+  # Records an approval, the way RubyLLM's Chat#approve does: the call is no
+  # longer pending.
+  def approve(tool_call)
+    decide(tool_call, :approved)
+  end
+
+  # Records a refusal.
+  def deny(tool_call)
+    decide(tool_call, :denied)
   end
 
   def cancelled?
@@ -102,5 +117,12 @@ class FakeChat
 
   def fire(name, *args)
     @callbacks[name].each { |callback| callback.call(*args) }
+  end
+
+  def decide(tool_call, decision)
+    id = tool_call.respond_to?(:id) ? tool_call.id : tool_call
+    @decisions[id] = decision
+    @approvals = @approvals.reject { |pending| pending.id == id }
+    self
   end
 end

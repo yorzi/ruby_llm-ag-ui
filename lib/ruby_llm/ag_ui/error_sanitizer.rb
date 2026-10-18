@@ -35,6 +35,9 @@ module RubyLLM
         'RubyLLM::AgUI::UnsupportedRunStateError' => [
           'The run paused for input this producer cannot express.', 'unsupported_run_state'
         ],
+        'RubyLLM::AgUI::ResumeRejectedError' => [
+          'The resume request could not be accepted.', 'resume_rejected'
+        ],
         'RubyLLM::AgUI::StreamError' => ['The run could not be streamed to completion.', 'stream_failed'],
         'RubyLLM::Error' => ['The model provider returned an error.', 'provider_error'],
         'Faraday::Error' => ['The model provider request failed.', 'transport_error'],
