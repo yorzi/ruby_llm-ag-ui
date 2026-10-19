@@ -34,6 +34,10 @@ The package check installs dependencies in a fresh temporary gem home and requir
 
 These checks make no live provider call. Keep provider and client interoperability evidence in [Compatibility]({% link _reference/compatibility.md %}).
 
+Install the documentation bundle before building the site: run `bundle install`
+from `docs/`. API HTML and Markdown use the RDoc version locked in that bundle,
+so local and CI builds use the same navigation and parser.
+
 ## Review Release Scope
 
 Use the repository's [roadmap](https://github.com/yorzi/ruby_llm-ag-ui/blob/main/ROADMAP.md)

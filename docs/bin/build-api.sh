@@ -11,8 +11,11 @@ docs="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source_root="${2:-$(git -C "$docs" rev-parse --show-toplevel)}"
 case "$out" in /*) ;; *) out="$PWD/$out" ;; esac
 
-( cd "$source_root" && ruby -rrdoc/rdoc -e 'RDoc::RDoc.new.document(ARGV)' -- --output "$out" --quiet lib )
-ruby "$docs/bin/export_api_markdown.rb" "$out" "$source_root" "RubyLLM AG-UI"
+# Use the locked docs toolchain for HTML and the ri subprocesses it exports.
+# Ruby's bundled RDoc varies across hosts and can generate broken navigation.
+export BUNDLE_GEMFILE="$docs/Gemfile"
+( cd "$source_root" && bundle exec ruby -rrdoc/rdoc -e 'RDoc::RDoc.new.document(ARGV)' -- --output "$out" --quiet lib )
+bundle exec ruby "$docs/bin/export_api_markdown.rb" "$out" "$source_root" "RubyLLM AG-UI"
 
 main="RubyLLM"
 if [[ -n "$main" && -f "$out/$main.html" ]]; then

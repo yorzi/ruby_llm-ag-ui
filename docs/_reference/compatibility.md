@@ -23,10 +23,10 @@ dependency does.
 
 | Component | Range | Evidence |
 |---|---|---|
-| Ruby | `>= 3.2` | CI configured for 3.2, 3.3, 3.4; 3.3.5 checked locally |
+| Ruby | `>= 3.2` | CI passes on 3.2.11, 3.3.12, and 3.4.11; 3.3.5 checked locally |
 | RubyLLM | `>= 2.1`, `< 3.0` | 2.1.1 (callback, approval and cancellation behavior read from its source) |
 | `ag-ui-protocol` | `~> 0.2.0` | 0.2.0 |
-| Rails (adapter only) | `railties`, `actionpack`, `activerecord` `>= 8.0` | CI configured for 8.0.x and 8.1.x; 8.1.4 checked locally |
+| Rails (adapter only) | `railties`, `actionpack`, `activerecord` `>= 8.0` | CI passes on 8.0.5.1 and 8.1.4 with Ruby 3.3/3.4; 8.1.4 checked locally |
 | AG-UI schema | pinned commit `89cedd3fd549feeee41e50e1d7c6d373e549241a` | vendored, SHA-256 recorded in [AG-UI Protocol Coverage]({% link _reference/protocol-coverage.md %}) |
 
 The pure-Ruby core uses `ruby_llm` and `ag-ui-protocol`, plus the patched
@@ -71,8 +71,13 @@ ordered example migrations to verify scoped chat persistence. This package
 probe uses available development dependencies; `bin/verify-package` checks a
 clean gem home with freshly resolved dependencies.
 
-These are local, synthetic checks. The browser CI job is configured, and no
-remote CI result or live provider session is recorded by this validation.
+The [2026-10-19 CI run](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39179834370)
+passes all ten jobs at `4aba0dc`: the Ruby and Rails matrices above, lint,
+installed-host verification, and the browser suite on Ubuntu 24.04.
+The browser job uses Playwright's Chromium 156.0.8078.4 and passes all 12
+scenarios, with 154 consumed events validated against the schema. Its desktop
+progress and mobile denial screenshots were also inspected. These remain
+synthetic checks; no live provider session is recorded.
 
 ## What is not asserted
 
