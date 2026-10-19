@@ -27,6 +27,14 @@ cancellation on the authorized chat. `SSEWriter` still raises a `StreamError`
 subclass when used directly. See
 [Streaming Runs]({% link _core_features/streaming-runs.md %}).
 
+Store writes now use an atomic revision check. Always retain the record returned
+by `save`. Custom stores must implement this contract before upgrading. Existing
+JSON payloads load with revision zero and the shipped table needs no migration.
+Drain old workers first, since 0.2 writers do not enforce revision checks.
+`PersistenceError` now propagates storage failures without guessing a terminal
+outcome. Read [Worker Recovery]({% link _advanced/worker-recovery.md %}) for
+explicit recovery and external-effect reconciliation.
+
 ## Move from 0.1 to 0.2
 
 Change your Gemfile and update the dependency:

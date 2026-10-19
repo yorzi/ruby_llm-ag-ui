@@ -8,10 +8,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.3.0] - Unreleased
 
+### Added
+
+- Explicit stopped-worker recovery with a `worker_lost` outcome, retaining run
+  identity and exposing unknown tool effects for host reconciliation.
+- Atomic storage revisions and independent-process SQLite reservation,
+  approval redemption, conflicting-write, and worker-death tests.
+
 ### Fixed
 
 - Continue a live run after its response transport disconnects, preserving the
   real outcome and side-effect identity instead of failing the run on a write.
+- Reject stale record writes and preserve uncertain database-write outcomes.
+  Disable callbacks even when a producer cannot persist its final record.
 
 ## [0.2.0] - 2026-10-19
 

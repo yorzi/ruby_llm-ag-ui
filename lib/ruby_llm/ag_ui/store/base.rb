@@ -63,9 +63,22 @@ module RubyLLM
           raise NotImplementedError
         end
 
-        # Persists an updated record and returns it.
+        # Atomically persists a record only if its revision is still current.
+        # Returns a new record with its revision incremented. Retain this return
+        # value for later writes. A stale write raises StaleRecordError.
         def save(record)
           raise NotImplementedError
+        end
+
+        # Closes an observed non-terminal run after the host confirms its worker
+        # has stopped. Does not cancel a worker, undo effects, release identity,
+        # or execute anything. A newer revision or terminal run is refused.
+        def recover(record)
+          raise RunConflictError, 'only a non-terminal run can be recovered' if record.terminal?
+
+          failure = { 'code' => 'worker_lost',
+                      'message' => 'The worker stopped before recording an outcome. Tool effects may be incomplete.' }
+          save(record.finish(RunRecord::FAILED, now: now, failure: failure))
         end
 
         # The interrupt with +id+ anywhere on the thread, or nil.
@@ -87,6 +100,16 @@ module RubyLLM
         end
 
         private
+
+        def next_record(stored, candidate)
+          raise InvalidRunIdentityError, "run #{candidate.run_id} was never reserved" if stored.nil?
+          raise RunConflictError, conflict_message(candidate) if stored.digest != candidate.digest
+          if stored.revision != candidate.revision || (stored.terminal? && stored.status != candidate.status)
+            raise StaleRecordError, "run #{candidate.run_id} changed; reload its record before writing"
+          end
+
+          candidate.next_revision
+        end
 
         # The host's scope must be a canonical string. An arbitrary object would
         # make two requests from the same tenant hash differently, so a retry

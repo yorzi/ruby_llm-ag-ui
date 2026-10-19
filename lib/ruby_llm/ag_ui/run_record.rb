@@ -52,6 +52,10 @@ module RubyLLM
       # reconnect are ordered by it rather than by wall-clock time.
       attr_reader :sequence
 
+      # Storage revision, distinct from the event sequence. Stores increment it
+      # atomically and reject writes from older snapshots.
+      attr_reader :revision
+
       # The host-owned run state kept for a reconnect snapshot, or nil.
       attr_reader :snapshot
 
@@ -67,13 +71,14 @@ module RubyLLM
 
       # rubocop:disable-next Metrics/ParameterLists -- one keyword per field the record owns
       def initialize(scope:, thread_id:, run_id:, digest:, created_at:, status: RESERVED, sequence: 0,
-                     snapshot: nil, interrupts: [], failure: nil, updated_at: nil)
+                     snapshot: nil, interrupts: [], failure: nil, updated_at: nil, revision: 0)
         @scope = scope
         @thread_id = thread_id
         @run_id = run_id
         @digest = digest
         @status = assert_status!(status)
         @sequence = sequence
+        @revision = revision
         @snapshot = snapshot
         @interrupts = interrupts.freeze
         @failure = failure
@@ -122,6 +127,11 @@ module RubyLLM
         with(now: now, sequence: sequence + 1)
       end
 
+      # :nodoc: Storage bookkeeping; hosts retain the record returned by save.
+      def next_revision
+        with(now: updated_at, revision: revision + 1)
+      end
+
       # Closes the run with +status+: :succeeded, :interrupted, :cancelled or
       # :failed, and, for a failure, the sanitized error a reconnect reports.
       # Re-applying the same terminal status is an idempotent no-op — so the
@@ -158,6 +168,7 @@ module RubyLLM
         with(now: now, interrupts: replaced)
       end
 
+      # rubocop:disable-next Metrics/AbcSize -- one entry per serialized record field
       def to_h
         {
           'scope' => scope.to_s,
@@ -166,6 +177,7 @@ module RubyLLM
           'digest' => digest,
           'status' => status.to_s,
           'sequence' => sequence,
+          'revision' => revision,
           'snapshot' => snapshot,
           'failure' => failure,
           'interrupts' => interrupts.map(&:to_h),
@@ -186,7 +198,8 @@ module RubyLLM
         new(
           scope: hash.fetch('scope'), thread_id: hash.fetch('threadId'), run_id: hash.fetch('runId'),
           digest: hash.fetch('digest'), status: hash.fetch('status').to_sym,
-          sequence: hash.fetch('sequence'), snapshot: hash['snapshot'], failure: hash['failure'],
+          sequence: hash.fetch('sequence'), revision: hash.fetch('revision', 0),
+          snapshot: hash['snapshot'], failure: hash['failure'],
           interrupts: interrupts_from_storage(hash['interrupts']),
           created_at: Interrupt.parse_time(hash.fetch('createdAt')),
           updated_at: Interrupt.parse_time(hash.fetch('updatedAt'))
@@ -201,10 +214,10 @@ module RubyLLM
 
       # rubocop:disable-next Metrics/ParameterLists -- one keyword per field, each defaulted to the record's own
       def with(now:, status: self.status, sequence: self.sequence, snapshot: self.snapshot,
-               interrupts: self.interrupts, failure: self.failure)
+               interrupts: self.interrupts, failure: self.failure, revision: self.revision)
         self.class.new(
           scope: scope, thread_id: thread_id, run_id: run_id, digest: digest, status: status,
-          sequence: sequence, snapshot: snapshot, interrupts: interrupts, failure: failure,
+          sequence: sequence, revision: revision, snapshot: snapshot, interrupts: interrupts, failure: failure,
           created_at: created_at, updated_at: now
         )
       end

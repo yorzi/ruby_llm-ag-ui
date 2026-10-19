@@ -64,9 +64,7 @@ module RubyLLM
       end
 
       def reserve
-        @store.reserve(
-          scope: @scope, thread_id: @input.thread_id, run_id: @input.run_id, digest: @input.digest
-        )
+        @store.reserve(scope: @scope, thread_id: @input.thread_id, run_id: @input.run_id, digest: @input.digest)
       end
 
       # An identity that is already reserved is never executed a second time.
@@ -92,8 +90,12 @@ module RubyLLM
         @record = finalize { finish }
       rescue RubyLLM::CancelledError
         @record = finalize { @emitter.cancel }
+      rescue PersistenceError, RunConflictError
+        raise
       rescue StandardError => e
         @record = finalize { @emitter.fail(e) }
+      ensure
+        finalize { @mapper&.close }
       end
 
       def start_execution(record, to)
@@ -104,8 +106,8 @@ module RubyLLM
 
       def build_emitter(record, to, mapper: build_mapper(record))
         Emitter.new(
-          writer: SSEWriter.new(to, logger: @logger), mapper: mapper,
-          store: @store, record: record, clock: @clock, logger: @logger
+          writer: SSEWriter.new(to, logger: @logger), mapper: mapper, store: @store,
+          record: record, clock: @clock, logger: @logger
         )
       end
 
@@ -164,8 +166,7 @@ module RubyLLM
 
       def run_started_event(record)
         Protocol.run_started(
-          thread_id: record.thread_id, run_id: record.run_id,
-          parent_run_id: @input.parent_run_id, input: @input.to_h
+          thread_id: record.thread_id, run_id: record.run_id, parent_run_id: @input.parent_run_id, input: @input.to_h
         )
       end
 

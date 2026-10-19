@@ -50,10 +50,8 @@ module RubyLLM
         def save(record)
           scope_key(record.scope)
           row = row_for(record.scope, record.thread_id, record.run_id)
-          raise InvalidRunIdentityError, "run #{record.run_id} was never reserved" if row.nil?
-          raise RunConflictError, conflict_message(record) if row.digest != record.digest
-
-          row.write_run_record(record)
+          updated = next_record(row&.as_run_record, record)
+          row.write_run_record(updated)
         end
 
         def find_interrupt(scope:, thread_id:, interrupt_id:)
@@ -62,20 +60,33 @@ module RubyLLM
           row_for_interrupt(scope, thread_id, interrupt_id)&.as_run_record&.interrupt(interrupt_id)
         end
 
-        # Records +decision+ on the interrupt under a row lock, so two resumes
-        # that arrive together cannot both record a decision and run the tool.
+        # Records +decision+ with a conditional update. Competing writers reload
+        # and revalidate, so only one can redeem the approval.
         def redeem_interrupt(scope:, thread_id:, interrupt_id:, decision:, now:)
           unless Interrupt::DECISIONS.include?(decision)
             raise ConfigurationError, "decision must be one of #{Interrupt::DECISIONS.join(', ')}"
           end
 
-          row = row_for_interrupt(scope, thread_id, interrupt_id)
-          raise ResumeRejectedError, "no interrupt #{interrupt_id}" if row.nil?
+          retry_stale do
+            row = row_for_interrupt(scope, thread_id, interrupt_id)
+            raise ResumeRejectedError, "no interrupt #{interrupt_id}" if row.nil?
 
-          row.with_lock { redeem(row.reload.as_run_record, interrupt_id, decision, now) }
+            redeem(row.as_run_record, interrupt_id, decision, now)
+          end
         end
 
         private
+
+        def retry_stale
+          attempts = 0
+          begin
+            yield
+          rescue StaleRecordError
+            attempts += 1
+            retry if attempts < 3
+            raise
+          end
+        end
 
         # A retry of the same identity attaches; a different input under the
         # same key is a conflict, because one run id may not mean two requests.
@@ -91,8 +102,7 @@ module RubyLLM
           raise ResumeRejectedError, "interrupt #{interrupt_id} expired" if interrupt.expired?(now)
 
           answered = interrupt.decide(decision, now: now)
-          row = row_for(record.scope, record.thread_id, record.run_id)
-          row.write_run_record(record.replace_interrupt(answered, now: now))
+          save(record.replace_interrupt(answered, now: now))
           Redemption.new(interrupt: answered, replayed: false)
         end
 

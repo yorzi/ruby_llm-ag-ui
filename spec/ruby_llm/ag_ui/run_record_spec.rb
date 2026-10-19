@@ -137,9 +137,11 @@ RSpec.describe RubyLLM::AgUI::RunRecord do
     it 'serializes the identity, status and interrupts' do
       record = build.start(now: created_at)
       expect(record.to_h.keys).to eq(
-        %w[scope threadId runId digest status sequence snapshot failure interrupts createdAt updatedAt]
+        %w[scope threadId runId digest status sequence revision snapshot failure interrupts createdAt updatedAt]
       )
-      expect(record.to_h).to include('scope' => 'tenant-1:user-1', 'status' => 'started', 'sequence' => 0)
+      expect(record.to_h).to include(
+        'scope' => 'tenant-1:user-1', 'status' => 'started', 'sequence' => 0, 'revision' => 0
+      )
     end
   end
 

@@ -37,6 +37,10 @@ module RubyLLM
       end
     end
 
+    # An observed run was changed by another writer. Reload before deciding
+    # whether an update is still valid; never overwrite the newer outcome.
+    class StaleRecordError < RunConflictError; end
+
     # Raised when run identity is required but missing.
     class InvalidRunIdentityError < InvalidInputError; end
 
@@ -62,6 +66,10 @@ module RubyLLM
     # The response transport is closed. A running producer detaches its writer
     # and continues to persist the real outcome while its worker remains alive.
     class TransportError < StreamError; end
+
+    # A store write failed without a reliable acknowledgement. The persisted
+    # outcome may be unknown; inspect storage before attempting recovery.
+    class PersistenceError < Error; end
 
     # Raised when RubyLLM paused the run for something the pinned AG-UI shape
     # cannot express as an interrupt this producer may answer, such as an MCP

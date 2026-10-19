@@ -37,9 +37,15 @@ run id is a conflict.
 
 ## Choose a Store
 
-`MemoryStore` is suitable for tests and a single process. Its records disappear on restart and are not shared between workers. The Rails adapter's `ActiveRecordStore` persists records and redeems interrupts under a database lock.
+`MemoryStore` is suitable for tests and a single process. Its records disappear on restart and are not shared between workers. The Rails adapter's `ActiveRecordStore` persists records and redeems interrupts with atomic conditional updates.
 
 The store boundary is `RubyLLM::AgUI::Store::Base`. Configure a compatible store globally or pass it to `Run.new`. For multi-process deployments, the database must enforce unique run identity and serialize interrupt redemption.
+
+Store writes check `RunRecord#revision` and refuse stale snapshots. A run whose
+worker died remains non-terminal until the host confirms the worker stopped
+and explicitly recovers it. See
+[Worker Recovery]({% link _advanced/worker-recovery.md %}) before changing a
+stuck record; deleting its reservation can repeat unknown tool effects.
 
 ## Next Steps
 

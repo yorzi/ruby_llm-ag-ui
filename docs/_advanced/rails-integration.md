@@ -106,8 +106,11 @@ what makes run identity survive a worker:
 
 - `reserve` inserts; a `RecordNotUnique` means another worker won, and the
   existing row is attached or refused by digest.
-- `redeem_interrupt` runs under `row.with_lock`, so exactly one resume records a
-  decision and the tool runs once.
+- `redeem_interrupt` uses a conditional update and revalidates competing
+  decisions, so only one caller redeems an approval.
+- `save` checks record revisions and refuses stale writers. Keep its returned
+  record for the next update. See [Worker Recovery]({% link _advanced/worker-recovery.md %})
+  before closing a run whose producer stopped.
 - `find_interrupt` is scoped by `(scope, thread_id, interrupt_id)`, so an
   interrupt id is not a global key.
 

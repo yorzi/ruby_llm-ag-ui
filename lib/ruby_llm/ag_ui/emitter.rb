@@ -113,6 +113,10 @@ module RubyLLM
 
       def persist(record)
         @store.save(record)
+      rescue RunConflictError
+        raise
+      rescue StandardError => e
+        raise PersistenceError, "The run record could not be persisted: #{e.class}"
       end
 
       def now

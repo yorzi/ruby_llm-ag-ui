@@ -55,13 +55,8 @@ module RubyLLM
         def save(record)
           key = key_for(record.scope, record.thread_id, record.run_id)
           @lock.synchronize do
-            stored = @records[key]
-            raise InvalidRunIdentityError, "run #{record.run_id} was never reserved" if stored.nil?
-            raise RunConflictError, conflict_message(record) if stored.digest != record.digest
-
-            @records[key] = record
+            @records[key] = next_record(@records[key], record)
           end
-          record
         end
 
         def find_interrupt(scope:, thread_id:, interrupt_id:)
@@ -89,7 +84,8 @@ module RubyLLM
           raise ResumeRejectedError, "interrupt #{interrupt_id} expired" if interrupt.expired?(now)
 
           answered = interrupt.decide(decision, now: now)
-          @records[key_for(scope, thread_id, record.run_id)] = record.replace_interrupt(answered, now: now)
+          @records[key_for(scope, thread_id, record.run_id)] =
+            record.replace_interrupt(answered, now: now).next_revision
           Redemption.new(interrupt: answered, replayed: false)
         end
 

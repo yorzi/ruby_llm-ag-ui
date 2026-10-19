@@ -28,13 +28,18 @@ module RubyLLM
           ::RubyLLM::AgUI::RunRecord.from_storage(::JSON.parse(payload))
         end
 
-        # Writes +record+ onto this row and returns the record.
+        # Writes +record+ only if this row's observed payload is still current.
+        # Returns the record or raises StaleRecordError on a competing update.
         #
         # The identity columns are not writable: a row keeps the identity it was
         # reserved with, so a record cannot be stored under another run's key.
         def write_run_record(record)
-          update!(digest: record.digest, status: record.status.to_s, sequence: record.sequence,
-                  payload: ::JSON.generate(record.to_storage))
+          changed = self.class.where(id: id, payload: payload).update_all(
+            digest: record.digest, status: record.status.to_s, sequence: record.sequence,
+            payload: ::JSON.generate(record.to_storage)
+          )
+          raise StaleRecordError, "run #{record.run_id} changed before it could be saved" unless changed == 1
+
           record
         end
 

@@ -14,7 +14,7 @@ After reading this guide, you will know:
 
 * How a run continues after its client disconnects.
 * How to reconnect without executing a turn twice.
-* Which lifecycle work remains planned.
+* How to recover after confirmed worker loss.
 
 ## Keep the Recorded Outcome
 
@@ -35,7 +35,15 @@ recorded outcome without running the chat or tool again. A second stream while
 the original is still running is refused. See
 [Reconnects and Run Identity]({% link _core_features/reconnects.md %}).
 
-## Development Status
+## Recover Lost Workers Explicitly
 
-Version 0.3 is unreleased. Cancellation wiring, cross-worker store tests, and
-explicit worker-loss recovery remain development targets in the roadmap.
+After confirming a worker has stopped, load its authorized record and call
+`store.recover(record)`. The recorded failure uses code `worker_lost` and keeps
+the identity reserved. Stale record writes are refused by revision checks.
+Storage acknowledgement failures propagate as `PersistenceError` rather than
+inventing a terminal outcome. See
+[Worker Recovery]({% link _advanced/worker-recovery.md %}).
+
+Version 0.3 is unreleased. Local tests use independent Ruby processes with a
+shared SQLite file, including a producer killed after a synthetic tool effect.
+These tests do not establish live provider or other-database behavior.

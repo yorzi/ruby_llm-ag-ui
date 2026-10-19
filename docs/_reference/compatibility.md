@@ -100,8 +100,8 @@ checks after download.
   initializer, and its specs run on 8.0/8.1. It may work on 7.2 and it is not
   tested there.
 - **Databases other than SQLite** for the ActiveRecord store. The store uses a
-  unique index and `with_lock`; PostgreSQL and MySQL should behave the same, and
-  that is untested.
+  unique index and conditional payload updates. PostgreSQL and MySQL are
+  untested; the SQLite checks do not establish their concurrency behavior.
 
 ## Deliberate behavior worth knowing
 
