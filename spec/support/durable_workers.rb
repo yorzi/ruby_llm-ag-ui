@@ -53,11 +53,18 @@ module DurableWorkers
     children = []
     # rubocop:disable-next Style/MapIntoArray -- retain already spawned children if a later spawn fails
     requests.each { |request| children << worker(database, **request) }
-    children.each { |child| raise 'not ready' unless read_worker(child) == 'READY' }
-    # rubocop:disable-next Style/CombinableLoops -- observe all revisions before releasing any writer
-    children.each { |child| child[0].puts('GO') }
+    release_workers(children, ready: 'READY', signal: 'GO')
+    if requests.all? { |request| request[:write_barrier] }
+      release_workers(children, ready: 'WRITE_READY', signal: 'COMMIT')
+    end
     children.map { |child| JSON.parse(read_worker(child)) }
   ensure
     children.each { |child| stop_worker(child) }
+  end
+
+  def release_workers(children, ready:, signal:)
+    children.each { |child| raise 'not ready' unless read_worker(child) == ready }
+    # rubocop:disable-next Style/CombinableLoops -- every writer must observe the old state before any is released
+    children.each { |child| child[0].puts(signal) }
   end
 end

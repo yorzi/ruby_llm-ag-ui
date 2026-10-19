@@ -69,6 +69,12 @@ acknowledgement. It does not attempt another terminal write or send a guessed
 available, reload the exact identity. Reconnect if it ended; confirm the worker
 has stopped before recovering a non-terminal record.
 
+This applies to identity reservation and approval redemption as well as status
+writes. If approval acknowledgement is lost, the decision may already be stored
+even though the chat never received it. Inspect both records and reconcile the
+chat; do not issue a new resume or execute the tool on the assumption that the
+decision failed.
+
 A stale or failed producer disables its mapper callbacks before returning, so
 reusing its chat cannot append events to that old stream.
 

@@ -31,14 +31,16 @@ RSpec.describe 'Independent SQLite workers' do
   end
 
   it 'allows only one of two writes made from the same observed revision' do
-    results = compete(seed: 'started', requests: [{ operation: 'finish' }, { operation: 'finish' }])
+    results = compete(seed: 'started', requests: [{ operation: 'finish', write_barrier: true },
+                                                  { operation: 'finish', write_barrier: true }])
 
     expect(results.count { |entry| entry['result'] == 'succeeded' }).to eq(1)
     expect(results).to include('error' => 'RubyLLM::AgUI::StaleRecordError')
   end
 
   it 'never lets recovery overwrite a competing completion' do
-    results = compete(seed: 'started', requests: [{ operation: 'finish' }, { operation: 'recover' }])
+    results = compete(seed: 'started', requests: [{ operation: 'finish', write_barrier: true },
+                                                  { operation: 'recover', write_barrier: true }])
 
     expect(results.count { |entry| %w[succeeded failed].include?(entry['result']) }).to eq(1)
     expect(results).to include('error' => 'RubyLLM::AgUI::StaleRecordError')

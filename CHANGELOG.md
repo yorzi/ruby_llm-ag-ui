@@ -24,6 +24,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   real outcome and side-effect identity instead of failing the run on a write.
 - Reject stale record writes and preserve uncertain database-write outcomes.
   Disable callbacks even when a producer cannot persist its final record.
+- Keep uncertain reservation and approval acknowledgements separate from run
+  failures, without executing a provider turn or guessing whether a decision committed.
 - Recognize Puma connection failures as disconnected transports and classify
   Faraday timeouts as `transport_timeout` instead of generic transport errors.
 

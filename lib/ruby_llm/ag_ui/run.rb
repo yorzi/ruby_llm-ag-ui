@@ -64,7 +64,9 @@ module RubyLLM
       end
 
       def reserve
-        @store.reserve(scope: @scope, thread_id: @input.thread_id, run_id: @input.run_id, digest: @input.digest)
+        Persistence.write do
+          @store.reserve(scope: @scope, thread_id: @input.thread_id, run_id: @input.run_id, digest: @input.digest)
+        end
       end
 
       # An identity that is already reserved is never executed a second time.
@@ -176,13 +178,9 @@ module RubyLLM
         end
         raise ConfigurationError, 'input must be a RubyLLM::AgUI::Input' unless @input.is_a?(Input)
 
-        validate_scope!
-      end
-
-      def validate_scope!
         return if @scope.is_a?(String) && !@scope.empty?
 
-        raise ConfigurationError, 'scope must be a non-empty String built from authenticated identity'
+        raise ConfigurationError, Store::Base::SCOPE_MESSAGE
       end
     end
   end

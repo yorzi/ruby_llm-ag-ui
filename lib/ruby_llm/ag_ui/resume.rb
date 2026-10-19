@@ -88,13 +88,17 @@ module RubyLLM
       # The store's redemption is atomic: the first answer record wins, and a
       # repeat comes back as a replay that must not execute anything.
       def redeem(planned, now:)
-        redemption = @store.redeem_interrupt(
-          scope: @scope, thread_id: @input.thread_id,
-          interrupt_id: planned.interrupt.id, decision: planned.decision, now: now
-        )
+        redemption = persist_decision(planned, now: now)
         raise ResumeRejectedError, "interrupt #{planned.interrupt.id} was already answered" if redemption.replayed?
 
         redemption.approved? ? @chat.approve(redemption.tool_call_id) : @chat.deny(redemption.tool_call_id)
+      end
+
+      def persist_decision(planned, now:)
+        Persistence.write do
+          @store.redeem_interrupt(scope: @scope, thread_id: @input.thread_id,
+                                  interrupt_id: planned.interrupt.id, decision: planned.decision, now: now)
+        end
       end
 
       # The protocol's resume vocabulary is resolved or cancelled; the interrupt

@@ -39,6 +39,18 @@ $stdout.puts 'READY'
 $stdout.flush
 raise 'missing barrier' unless $stdin.gets&.strip == 'GO'
 
+if request['write_barrier']
+  RubyLLM::AgUI::Rails::Record.prepend(Module.new do
+    def write_run_record(record)
+      $stdout.puts 'WRITE_READY'
+      $stdout.flush
+      raise 'missing write barrier' unless $stdin.gets&.strip == 'COMMIT'
+
+      super
+    end
+  end)
+end
+
 begin
   result = case operation
            when 'reserve'
