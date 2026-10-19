@@ -12,27 +12,57 @@ module AgUiDemo
       @scenario = scenario
       @turns = 0
       @effects = 0
+      @control_lock = Mutex.new
     end
 
     def complete(&stream)
       @turns += 1
       @stream = stream
-      return follow_up if @turns > 2 || (@turns > 1 && @scenario != 'approval')
+      return follow_up if follow_up?
 
       case @scenario
       when 'failure' then raise StandardError, 'fixture-secret-must-not-reach-client'
+      when 'timeout' then raise Timeout::Error, 'fixture-secret-timeout'
       when 'cancelled' then raise RubyLLM::CancelledError
       when 'text' then say('Hello from the offline Ruby host.')
       else super
       end
     end
 
+    def acquire(run_id)
+      @control_lock.synchronize do
+        raise RubyLLM::AgUI::RunConflictError, 'This fixture chat is already running.' if @active_run_id
+
+        @active_run_id = run_id
+        @cancelled = false
+      end
+      self
+    end
+
+    def release
+      @control_lock.synchronize { @active_run_id = nil }
+    end
+
+    def cancel_run(run_id)
+      @control_lock.synchronize do
+        next false unless @active_run_id == run_id
+
+        @cancelled = true
+      end
+    end
+
     private
+
+    def follow_up?
+      @turns > 2 || (@turns > 1 && @scenario != 'approval')
+    end
 
     def finish_the_answer
       if @decisions[TOOL_CALL.id] == :approved
         fire(:after_tool_progress, TOOL_CALL, RubyLLM::Progress.new(value: 1, total: 3, message: 'fixture-secret'))
-        sleep 0.4 # A visible synthetic gap lets the browser verify delivery before completion.
+        sleep 1 # A visible gap lets the browser disconnect or send a cancellation request.
+        raise RubyLLM::CancelledError if @control_lock.synchronize { @cancelled }
+
         fire(:after_tool_progress, TOOL_CALL, RubyLLM::Progress.new(value: 3, total: 3, message: 'Finished'))
         @effects += 1
       end
@@ -52,7 +82,7 @@ module AgUiDemo
   # Fixture identity and chat lifetime are host-owned, shared by both endpoints.
   class Registry
     ACTORS = %w[alice bob].freeze
-    SCENARIOS = %w[text approval failure cancelled].freeze
+    SCENARIOS = %w[text approval failure cancelled timeout].freeze
 
     def initialize
       @chats = {}
@@ -77,6 +107,14 @@ module AgUiDemo
         chat = @chats[[scope, thread]]
         { turns: chat&.turns || 0, effects: chat&.effects || 0 }
       end
+    end
+
+    def checkout(scope, input, scenario)
+      chat(scope, input, scenario).acquire(input.run_id)
+    end
+
+    def cancel(scope, thread, run_id)
+      @mutex.synchronize { @chats[[scope, thread]]&.cancel_run(run_id) || false }
     end
   end
 end

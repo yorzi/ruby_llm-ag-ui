@@ -91,6 +91,64 @@ for (const backend of ['core', 'rails']) {
     await expect(page.locator('#status')).toHaveText('success');
   });
 
+  test(`${backend}: active host cancellation is scoped to the exact run`, async ({ page, request }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/?backend=${backend}`);
+    await page.getByRole('button', { name: 'Run turn', exact: true }).click();
+    await expect(page.locator('#status')).toHaveText('interrupt');
+    await page.getByRole('button', { name: 'Approve', exact: true }).click();
+    await expect(page.locator('#progress')).toContainText('"value":1');
+    const input = await page.evaluate(() => window.demo.input);
+    const payload = { threadId: input.threadId, runId: input.runId, messages: [] };
+    const otherActor = await request.post('/cancel', { data: payload, headers: { 'X-Demo-Actor': 'bob' } });
+    expect(otherActor.status()).toBe(404);
+    const otherRun = await request.post('/cancel', { data: { ...payload, runId: 'old-run' },
+      headers: { 'X-Demo-Actor': 'alice' } });
+    expect(otherRun.status()).toBe(404);
+    await page.getByRole('button', { name: 'Cancel server run', exact: true }).click();
+    await expect(page.locator('#status')).toHaveText('cancelled');
+    await page.screenshot({ path: testInfo.outputPath('cancelled.png'), fullPage: true });
+    expect((await stats(page, request)).effects).toBe(0);
+    await page.getByRole('button', { name: 'Reconnect completed run' }).click();
+    await expect(page.locator('#status')).toHaveText('reconnected: cancelled');
+    const inactive = await request.post('/cancel', { data: payload, headers: { 'X-Demo-Actor': 'alice' } });
+    expect(inactive.status()).toBe(409);
+    await page.getByRole('button', { name: 'Run turn', exact: true }).click();
+    await expect(page.locator('#status')).toHaveText('success');
+    expect((await stats(page, request)).effects).toBe(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  });
+
+  test(`${backend}: HTTP abort leaves the producer running and reconnect never repeats its tool`, async ({ page, request }, testInfo) => {
+    await page.goto(`/?backend=${backend}`);
+    await page.getByRole('button', { name: 'Run turn', exact: true }).click();
+    await expect(page.locator('#status')).toHaveText('interrupt');
+    await page.getByRole('button', { name: 'Approve', exact: true }).click();
+    await expect(page.locator('#progress')).toContainText('"value":1');
+    const input = await page.evaluate(() => window.demo.input);
+    const duplicate = await request.post(`/${backend === 'rails' ? 'agent' : 'core'}`, { data: input,
+      headers: { 'Accept': 'text/event-stream', 'X-Demo-Actor': 'alice', 'X-Demo-Scenario': 'approval' } });
+    expect(duplicate.status()).toBe(409);
+    await page.getByRole('button', { name: 'Disconnect stream', exact: true }).click();
+    await expect(page.locator('#status')).toHaveText('disconnected');
+    await page.screenshot({ path: testInfo.outputPath('disconnected.png'), fullPage: true });
+    await expect.poll(async () => (await stats(page, request)).status).toBe('succeeded');
+    expect((await stats(page, request)).effects).toBe(1);
+    await page.getByRole('button', { name: 'Reconnect completed run' }).click();
+    await expect(page.locator('#status')).toHaveText('reconnected: success');
+    expect((await stats(page, request)).effects).toBe(1);
+    expect((await stats(page, request)).turns).toBe(2);
+  });
+
+  test(`${backend}: timeout is a sanitized failure`, async ({ page }) => {
+    await page.goto(`/?backend=${backend}&scenario=timeout`);
+    await page.getByRole('button', { name: 'Run turn', exact: true }).click();
+    await expect(page.locator('#status')).toHaveText('error: transport_timeout');
+    await page.getByRole('button', { name: 'Reconnect completed run' }).click();
+    await expect(page.locator('#status')).toHaveText('error: transport_timeout');
+    expect(JSON.stringify(await page.evaluate(() => window.demo.events))).not.toContain('fixture-secret');
+  });
+
   test(`${backend}: failure is sanitized`, async ({ page }) => {
     await page.goto(`/?backend=${backend}&scenario=failure`);
     await page.getByRole('button', { name: 'Run turn', exact: true }).click();

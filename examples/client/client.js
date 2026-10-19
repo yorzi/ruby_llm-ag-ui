@@ -6,7 +6,7 @@ for (const name of ['backend', 'actor', 'scenario']) {
   if ([...byId(name).options].some((o) => o.value === query.get(name))) byId(name).value = query.get(name);
 }
 const settings = () => Object.fromEntries(['backend', 'actor', 'scenario'].map((n) => [n, byId(n).value]));
-let agent, threadId, interrupts = [], lastInput, busy = false;
+let agent, threadId, interrupts = [], lastInput, busy = false, disconnected = false;
 const events = [];
 const status = (text) => { byId('status').textContent = text; };
 function render(messages) {
@@ -35,10 +35,12 @@ function subscriber(replay = false) {
     },
   };
 }
-function setBusy(value) {
+function setBusy(value, live = false) {
   busy = value;
   byId('run').disabled = value || interrupts.length > 0;
   for (const id of ['reset', 'backend', 'actor', 'scenario', 'approve', 'deny']) byId(id).disabled = value;
+  byId('reconnect').disabled = value || interrupts.length > 0 || !lastInput;
+  for (const id of ['cancel', 'disconnect']) byId(id).disabled = !value || !live;
 }
 function createAgent(initialMessages = [], initialState = {}) {
   const { backend, actor, scenario } = settings();
@@ -64,15 +66,32 @@ function reset() {
 }
 async function execute(resume) {
   if (busy || (!resume && interrupts.length > 0)) return;
-  setBusy(true); status('running'); byId('approval').hidden = true;
+  disconnected = false;
+  if (resume) interrupts = [];
+  setBusy(true, true); status('running'); byId('approval').hidden = true;
   try {
     if (!resume) agent.addMessage({ id: crypto.randomUUID(), role: 'user', content: byId('prompt').value });
     await agent.runAgent({ runId: crypto.randomUUID(), ...(resume ? { resume } : {}) }, subscriber());
     byId('reconnect').disabled = interrupts.length > 0;
   } catch (error) {
-    status(`error: ${error.message}`);
-  } finally { setBusy(false); }
+    if (!disconnected) status(`error: ${error.message}`);
+  } finally {
+    if (disconnected) status('disconnected');
+    setBusy(false);
+  }
 }
+byId('disconnect').onclick = () => { disconnected = true; agent.abortRun(); };
+byId('cancel').onclick = async () => {
+  if (!busy || !lastInput) return;
+  byId('cancel').disabled = true;
+  try {
+    const response = await fetch('/cancel', { method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Demo-Actor': settings().actor },
+      body: JSON.stringify({ threadId, runId: lastInput.runId, messages: [] }),
+    });
+    if (!response.ok && busy) status(`cancel refused: ${response.status}`);
+  } catch (error) { if (busy) status(`cancel failed: ${error.message}`); }
+};
 byId('turn').addEventListener('submit', (event) => { event.preventDefault(); execute(); });
 byId('approve').onclick = () => execute(interrupts.map((i) => ({ interruptId: i.id, status: 'resolved' })));
 byId('deny').onclick = () => execute(interrupts.map((i) => ({ interruptId: i.id, status: 'cancelled' })));

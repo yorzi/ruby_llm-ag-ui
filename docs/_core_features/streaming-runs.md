@@ -59,5 +59,6 @@ that transport error. Mapping and persistence errors are separate failures.
 
 * [Validating Input]({% link _core_features/input-validation.md %}) - parse untrusted request data.
 * [Tool Progress]({% link _core_features/tool-progress.md %}) - publish local tool updates.
+* [Cancellation and Timeouts]({% link _core_features/cancellation.md %}) - connect host cancellation to the active chat.
 * [Approval and Resume]({% link _core_features/approval-and-resume.md %}) - answer an interrupt on a new run.
 * [Reconnects and Run Identity]({% link _core_features/reconnects.md %}) - serve a completed run again.

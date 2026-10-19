@@ -40,6 +40,7 @@ module RubyLLM
         ],
         'RubyLLM::AgUI::StreamError' => ['The run could not be streamed to completion.', 'stream_failed'],
         'RubyLLM::Error' => ['The model provider returned an error.', 'provider_error'],
+        'Faraday::TimeoutError' => ['The model provider request timed out.', 'transport_timeout'],
         'Faraday::Error' => ['The model provider request failed.', 'transport_error'],
         'Timeout::Error' => ['The model provider request timed out.', 'transport_timeout'],
         'Errno::ETIMEDOUT' => ['The model provider request timed out.', 'transport_timeout']

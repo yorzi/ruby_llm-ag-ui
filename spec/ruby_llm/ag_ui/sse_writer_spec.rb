@@ -91,6 +91,17 @@ RSpec.describe RubyLLM::AgUI::SSEWriter do
   describe 'a dead stream (FR-05)' do
     let(:stream) { Class.new { def write(_frame) = raise(Errno::EPIPE) }.new }
 
+    it 'normalizes the real Puma connection exception without making Puma a runtime dependency' do
+      require 'puma'
+      require 'puma/server'
+      dead = Object.new
+      dead.define_singleton_method(:write) { |_frame| raise Puma::ConnectionError, 'private socket' }
+      writer = described_class.new(dead)
+
+      expect { writer.write(start_event) }.to raise_error(RubyLLM::AgUI::TransportError)
+      expect(writer).to be_closed
+    end
+
     it 'reports a transport truncation without echoing the socket error' do
       expect { writer.write(start_event) }.to raise_error(RubyLLM::AgUI::StreamError, /EPIPE/)
     end

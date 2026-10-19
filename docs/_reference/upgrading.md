@@ -35,6 +35,10 @@ Drain old workers first, since 0.2 writers do not enforce revision checks.
 outcome. Read [Worker Recovery]({% link _advanced/worker-recovery.md %}) for
 explicit recovery and external-effect reconciliation.
 
+Faraday request timeouts now use `transport_timeout` instead of the generic
+`transport_error` code. Both remain failed outcomes. See
+[Cancellation and Timeouts]({% link _core_features/cancellation.md %}).
+
 ## Move from 0.1 to 0.2
 
 Change your Gemfile and update the dependency:

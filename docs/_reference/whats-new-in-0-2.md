@@ -1,7 +1,8 @@
 ---
 layout: default
 title: "What's New in 0.2"
-nav_order: 0
+nav_order: 2
+parent: Release History
 description: Verify real AG-UI client workflows and opt in to redacted tool progress.
 ---
 

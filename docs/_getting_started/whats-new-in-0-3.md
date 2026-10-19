@@ -2,7 +2,7 @@
 layout: default
 title: "What's New in 0.3"
 nav_order: -1
-description: Keep run outcomes independent from response transport failures.
+description: Verify transport failure, scoped cancellation, and explicit worker recovery.
 ---
 
 # {{ page.title }}
@@ -15,6 +15,7 @@ After reading this guide, you will know:
 * How a run continues after its client disconnects.
 * How to reconnect without executing a turn twice.
 * How to recover after confirmed worker loss.
+* How host cancellation differs from HTTP abort and provider timeout.
 
 ## Keep the Recorded Outcome
 
@@ -43,6 +44,14 @@ the identity reserved. Stale record writes are refused by revision checks.
 Storage acknowledgement failures propagate as `PersistenceError` rather than
 inventing a terminal outcome. See
 [Worker Recovery]({% link _advanced/worker-recovery.md %}).
+
+## Cancel the Authorized Run
+
+The client example now shows separate controls for host cancellation and HTTP
+abort. Its cancel endpoint checks the fixture actor and exact run identity;
+disconnecting the browser leaves the producer running. RubyLLM's HTTP timeout
+is recorded as `transport_timeout`, without raw provider details. See
+[Cancellation and Timeouts]({% link _core_features/cancellation.md %}).
 
 Version 0.3 is unreleased. Local tests use independent Ruby processes with a
 shared SQLite file, including a producer killed after a synthetic tool effect.

@@ -45,6 +45,17 @@ redacted by default. Approved tools also publish synthetic progress counts;
 the host policy withholds progress messages. The text, sanitized failure, and cancelled scenarios show
 the other run outcomes.
 
+During approved progress, **Cancel server run** requests cancellation for the
+exact fixture actor, thread, and run. The host rejects another actor, an old
+run id, or a completed run. The synthetic tool checks cancellation before its
+effect. This does not establish cancellation latency for a real provider or
+arbitrary tool.
+
+**Disconnect stream** calls the client's HTTP abort. The producer keeps running
+and records its actual outcome. Reconnect after it finishes to read that result
+without repeating the tool. An early reconnect is refused while the host still
+owns the active chat. The timeout scenario produces a sanitized recorded failure.
+
 Use **Reconnect completed run** after a successful turn. The client sends the
 original input and receives the recorded outcome and snapshot; no new model
 turn or text delta is produced.

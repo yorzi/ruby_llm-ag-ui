@@ -17,7 +17,7 @@ description: Review RubyLLM AG-UI releases, newest first, with highlights and up
 
 | Release | Date | Highlights |
 | --- | --- | --- |
-| [0.2.0](https://github.com/yorzi/ruby_llm-ag-ui/releases/tag/v0.2.0) | 2026-10-19 | [Client workflows and tool progress]({% link _getting_started/whats-new-in-0-2.md %}): opt-in redacted progress, a real-client demo, and completed resume reconnect |
+| [0.2.0](https://github.com/yorzi/ruby_llm-ag-ui/releases/tag/v0.2.0) | 2026-10-19 | [Client workflows and tool progress]({% link _reference/whats-new-in-0-2.md %}): opt-in redacted progress, a real-client demo, and completed resume reconnect |
 | [0.1.0](https://github.com/yorzi/ruby_llm-ag-ui/releases/tag/v0.1.0) | 2026-10-18 | [First release]({% link _reference/whats-new-in-0-1.md %}): AG-UI event mapping, approval and resume, cancellation, reconnect, and the optional Rails adapter |
 
 To move an application from one release to the next, follow [Upgrading]({% link _reference/upgrading.md %}).

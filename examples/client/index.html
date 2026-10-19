@@ -18,7 +18,7 @@
   <section aria-label="Fixture settings">
     <label>Backend <select id="backend" aria-label="Backend"><option value="rails">Rails + SQLite</option><option value="core">Plain Ruby</option></select></label>
     <label>Actor <select id="actor" aria-label="Actor"><option>alice</option><option>bob</option></select></label>
-    <label>Scenario <select id="scenario" aria-label="Scenario"><option value="approval">Tool approval</option><option value="text">Text</option><option value="failure">Failure</option><option value="cancelled">Cancelled</option></select></label>
+    <label>Scenario <select id="scenario" aria-label="Scenario"><option value="approval">Tool approval</option><option value="text">Text</option><option value="failure">Failure</option><option value="timeout">Timeout</option><option value="cancelled">Cancelled</option></select></label>
     <button id="reset">New conversation</button>
   </section>
   <section aria-label="Conversation">
@@ -27,6 +27,9 @@
     <form id="turn"><label for="prompt">Message</label><input id="prompt" value="Cancel order 42." required><button id="run">Run turn</button></form>
     <div id="approval" hidden><p>A tool needs your decision.</p><button id="approve">Approve</button><button id="deny">Deny</button></div>
     <button id="reconnect" disabled>Reconnect completed run</button>
+    <button id="cancel" disabled>Cancel server run</button>
+    <button id="disconnect" disabled>Disconnect stream</button>
+    <p class="muted">Cancellation asks the server to stop. Disconnecting only stops this browser from reading.</p>
     <p id="tool" aria-live="polite"></p><p id="progress" aria-live="polite"></p>
   </section>
   <details><summary>Event trace</summary><pre id="events"></pre></details>

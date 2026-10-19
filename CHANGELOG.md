@@ -14,6 +14,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   identity and exposing unknown tool effects for host reconciliation.
 - Atomic storage revisions and independent-process SQLite reservation,
   approval redemption, conflicting-write, and worker-death tests.
+- Exact-run, actor-scoped cancellation and HTTP abort workflows in the offline
+  browser example, plus real RubyLLM HTTP timeout and cancellation checkpoints
+  verified without a provider connection.
 
 ### Fixed
 
@@ -21,6 +24,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   real outcome and side-effect identity instead of failing the run on a write.
 - Reject stale record writes and preserve uncertain database-write outcomes.
   Disable callbacks even when a producer cannot persist its final record.
+- Recognize Puma connection failures as disconnected transports and classify
+  Faraday timeouts as `transport_timeout` instead of generic transport errors.
 
 ## [0.2.0] - 2026-10-19
 

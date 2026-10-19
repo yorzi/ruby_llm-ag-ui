@@ -121,6 +121,7 @@ module RubyLLM
 
       def transport_error?(error)
         return true if error.is_a?(IOError) || error.is_a?(SystemCallError)
+        return true if defined?(::Puma::ConnectionError) && error.is_a?(::Puma::ConnectionError)
 
         defined?(::ActionController::Live::ClientDisconnected) &&
           error.is_a?(::ActionController::Live::ClientDisconnected)
