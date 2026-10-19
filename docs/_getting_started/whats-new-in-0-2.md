@@ -14,7 +14,7 @@ After reading this guide, you will know:
 
 * How to publish tool progress without exposing private messages.
 * How to run the maintained browser client example.
-* Which validation remains separate from the local candidate.
+* Which client checks run offline and which provider checks remain separate.
 
 ## Publish Tool Progress
 
@@ -50,4 +50,4 @@ evidence. They do not establish live provider behavior, all-client compatibility
 or remote CI success. The opt-in live spec now shares an actor-scoped setup
 with an offline harness check. See
 [Compatibility]({% link _reference/compatibility.md %}) and
-[Upgrading]({% link _reference/upgrading.md %}) before adopting the candidate.
+[Upgrading]({% link _reference/upgrading.md %}) before updating your application.

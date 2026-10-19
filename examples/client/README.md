@@ -15,5 +15,5 @@ its temporary SQLite database. `X-Demo-Actor` selects a fixture identity only;
 replace that mechanism in a real application.
 
 Run `bin/check-browser` for the automated workflows and fixture screenshots.
-See the [client guide](https://rubyllm-ag-ui.wangyaodi.com/next/client-example/)
+See the [client guide](https://rubyllm-ag-ui.wangyaodi.com/client-example/)
 for details, limitations, and browser setup.

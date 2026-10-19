@@ -151,7 +151,7 @@ host need fits this gem's integration boundary.
 
 ## Next action
 
-Review the 0.2.0 local candidate and run remote CI before authorizing publication.
-The gem and docs version are 0.2.0 with `released: false`; no 0.2 tag or upload is
-part of local development. After the release, start 0.3.0 with disconnect and
-worker-loss cases against the existing client and installed-host fixtures.
+Publication of 0.2.0 is authorized. Push the release commit, pass remote CI,
+then publish its matching tag and verify RubyGems, release assets, and stable
+documentation. After publication, start 0.3.0 with disconnect and worker-loss
+cases against the existing client and installed-host fixtures.

@@ -6,7 +6,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.2.0] - Unreleased
+## [0.2.0] - 2026-10-19
 
 ### Added
 
@@ -22,7 +22,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Reconnect an exact completed resume request without redeeming its approval
   again. Changed input still conflicts, and a new run cannot reuse an answered
   interrupt.
-
 - Supply the required actor scope in the opt-in live-provider check and exercise
   its run setup offline, before provider verification.
 

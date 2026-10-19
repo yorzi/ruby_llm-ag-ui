@@ -15,13 +15,20 @@ After reading this guide, you will know:
 * How to move between versioned releases.
 * Where to find changes that need code updates.
 
-## Move from 0.1 to the 0.2 Candidate
+## Move from 0.1 to 0.2
 
-The 0.2 candidate keeps the 0.1 run, store, and Rails APIs. It does not require
-another migration or installer run. Until the release is published, use the
-`main` checkout for development and keep the latest stable release in production.
-After publication, change the dependency to `~> 0.2.0` and run `bundle update
-ruby_llm-ag_ui`.
+Change your Gemfile and update the dependency:
+
+```ruby
+gem 'ruby_llm-ag_ui', '~> 0.2.0'
+```
+
+```sh
+bundle update ruby_llm-ag_ui
+```
+
+The 0.2 release keeps the 0.1 run, store, and Rails APIs. It does not require
+another migration or installer run.
 
 Tool progress is off by default. Set `config.emit_tool_progress = true` only
 when your client handles activity snapshots, and review its redaction policy.
