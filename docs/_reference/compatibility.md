@@ -79,6 +79,12 @@ scenarios, with 154 consumed events validated against the schema. Its desktop
 progress and mobile denial screenshots were also inspected. These remain
 synthetic checks; no live provider session is recorded.
 
+The [0.2.0 release workflow](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39180349362)
+also passes browser, advisory, installed-host, and clean-install verification.
+The published GitHub and RubyGems downloads have matching checksums. The actual
+published artifact separately passes the installed-host and clean core/Rails
+checks after download.
+
 ## What is not asserted
 
 - **Other clients or versions.** CopilotKit and client versions other than the

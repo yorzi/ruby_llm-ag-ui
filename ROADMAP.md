@@ -23,8 +23,8 @@ approval/resume, run identity, and the memory and ActiveRecord stores. The
 repository defines Ruby and Rails CI matrices and package verification.
 These checks do not establish real client or live provider compatibility.
 
-The local 0.2.0 candidate is complete as of 2026-10-19. It is not published.
-The initial gaps now have reproducible checks:
+[0.2.0](https://github.com/yorzi/ruby_llm-ag-ui/releases/tag/v0.2.0) is published
+on 2026-10-19. The initial gaps now have reproducible checks:
 
 - `@ag-ui/client` 1.0.3 consumes both plain Ruby and Rails streams in Chrome.
   Browser workflows and captured-event schema checks run with one command.
@@ -36,7 +36,8 @@ The initial gaps now have reproducible checks:
   synthetic chats per actor/thread in one process.
 
 See [Compatibility](docs/_reference/compatibility.md) for the evidence boundary.
-Remote CI and release publication remain separate from local validation.
+Remote CI, the release workflow, the published artifact checks, and the stable
+documentation deployment pass. These remain separate from live-provider evidence.
 
 ## Release sequence
 
@@ -45,7 +46,7 @@ behavior they describe; future features stay out of the changelog until built.
 
 | Version | Main outcome | Release condition |
 | --- | --- | --- |
-| **0.2.0** | A real client example and opt-in tool progress | A pinned client consumes the demo; progress is ordered, redacted, and schema-valid. |
+| **0.2.0 (released)** | A real client example and opt-in tool progress | A pinned client consumes the demo; progress is ordered, redacted, and schema-valid. |
 | **0.3.0** | Reliable lifecycle and durable runs | Disconnect, cancellation, worker loss, and competing requests have tested, documented outcomes. |
 | **0.4.0** | Compatibility and API stabilization | The proposed 1.0 support matrix and public API pass end-to-end verification. |
 | **1.0.0.rc.1** | Release rehearsal | A fresh application uses the packaged candidate without checkout-only files or undocumented setup. |
@@ -151,7 +152,7 @@ host need fits this gem's integration boundary.
 
 ## Next action
 
-Publication of 0.2.0 is authorized. Push the release commit, pass remote CI,
-then publish its matching tag and verify RubyGems, release assets, and stable
-documentation. After publication, start 0.3.0 with disconnect and worker-loss
-cases against the existing client and installed-host fixtures.
+Start 0.3.0 with disconnect and worker-loss cases against the existing client
+and installed-host fixtures. First reproduce disconnects before the first event
+and during a tool, then specify the persisted outcome and retry behavior.
+Keep unknown tool side effects explicit before adding any recovery API.

@@ -89,3 +89,46 @@ The fixture actor header and disabled CSRF checks are not production security.
 Temporary hosts and databases are removed on exit. Playwright closes browser
 sessions and the runner stops its owned server. A final process audit finds no
 demo server or test-browser profiles, and port 3199 has no listener.
+
+## Publication follow-up
+
+The sections above record local candidate work before publication. On
+2026-10-19, publication was separately authorized and completed:
+
+- Release tag `v0.2.0` points to `c661ea57b42d03aa11b22330cc383efff97c22f5`.
+- [Main CI](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39180143730)
+  passes all ten jobs: Ruby 3.2.11, 3.3.12, 3.4.11; Rails 8.0.5.1 and 8.1.4
+  on Ruby 3.3/3.4; lint; installed host; and real-client browser workflows.
+- [Release verification and publishing](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39180349362)
+  passes 247 examples (one opt-in provider check skipped), lint, 12 browser
+  scenarios, 154 schema-valid captured events, advisory checks, and installed
+  host plus clean core/Rails checks.
+- The Linux browser uses Playwright's Chromium 156.0.8078.4 on Ubuntu 24.04.
+  Remote desktop progress and 390px mobile denial screenshots were inspected.
+- The first docs run exposed broken navigation in Ruby's bundled RDoc.
+  Reproducing with RDoc 6.6.3.1 produces the same missing anchors. The docs
+  bundle now locks RDoc 8.1.0 and both HTML and Markdown generation use it.
+- [Stable documentation](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39180510567)
+  deploys v0.2.0 at `/` and main at `/next/`. The build checks 9,036 links in
+  138 pages with zero errors. Online installation, upgrading, client example,
+  tool progress, and `llms.txt` are verified against the public domain.
+- [GitHub Release](https://github.com/yorzi/ruby_llm-ag-ui/releases/tag/v0.2.0)
+  includes the gem and `SHA256SUMS`.
+  [RubyGems](https://rubygems.org/gems/ruby_llm-ag_ui/versions/0.2.0) serves
+  the same bytes. Both downloads and the checksum file agree:
+
+```text
+SHA256=45e1265a27470ddcd9fc03cec322a7ef7fffec67a87476d153f9dfd5bb98301f
+```
+
+The publishing action rebuilds the gem after the verification job. Its hash
+differs from that job's artifact (`bd22fc07fe0e60c08b43be91b85ce5cc460a18a185f19b3201978ee02f215c18`).
+The actual public download is therefore verified again: all 58 packaged files
+match the tagged source, both installed endpoints and generated Rails models
+pass, and clean GEM_HOME core, advisory, and Rails generator migration checks
+pass with the published hash above. No reproducible-build claim is made.
+
+Post-download clean GEM_HOME evidence:
+`/var/folders/lg/2wcb539s3x79yz10zq8ltv1m0000gn/T/ag-ui-package-20261019-5463-rogpeo`.
+Remote fixtures and release assets are retained under ignored `tmp/remote-ci/`
+and `tmp/releases/v0.2.0/`. No live provider was used during publication.
