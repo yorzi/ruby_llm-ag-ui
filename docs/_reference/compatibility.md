@@ -23,10 +23,10 @@ dependency does.
 
 | Component | Range | Evidence |
 |---|---|---|
-| Ruby | `>= 3.2` | CI passes on 3.2.11, 3.3.12, and 3.4.11; 3.3.5 checked locally |
+| Ruby | `>= 3.2` | Recorded 0.2 CI passes on 3.2.11, 3.3.12, and 3.4.11; 0.3 checked locally on 3.3.5 |
 | RubyLLM | `>= 2.1`, `< 3.0` | 2.1.1 (callback, approval and cancellation behavior read from its source) |
 | `ag-ui-protocol` | `~> 0.2.0` | 0.2.0 |
-| Rails (adapter only) | `railties`, `actionpack`, `activerecord` `>= 8.0` | CI passes on 8.0.5.1 and 8.1.4 with Ruby 3.3/3.4; 8.1.4 checked locally |
+| Rails (adapter only) | `railties`, `actionpack`, `activerecord` `>= 8.0` | Recorded 0.2 CI passes on 8.0.5.1 and 8.1.4 with Ruby 3.3/3.4; 0.3 checked locally on 8.1.4 |
 | AG-UI schema | pinned commit `89cedd3fd549feeee41e50e1d7c6d373e549241a` | vendored, SHA-256 recorded in [AG-UI Protocol Coverage]({% link _reference/protocol-coverage.md %}) |
 
 The pure-Ruby core uses `ruby_llm` and `ag-ui-protocol`, plus the patched
@@ -53,7 +53,28 @@ adapter is only loaded when `Rails::Railtie` is already defined.
 
 The RSpec suite runs offline with fakes and no provider credentials. Package verification uses the network only to install dependencies, then runs its core and Rails checks without a provider. Its advisory check includes the actual default-library gem versions activated by the isolated core install.
 
-## Recorded Client Verification
+## Local 0.3 Development Verification
+
+On 2026-10-19, Ruby 3.3.5, RubyLLM 2.1.1, and Rails 8.1.4 pass 284 examples
+with zero failures and one opt-in provider example skipped. The 18 browser
+workflows pass with `@ag-ui/client` 1.0.3, Playwright 1.64.1, and Puma 8.0.2;
+all 242 consumed events validate against the pinned schema. Desktop disconnect
+and 390px cancellation screenshots were inspected.
+
+Independent Ruby processes share one SQLite file to check reservations,
+approval decisions, and competing outcome writes. Write barriers force both
+processes to observe the old payload before either updates it. A producer
+killed after a synthetic tool effect is explicitly recovered; reconnect never
+executes the tool again. Mutation checks reject removal of either SQL compare
+conditions or revision validation.
+
+The real RubyLLM chat is also checked with intercepted HTTP: cancellation at
+a checkpoint makes no provider request, and a request timeout produces a
+sanitized, reconnectable failure. These tests make no live provider call.
+Installed-host checks pass for both endpoints and generated Rails models.
+Version 0.3 has no recorded remote CI or publication result yet.
+
+## Recorded 0.2 Client Verification
 
 On 2026-10-19, the local 0.2.0 candidate passes the maintained browser workflows
 with `@ag-ui/client` 1.0.3, Playwright 1.64.1, and Chrome 155.0.8059.82 on macOS.

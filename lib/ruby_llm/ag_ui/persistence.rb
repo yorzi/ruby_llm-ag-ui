@@ -2,8 +2,8 @@
 
 module RubyLLM
   module AgUI
-    # :nodoc: Keep uncertain write acknowledgements separate from run outcomes.
-    module Persistence
+    # Keep uncertain write acknowledgements separate from run outcomes.
+    module Persistence # :nodoc:
       module_function
 
       def write

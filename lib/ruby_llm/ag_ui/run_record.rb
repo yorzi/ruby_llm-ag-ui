@@ -127,8 +127,8 @@ module RubyLLM
         with(now: now, sequence: sequence + 1)
       end
 
-      # :nodoc: Storage bookkeeping; hosts retain the record returned by save.
-      def next_revision
+      # Storage bookkeeping; hosts retain the record returned by save.
+      def next_revision # :nodoc:
         with(now: updated_at, revision: revision + 1)
       end
 

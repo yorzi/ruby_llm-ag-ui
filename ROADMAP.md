@@ -47,7 +47,7 @@ behavior they describe; future features stay out of the changelog until built.
 | Version | Main outcome | Release condition |
 | --- | --- | --- |
 | **0.2.0 (released)** | A real client example and opt-in tool progress | A pinned client consumes the demo; progress is ordered, redacted, and schema-valid. |
-| **0.3.0** | Reliable lifecycle and durable runs | Disconnect, cancellation, worker loss, and competing requests have tested, documented outcomes. |
+| **0.3.0 (local candidate)** | Reliable lifecycle and durable runs | Disconnect, cancellation, worker loss, and competing requests have tested, documented outcomes. |
 | **0.4.0** | Compatibility and API stabilization | The proposed 1.0 support matrix and public API pass end-to-end verification. |
 | **1.0.0.rc.1** | Release rehearsal | A fresh application uses the packaged candidate without checkout-only files or undocumented setup. |
 | **1.0.0** | Stable integration contract | All release conditions below pass; no known blocker remains. |
@@ -82,21 +82,28 @@ this release. The progress feature remains a small callback mapping.
 
 ### 0.3.0: lifecycle and storage reliability
 
-- Test disconnects before the first event, during a tool, and around terminal
+- [x] Test disconnects before the first event, during a tool, and around terminal
   persistence. Define what remains in the store and what a retry receives.
-- Document and verify host-triggered cancellation and provider timeouts.
+- [x] Document and verify host-triggered cancellation and provider timeouts.
   Client HTTP abort and server-side `Chat#cancel` are separate actions; show
   the host wiring required to connect them. Keep cancellation scope-bound.
-- Exercise competing reservations and approval redemptions through independent
+- [x] Exercise competing reservations and approval redemptions through independent
   database connections or workers. Start with SQLite, the current tested store
   backend. A sequential store test is not evidence of a cross-worker race.
-- Define recovery for a worker that dies with a non-terminal run. Keep it
+- [x] Define recovery for a worker that dies with a non-terminal run. Keep it
   explicit and host-controlled. Never automatically rerun a tool whose side
   effect is unknown, or claim exactly-once execution across crashes.
 
 Publish the supported recovery procedure and its limits. A background job
 system, resumable provider execution, and live stream fan-out remain outside
 the gem.
+
+The 2026-10-19 local candidate passes 284 examples and 18 real-client browser
+workflows. Independent-process SQLite tests include a producer killed after
+a synthetic tool effect and synchronized writes from the same observed payload.
+Storage acknowledgement failures preserve uncertain outcomes instead of guessing
+success or failure. Guides describe the changed custom-store contract and the
+requirement to drain old workers. Remote CI and publication remain pending.
 
 ### 0.4.0: compatibility and API stabilization
 
@@ -152,7 +159,7 @@ host need fits this gem's integration boundary.
 
 ## Next action
 
-Start 0.3.0 with disconnect and worker-loss cases against the existing client
-and installed-host fixtures. First reproduce disconnects before the first event
-and during a tool, then specify the persisted outcome and retry behavior.
-Keep unknown tool side effects explicit before adding any recovery API.
+Run the 0.3.0 candidate through remote CI and review publication. Keep live
+provider verification and the proposed support matrix in the 0.4.0 scope.
+After publication, begin API stabilization against the recorded lifecycle
+contract rather than adding more event types.
