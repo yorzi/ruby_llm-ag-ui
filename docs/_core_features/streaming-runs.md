@@ -42,6 +42,19 @@ An assistant message opens on its first non-empty chunk and closes before a tool
 
 The run record reaches a terminal state before the terminal event is written. If the connection closes in the middle, the record remains available for a later reconnect.
 
+## When the Client Disconnects
+
+The producer detaches a failed transport and continues the same chat turn while
+its worker stays alive. A broken connection does not cancel the provider or
+undo a tool. The store retains the real success, failure, approval pause, or
+cancelled outcome. A retry while the turn is running is refused; after it ends,
+the same input and run id receive the recorded outcome without execution.
+
+This also applies when the first write or a flush fails. A terminal write
+failure cannot replace an outcome that is already persisted. `SSEWriter` used
+directly raises `TransportError`, a subclass of `StreamError`; `Run` handles
+that transport error. Mapping and persistence errors are separate failures.
+
 ## Next Steps
 
 * [Validating Input]({% link _core_features/input-validation.md %}) - parse untrusted request data.

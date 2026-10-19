@@ -123,10 +123,18 @@ RSpec.describe RubyLLM::AgUI::Rails::Streaming do
   end
 
   describe 'a client that leaves mid-run (FR-05)' do
-    it 'reports no outcome from a truncated stream and does not raise' do
+    it 'continues after the real Rails ClientDisconnected exception' do
+      controller = FakeController.new(body: body)
+      allow(controller.response.stream).to receive(:write).and_raise(ActionController::Live::ClientDisconnected)
+
+      expect(controller.stream_ag_ui_run { |_input| chat }).to be_succeeded
+      expect(controller.refusals).to be_empty
+    end
+
+    it 'returns the real stored outcome without a refusal on the truncated stream' do
       controller = FakeController.new(body: body, drops: true)
 
-      expect(controller.stream_ag_ui_run { |_input| chat }).to be_nil
+      expect(controller.stream_ag_ui_run { |_input| chat }).to be_succeeded
       expect(controller.refusals).to be_empty
     end
 

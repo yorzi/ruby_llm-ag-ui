@@ -45,9 +45,9 @@ module RubyLLM
           include ::ActionController::Live
         end
 
-        # Streams one run and returns the run's record, or nil when the client
-        # disconnected. The block receives the parsed input and returns the chat
-        # for it.
+        # Streams one run and returns its record. A disconnected transport does
+        # not stop its worker from completing and storing the real outcome.
+        # The block receives the parsed input and returns the authorized chat.
         def stream_ag_ui_run(&resolve_chat)
           if resolve_chat.nil?
             raise ConfigurationError, 'stream_ag_ui_run needs a block that returns the chat for the input'

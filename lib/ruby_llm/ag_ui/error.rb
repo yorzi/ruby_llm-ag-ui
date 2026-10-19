@@ -56,9 +56,12 @@ module RubyLLM
     # Raised when the pinned protocol version is not the one this gem speaks.
     class UnsupportedProtocolVersionError < InputError; end
 
-    # Raised when the stream cannot be closed in order (for example the
-    # transport died mid-run). The run is reported as RUN_ERROR.
+    # Raised when run or stream ordering cannot be honored.
     class StreamError < Error; end
+
+    # The response transport is closed. A running producer detaches its writer
+    # and continues to persist the real outcome while its worker remains alive.
+    class TransportError < StreamError; end
 
     # Raised when RubyLLM paused the run for something the pinned AG-UI shape
     # cannot express as an interrupt this producer may answer, such as an MCP

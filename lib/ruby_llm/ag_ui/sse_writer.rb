@@ -10,7 +10,7 @@ module RubyLLM
     # buffer frames or choose how a host relays a background job to a client.
     # What it does own is the ordering and the framing of the events it writes.
     #
-    # A dead stream is reported as a StreamError and the writer stays closed.
+    # A dead stream is reported as a TransportError and the writer stays closed.
     # The reason is a transport truncation, not a run outcome: it is never
     # evidence that the work finished, succeeded or was cancelled.
     class SSEWriter
@@ -82,7 +82,7 @@ module RubyLLM
       # Encodes +event+ and writes it, then flushes so the client sees it now.
       # Returns the encoded frame.
       def write(event)
-        raise StreamError, 'The event stream is closed.' if @closed
+        raise TransportError, 'The event stream is closed.' if @closed
 
         frame = @encoder.encode(event)
         @stream.write(frame)
@@ -90,12 +90,14 @@ module RubyLLM
         @events_written += 1
         @bytes_written += frame.bytesize
         frame
-      rescue IOError, SystemCallError => e
+      rescue StandardError => e
+        raise unless transport_error?(e)
+
         # The client is gone. The class name is enough for the host log; the
         # message may embed a path or a socket address and is not echoed.
         @logger&.warn("[ruby_llm_ag_ui] the event stream failed: #{e.class}")
         @closed = true
-        raise StreamError, "The event stream failed: #{e.class}"
+        raise TransportError, "The event stream failed: #{e.class}"
       end
 
       # Pushes buffered bytes to the client. A no-op for a stream that cannot
@@ -113,6 +115,15 @@ module RubyLLM
       # Whether the stream can no longer take events.
       def closed?
         @closed
+      end
+
+      private
+
+      def transport_error?(error)
+        return true if error.is_a?(IOError) || error.is_a?(SystemCallError)
+
+        defined?(::ActionController::Live::ClientDisconnected) &&
+          error.is_a?(::ActionController::Live::ClientDisconnected)
       end
     end
   end

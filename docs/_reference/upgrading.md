@@ -15,6 +15,18 @@ After reading this guide, you will know:
 * How to move between versioned releases.
 * Where to find changes that need code updates.
 
+## Develop against 0.3
+
+Version 0.3 is unreleased. Use the `main` checkout to test these changes.
+The latest published release remains 0.2.
+
+`Run` now continues after a response write or flush fails. It saves the real
+outcome instead of reporting the disconnected client as a failed run. Hosts
+that previously relied on disconnects to stop work must explicitly request
+cancellation on the authorized chat. `SSEWriter` still raises a `StreamError`
+subclass when used directly. See
+[Streaming Runs]({% link _core_features/streaming-runs.md %}).
+
 ## Move from 0.1 to 0.2
 
 Change your Gemfile and update the dependency:

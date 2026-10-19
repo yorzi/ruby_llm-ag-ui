@@ -94,7 +94,11 @@ module RubyLLM
       private
 
       def emit(event)
+        return if @detached
+
         @writer.write(event)
+      rescue TransportError
+        @detached = true
       end
 
       # Closes whatever content is still open, then writes the terminal event.

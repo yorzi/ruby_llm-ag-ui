@@ -47,6 +47,14 @@ RSpec.describe RubyLLM::AgUI::SSEWriter do
   end
 
   describe '#write' do
+    it 'does not disguise an encoder defect as a disconnected client' do
+      encoder = instance_double(AgUiProtocol::EventEncoder)
+      allow(encoder).to receive(:encode).and_raise(ArgumentError, 'bad event')
+
+      expect { described_class.new(stream, encoder: encoder).write(start_event) }
+        .to raise_error(ArgumentError, 'bad event')
+    end
+
     it 'writes one schema-valid SSE frame per event' do
       writer.write(start_event)
       writer.write(content_event('Hel'))

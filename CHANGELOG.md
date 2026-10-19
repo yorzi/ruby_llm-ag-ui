@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] - Unreleased
+
+### Fixed
+
+- Continue a live run after its response transport disconnects, preserving the
+  real outcome and side-effect identity instead of failing the run on a write.
+
 ## [0.2.0] - 2026-10-19
 
 ### Added
