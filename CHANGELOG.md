@@ -28,6 +28,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   failures, without executing a provider turn or guessing whether a decision committed.
 - Recognize Puma connection failures as disconnected transports and classify
   Faraday timeouts as `transport_timeout` instead of generic transport errors.
+- Require JSON 2.x so Rails 8.0 can load a real RubyLLM chat without passing
+  a removed `quirks_mode` option to JSON 3.
 
 ## [0.2.0] - 2026-10-19
 

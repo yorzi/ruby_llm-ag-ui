@@ -56,3 +56,6 @@ is recorded as `transport_timeout`, without raw provider details. See
 Version 0.3 adds independent-process SQLite tests, including a producer killed
 after a synthetic tool effect.
 These tests do not establish live provider or other-database behavior.
+
+Before updating, read [Upgrading]({% link _reference/upgrading.md %}) for worker
+draining, the custom-store contract, and the JSON 2.x dependency requirement.

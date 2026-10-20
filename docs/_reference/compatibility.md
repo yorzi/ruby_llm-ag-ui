@@ -26,6 +26,7 @@ dependency does.
 | Ruby | `>= 3.2` | Recorded 0.2 CI passes on 3.2.11, 3.3.12, and 3.4.11; 0.3 checked locally on 3.3.5 |
 | RubyLLM | `>= 2.1`, `< 3.0` | 2.1.1 (callback, approval and cancellation behavior read from its source) |
 | `ag-ui-protocol` | `~> 0.2.0` | 0.2.0 |
+| JSON | `>= 2.0`, `< 3` | Rails 8.0's encoder uses `quirks_mode`, removed in JSON 3; the gem excludes that incompatible combination |
 | Rails (adapter only) | `railties`, `actionpack`, `activerecord` `>= 8.0` | Recorded 0.2 CI passes on 8.0.5.1 and 8.1.4 with Ruby 3.3/3.4; 0.3 checked locally on 8.1.4 |
 | AG-UI schema | pinned commit `89cedd3fd549feeee41e50e1d7c6d373e549241a` | vendored, SHA-256 recorded in [AG-UI Protocol Coverage]({% link _reference/protocol-coverage.md %}) |
 

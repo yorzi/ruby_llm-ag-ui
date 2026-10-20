@@ -2,6 +2,8 @@
 
 # Executed outside Bundler and the checkout, with only the artifact's spec added
 # to GEM_HOME. Development dependencies remain available through GEM_PATH.
+# Activate its dependency constraints before Rails can select a JSON version.
+gem 'ruby_llm-ag_ui'
 require_relative '../examples/client/database'
 require 'json_schemer'
 

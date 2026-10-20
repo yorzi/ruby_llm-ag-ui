@@ -27,6 +27,10 @@ gem 'ruby_llm-ag_ui', '~> 0.3.0'
 bundle update ruby_llm-ag_ui
 ```
 
+Version 0.3 requires JSON 2.x. Rails 8.0 passes an option removed in JSON 3
+when RubyLLM loads its chat class. If your Gemfile pins JSON 3, remove that pin
+or select JSON 2.x before updating. This bound also applies to plain Ruby hosts.
+
 `Run` now continues after a response write or flush fails. It saves the real
 outcome instead of reporting the disconnected client as a failed run. Hosts
 that previously relied on disconnects to stop work must explicitly request
@@ -46,33 +50,7 @@ Faraday request timeouts now use `transport_timeout` instead of the generic
 `transport_error` code. Both remain failed outcomes. See
 [Cancellation and Timeouts]({% link _core_features/cancellation.md %}).
 
-## Move from 0.1 to 0.2
+## Older Releases
 
-Change your Gemfile and update the dependency:
-
-```ruby
-gem 'ruby_llm-ag_ui', '~> 0.2.0'
-```
-
-```sh
-bundle update ruby_llm-ag_ui
-```
-
-The 0.2 release keeps the 0.1 run, store, and Rails APIs. It does not require
-another migration or installer run.
-
-Tool progress is off by default. Set `config.emit_tool_progress = true` only
-when your client handles activity snapshots, and review its redaction policy.
-See [Tool Progress]({% link _core_features/tool-progress.md %}).
-
-## Completed Resume Retries in 0.2
-
-An exact retry of a completed resume run now returns its recorded outcome.
-Keep the original run id and full input, including `resume`. A new run id that
-tries to answer an already answered interrupt is still refused, and changed
-input under the original id is a conflict. No approval or tool is executed again.
-
-## Older Development Checkouts
-
-For the initial release's generator namespace correction, read the
-[0.1 upgrading guide](https://github.com/yorzi/ruby_llm-ag-ui/blob/v0.1.0/docs/_reference/upgrading.md).
+For earlier upgrade steps, read the
+[0.2 upgrading guide](https://github.com/yorzi/ruby_llm-ag-ui/blob/v0.2.0/docs/_reference/upgrading.md).

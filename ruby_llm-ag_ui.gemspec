@@ -41,6 +41,9 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'ag-ui-protocol', '~> 0.2.0'
   spec.add_dependency 'ruby_llm', '>= 2.1', '< 3.0'
+  # Rails 8.0 passes quirks_mode to JSON.generate when RubyLLM loads Chat.
+  # JSON 3 removes that option. Keep both supported Rails lines usable.
+  spec.add_dependency 'json', '>= 2.0', '< 3'
 
   # Old Ruby default gems can otherwise satisfy transitive dependencies while
   # retaining known URL, CGI, DNS and compression vulnerabilities.
