@@ -10,8 +10,8 @@ module RubyLLM
     #     config.logger    = Rails.logger
     #   end
     #
-    # Every value can be overridden per run by passing the matching keyword to
-    # RubyLLM::AgUI::Run.new.
+    # Run.new can override storage, logging, redaction, clock, interrupt expiry,
+    # and tool progress. Input.parse uses the configured request limits.
     class Configuration
       # The object that reserves run identity and stores interrupts. Defaults
       # to nil; set a RubyLLM::AgUI::Store::MemoryStore for single-process use,
@@ -38,7 +38,17 @@ module RubyLLM
 
       # The AG-UI protocol version this producer speaks, emitted on
       # RUN_STARTED so a consumer can detect a downgrade.
-      attr_accessor :protocol_version
+      attr_reader :protocol_version
+
+      # Accepts only the protocol implemented by this producer. A different
+      # version is refused instead of silently reporting a misleading setting.
+      def protocol_version=(value)
+        unless value == Protocol::PROTOCOL_VERSION
+          raise ConfigurationError, "This producer supports protocol #{Protocol::PROTOCOL_VERSION} only."
+        end
+
+        @protocol_version = value
+      end
 
       # Maximum accepted request body size in bytes.
       attr_accessor :max_input_bytes
@@ -58,23 +68,17 @@ module RubyLLM
       # A callable returning the current UTC Time. Injected in tests.
       attr_accessor :clock
 
-      # Whether client-supplied message history is reconciled against
-      # host-stored history. Always off in the first release: client messages
-      # are never trusted as system or tool turns.
-      attr_accessor :allow_client_history
-
       def initialize
         @run_store = nil
         @redact = Redaction.method(:default)
         @logger = nil
-        @protocol_version = '1.0'
+        @protocol_version = Protocol::PROTOCOL_VERSION
         @max_input_bytes = 256_000
         @max_messages = 500
         @max_tools = 64
         @max_context = 64
         @interrupt_ttl = 900
         @clock = -> { Time.now.utc }
-        @allow_client_history = false
         @emit_tool_progress = false
       end
 
@@ -110,7 +114,6 @@ module RubyLLM
           max_tools: max_tools,
           max_context: max_context,
           interrupt_ttl: interrupt_ttl,
-          allow_client_history: allow_client_history,
           emit_tool_progress: emit_tool_progress
         }
       end

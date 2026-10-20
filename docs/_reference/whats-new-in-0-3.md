@@ -1,7 +1,8 @@
 ---
 layout: default
 title: "What's New in 0.3"
-nav_order: -1
+nav_order: 30
+parent: Release History
 description: Verify transport failure, scoped cancellation, and explicit worker recovery.
 ---
 

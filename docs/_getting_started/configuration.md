@@ -40,14 +40,16 @@ The global configuration supplies defaults. `Run.new` can override the store, lo
 | `redact` | `Redaction.default` | Transform tool results before they reach the stream. |
 | `emit_tool_progress` | `false` | Publish tool progress as redacted activity snapshots. |
 | `logger` | `nil` | Receive host-side diagnostics without prompts or raw tool payloads. |
-| `protocol_version` | `"1.0"` | Value reported by `RUN_STARTED`. |
+| `protocol_version` | `"1.0"` | Fixed supported version reported by `RUN_STARTED`; setting another value raises `ConfigurationError`. |
 | `max_input_bytes` | `256_000` | Maximum request body size. |
 | `max_messages` | `500` | Maximum messages in one request. |
 | `max_tools` | `64` | Maximum tool definitions in one request. |
 | `max_context` | `64` | Maximum context entries in one request. |
 | `interrupt_ttl` | `900` seconds | How long an approval interrupt can be answered. |
 | `clock` | `Time.now.utc` | Clock used to set interrupt expiry. |
-| `allow_client_history` | `false` | Reserved for future history behavior; client history is not trusted in this release. |
+
+Client history stays under host control. There is no configuration switch that
+trusts or imports it into a chat.
 
 Provider keys and model selection are configured through RubyLLM and the host app. This gem does not read credentials when it loads.
 

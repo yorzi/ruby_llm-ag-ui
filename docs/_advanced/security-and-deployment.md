@@ -43,8 +43,8 @@ responsibility.
 - **Choose the model, tools or system prompt.** `input.tools` is informational:
   `Input#tool_names` and `Input#client_tools?` report it, and nothing in the gem
   registers a client-supplied tool on the chat. `input.messages` is parsed and
-  echoed, never appended to the chat as trusted turns; `config.allow_client_history`
-  is off and documented as off.
+  echoed, never appended to the chat as trusted turns. The host owns history
+  reconciliation; this gem has no switch that imports client history.
 - **Reach another actor's run.** Every lookup is bounded by the scope the host
   supplies. The same `(threadId, runId)` under a different scope is a different
   run (`spec/ruby_llm/ag_ui/run_spec.rb`: "does not let one scope attach to

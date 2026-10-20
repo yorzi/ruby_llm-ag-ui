@@ -6,6 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] - Unreleased
+
+### Changed
+
+- Remove the unused `allow_client_history` configuration and diagnostic key.
+  Client messages remain untrusted data under host-controlled history policy.
+- Reject unsupported `protocol_version` configuration instead of accepting a
+  setting that cannot change the producer's fixed 1.0 output.
+
 ## [0.3.0] - 2026-10-20
 
 ### Added

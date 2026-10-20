@@ -17,8 +17,8 @@ module RubyLLM
     #
     # Nothing here grants trust. Client messages, state, tools, context and
     # forwardedProps are accepted as data only; the host decides which tools
-    # and model a run may use, and client history is reconciled by id against
-    # host-stored history rather than appended as trusted system or tool turns.
+    # and model a run may use. This gem never reconciles or appends client
+    # history to the host chat. The host owns that policy.
     class Input
       # The protocol versions this gem can act on.
       SUPPORTED_PROTOCOL_VERSIONS = [Protocol::PROTOCOL_VERSION].freeze
