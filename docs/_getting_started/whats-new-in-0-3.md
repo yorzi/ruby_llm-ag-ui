@@ -53,6 +53,6 @@ disconnecting the browser leaves the producer running. RubyLLM's HTTP timeout
 is recorded as `transport_timeout`, without raw provider details. See
 [Cancellation and Timeouts]({% link _core_features/cancellation.md %}).
 
-Version 0.3 is unreleased. Local tests use independent Ruby processes with a
-shared SQLite file, including a producer killed after a synthetic tool effect.
+Version 0.3 adds independent-process SQLite tests, including a producer killed
+after a synthetic tool effect.
 These tests do not establish live provider or other-database behavior.

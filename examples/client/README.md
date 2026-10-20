@@ -17,5 +17,5 @@ replace that mechanism in a real application.
 Run `bin/check-browser` for the automated workflows and fixture screenshots.
 Try **Cancel server run** and **Disconnect stream** during tool progress to
 compare server cancellation with HTTP abort. See the
-[development client guide](https://rubyllm-ag-ui.wangyaodi.com/next/client-example/)
+[client guide](https://rubyllm-ag-ui.wangyaodi.com/client-example/)
 for details, limitations, and browser setup.

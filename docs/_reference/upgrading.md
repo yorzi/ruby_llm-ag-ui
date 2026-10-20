@@ -15,10 +15,17 @@ After reading this guide, you will know:
 * How to move between versioned releases.
 * Where to find changes that need code updates.
 
-## Develop against 0.3
+## Move from 0.2 to 0.3
 
-Version 0.3 is unreleased. Use the `main` checkout to test these changes.
-The latest published release remains 0.2.
+Drain your old workers, change your Gemfile, and update the dependency:
+
+```ruby
+gem 'ruby_llm-ag_ui', '~> 0.3.0'
+```
+
+```sh
+bundle update ruby_llm-ag_ui
+```
 
 `Run` now continues after a response write or flush fails. It saves the real
 outcome instead of reporting the disconnected client as a failed run. Hosts

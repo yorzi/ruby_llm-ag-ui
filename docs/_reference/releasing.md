@@ -67,3 +67,13 @@ Replace the example tag with the version you are releasing. The `Release Gem` wo
 On success, the workflow creates a GitHub Release with the gem, checksum, and CHANGELOG notes. The Docs workflow runs after the release workflow succeeds. It publishes the tagged version at `/` and current `main` at `/next/`.
 
 Check the version on RubyGems, the GitHub Release assets, and the documentation installation command. If a publish attempt fails, inspect its logs before retrying. A published RubyGems version cannot be overwritten.
+
+Download the published gem from both RubyGems and the GitHub Release. Compare
+their SHA-256 hashes with the release's `SHA256SUMS` and RubyGems metadata.
+Verify that its packaged files match the tag. The publish job builds its own
+artifact, so a verification job's earlier hash is not proof of the public bytes.
+
+Place the downloaded gem under `pkg/` and repeat the installed-host check with
+`--built`, followed by `bin/verify-package --rails --audit`. Do not rebuild the
+gem between downloading and checking it. Confirm the rendered stable and
+`/next/` guides, API links, and version menu after the Docs deployment succeeds.
