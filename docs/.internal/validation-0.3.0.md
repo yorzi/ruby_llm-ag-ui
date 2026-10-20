@@ -1,4 +1,7 @@
-# 0.3.0 local candidate validation
+# 0.3.0 validation
+
+The candidate sections below record local work before publication. See
+Publication follow-up for the separately verified 2026-10-20 release.
 
 2026-10-19, macOS arm64. Baseline: `7bb799d` after the 0.2.0 release.
 Implementation commits: `e27a0d1`, `a01948f`, `820f732`, `546f06a`.
@@ -102,3 +105,57 @@ The final browser run is under ignored
 disconnected phase screenshots. Final process inspection finds no demo server,
 no Playwright Chrome profile process, and no listener on port 3199. All worker
 subprocesses are joined or terminated, and disposable databases are removed.
+
+
+## Publication follow-up
+
+On 2026-10-20, publication was separately authorized and completed:
+
+- Tag `v0.3.0` points to `369057cd93fb1a27fc5f489073406a21f61a350c`.
+- [Final candidate CI](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39376069591)
+  passes all ten jobs. The preceding [matrix evidence](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39375830117)
+  records Ruby 3.2.11, 3.3.12, and 3.4.11; Rails 8.0.5.1 and 8.1.4 on Ruby
+  3.3/3.4; lint; installed-host checks; and browser workflows on Ubuntu 24.04.
+- The initial Rails 8.0 jobs exposed JSON 3's removal of `quirks_mode` while
+  loading a real RubyLLM chat. The same two intercepted-HTTP examples fail
+  locally before the dependency bound and pass after it. JSON is constrained
+  to 2.x in the published gem, with upgrade guidance. Both complete local
+  Rails 8.0 and 8.1 suites pass 284 examples, zero failures, one provider skip.
+- [Release verification and publishing](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39376258843)
+  passes 284 examples, lint, 18 browser workflows, all 242 consumed-event schema
+  checks, dependency audit, installed-host checks, and clean core/Rails checks.
+- Linux browser evidence uses Playwright 1.64.1 and Chromium 156.0.8078.4.
+  Desktop disconnection and 390px cancellation screenshots were inspected.
+- [Stable docs deployment](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39376540516)
+  builds v0.3.0 at `/` and main at `/next/`: 10,170 links in 150 pages, no errors.
+  Public HTTP checks cover installation, upgrading, recovery, cancellation,
+  client example, What's New, release history, both llms.txt channels, and
+  RunRecord and Store::Base API pages. A browser verifies stable installation
+  and switches to Next using the version menu; its screenshot was inspected.
+- [GitHub Release](https://github.com/yorzi/ruby_llm-ag-ui/releases/tag/v0.3.0)
+  and [RubyGems](https://rubygems.org/gems/ruby_llm-ag_ui/versions/0.3.0)
+  serve identical bytes. The downloaded files, RubyGems version metadata,
+  GitHub asset digest, and `SHA256SUMS` agree:
+
+```text
+SHA256=9ed492bc2774b1acc91d75b5104f3ebfed2477aa3b0fba86d46e1ec53db541ed
+```
+
+The publishing job rebuilds the gem. The preceding verification job's artifact
+has SHA-256 `605bca1edfe7e3d17263c944ee1eb5c6f602640bf03ad4f157f14bd9220c1cf6`,
+so it does not establish the public bytes. The actual download is verified
+again: all 62 packaged files match the tag; both installed endpoints and
+RubyLLM models pass; fresh GEM_HOME core, activated dependency audit, and Rails
+migration up/down pass. No reproducible-build claim is made.
+
+The isolated macOS core activates JSON 2.7.1 and the remote matrix uses 2.21.2.
+Root and activated-core audits report no findings against 1,266 advisories at
+`fa2295251efb3b0d1a300e5ce8ad700ff1f1b485`. This does not audit all optional
+host or OS dependencies. Fresh download evidence is under
+`/var/folders/lg/2wcb539s3x79yz10zq8ltv1m0000gn/T/ag-ui-package-20261020-45725-pcrx45`.
+
+Remote artifacts, public downloads, logs, and screenshots remain under ignored
+`tmp/validation/` and `tmp/releases/v0.3.0/`. The hosted check closes its browser
+in a finally block. No local server is started for publication, and all task
+watch commands complete. No live provider is used. The next iteration is 0.4.0
+API stabilization and recorded provider/dependency compatibility.

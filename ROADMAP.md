@@ -47,7 +47,7 @@ behavior they describe; future features stay out of the changelog until built.
 | Version | Main outcome | Release condition |
 | --- | --- | --- |
 | **0.2.0 (released)** | A real client example and opt-in tool progress | A pinned client consumes the demo; progress is ordered, redacted, and schema-valid. |
-| **0.3.0 (release prepared)** | Reliable lifecycle and durable runs | Disconnect, cancellation, worker loss, and competing requests have tested, documented outcomes. |
+| **0.3.0 (released)** | Reliable lifecycle and durable runs | Disconnect, cancellation, worker loss, and competing requests have tested, documented outcomes. |
 | **0.4.0** | Compatibility and API stabilization | The proposed 1.0 support matrix and public API pass end-to-end verification. |
 | **1.0.0.rc.1** | Release rehearsal | A fresh application uses the packaged candidate without checkout-only files or undocumented setup. |
 | **1.0.0** | Stable integration contract | All release conditions below pass; no known blocker remains. |
@@ -104,7 +104,10 @@ a synthetic tool effect and synchronized writes from the same observed payload.
 Storage acknowledgement failures preserve uncertain outcomes instead of guessing
 success or failure. Guides describe the changed custom-store contract and the
 requirement to drain old workers. The 2026-10-20 remote matrix passes after
-excluding JSON 3, which is incompatible with Rails 8.0. Publication is pending.
+excluding JSON 3, which is incompatible with Rails 8.0.
+[0.3.0](https://github.com/yorzi/ruby_llm-ag-ui/releases/tag/v0.3.0) is published
+on 2026-10-20. Release verification, matching public downloads, fresh core/Rails
+installation, and stable documentation checks pass.
 
 ### 0.4.0: compatibility and API stabilization
 
@@ -160,7 +163,7 @@ host need fits this gem's integration boundary.
 
 ## Next action
 
-Run the 0.3.0 candidate through remote CI and review publication. Keep live
-provider verification and the proposed support matrix in the 0.4.0 scope.
-After publication, begin API stabilization against the recorded lifecycle
-contract rather than adding more event types.
+Begin 0.4.0 by listing the public API to freeze and resolving reserved settings.
+Then verify the proposed dependency matrix and one live provider's text, tool,
+and approval-resume paths. Use the recorded 0.3 lifecycle contract as the
+regression baseline. Keep new event types outside this iteration.

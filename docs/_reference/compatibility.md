@@ -89,6 +89,14 @@ chat. Version 0.3 bounds JSON to 2.x; the passing matrix uses 2.21.2. Intercepte
 HTTP tests reproduce the failure before the bound and pass after it. These
 checks make no live provider call.
 
+The [0.3.0 release workflow](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39376258843)
+passes offline tests, browser workflows, advisory checks, and installed-host
+plus clean core/Rails checks. After publication, the actual GitHub and RubyGems
+downloads have matching SHA-256 hashes and all 62 packaged files match the tag.
+The downloaded artifact independently passes both installed endpoints and fresh
+core, advisory, and Rails generator migration checks. The isolated macOS core
+activates JSON 2.7.1; the remote test matrix uses 2.21.2.
+
 ## Recorded 0.2 Client Verification
 
 On 2026-10-19, the local 0.2.0 candidate passes the maintained browser workflows
