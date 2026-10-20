@@ -48,6 +48,9 @@ The global configuration supplies defaults. `Run.new` can override the store, lo
 | `interrupt_ttl` | `900` seconds | How long an approval interrupt can be answered. |
 | `clock` | `Time.now.utc` | Clock used to set interrupt expiry. |
 
+`Configuration#protocol_version=` accepts only `"1.0"`. Its value describes the
+producer; it does not select another event schema.
+
 Client history stays under host control. There is no configuration switch that
 trusts or imports it into a chat.
 

@@ -23,11 +23,11 @@ dependency does.
 
 | Component | Range | Evidence |
 |---|---|---|
-| Ruby | `>= 3.2` | Recorded 0.3 CI passes on 3.2.11, 3.3.12, and 3.4.11 |
-| RubyLLM | `>= 2.1`, `< 3.0` | 2.1.0 and 2.1.1 pass the local 0.4 offline suite; the recorded live session uses 2.1.1 |
+| Ruby | `>= 3.2` | Recorded 0.4 CI passes on 3.2.11, 3.3.12, and 3.4.11 |
+| RubyLLM | `>= 2.1`, `< 3.0` | 2.1.0 and 2.1.1 pass the 0.4 CI matrix; the recorded live session uses 2.1.1 |
 | `ag-ui-protocol` | `~> 0.2.0` | 0.2.0 |
 | JSON | `>= 2.0`, `< 3` | 2.21.2 passes both Rails lines; JSON 3 removes the `quirks_mode` option used by Rails 8.0 |
-| Rails (adapter only) | `railties`, `actionpack`, `activerecord` `>= 8.0` | Recorded 0.3 CI passes on 8.0.5.1 and 8.1.4 with Ruby 3.3/3.4 |
+| Rails (adapter only) | `railties`, `actionpack`, `activerecord` `>= 8.0` | Recorded 0.4 CI passes on 8.0.5.1 and 8.1.4 with Ruby 3.3/3.4 |
 | AG-UI schema | pinned commit `89cedd3fd549feeee41e50e1d7c6d373e549241a` | vendored, SHA-256 recorded in [AG-UI Protocol Coverage]({% link _reference/protocol-coverage.md %}) |
 
 The pure-Ruby core uses `ruby_llm` and `ag-ui-protocol`, plus the patched
@@ -58,15 +58,22 @@ The RSpec suite runs offline with fakes and no provider credentials. Package ver
 
 On 2026-10-21, the candidate passes 294 offline examples with zero failures
 and two opt-in provider checks skipped. Separate runs use RubyLLM 2.1.0 and
-2.1.1 on Ruby 3.3.5 with Rails 8.1.4 and JSON 2.21.2. CI now defines both
-RubyLLM versions across Ruby 3.2/3.3/3.4 and Rails 8.0/8.1; a configured matrix
-is not a recorded pass until its run completes.
+2.1.1 on Ruby 3.3.5 with Rails 8.1.4 and JSON 2.21.2. The [0.4 candidate CI](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39515383346)
+passes all 17 jobs at `14b3c15`: six Ruby jobs across 3.2.11, 3.3.12, and
+3.4.11 with both RubyLLM versions; eight Rails jobs across 8.0.5.1 and 8.1.4
+on Ruby 3.3/3.4 with both versions; lint, installed-host, and browser checks.
+Each suite reports 294 examples, zero failures, and two opt-in provider skips.
 
 The maintained client passes 18 workflows and validates all 242 consumed
 events. Approval assertions inspect the official client's messages as well as
 the wire: one original call, one associated result, no duplicate visible text
-after reconnect. The fixture now fires the same resumed before-tool callback
-as a real RubyLLM chat. Installed-host and generated Rails model checks pass.
+after reconnect. The remote browser uses Chromium 156.0.8078.4; local and remote
+desktop progress and 390px denial screenshots were inspected. The fixture now fires the same resumed before-tool callback
+as a real RubyLLM chat. Installed-host and generated Rails model checks pass. A fixed local 66-file
+artifact independently passes clean core loading, activated dependency audit,
+and Rails generator migration up/down. The isolated core uses JSON 2.7.1.
+The root and activated-core audit reports no findings against the recorded
+advisory database. These are development artifact checks, not public downloads.
 
 ### Recorded Live Provider Session
 

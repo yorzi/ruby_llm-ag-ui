@@ -1,8 +1,8 @@
 # Roadmap to 1.0
 
-Proposed sequence, based on the `v0.1.0` checkout (`3ed4f10`), reviewed on
-2026-10-18. These are development targets, not shipped features or release
-dates. Keep one release in progress. Split or drop optional work when it delays
+Sequence reviewed on 2026-10-21. Versions 0.2 and 0.3 are published. The
+0.4 candidate has recorded verification; later releases remain targets rather
+than promised dates. Keep one release in progress. Split or drop optional work when it delays
 the release's main outcome; use patch releases for fixes.
 
 ## What 1.0 means
@@ -48,7 +48,7 @@ behavior they describe; future features stay out of the changelog until built.
 | --- | --- | --- |
 | **0.2.0 (released)** | A real client example and opt-in tool progress | A pinned client consumes the demo; progress is ordered, redacted, and schema-valid. |
 | **0.3.0 (released)** | Reliable lifecycle and durable runs | Disconnect, cancellation, worker loss, and competing requests have tested, documented outcomes. |
-| **0.4.0** | Compatibility and API stabilization | The proposed 1.0 support matrix and public API pass end-to-end verification. |
+| **0.4.0 (candidate)** | Compatibility and API stabilization | The proposed 1.0 support matrix and public API pass end-to-end verification. |
 | **1.0.0.rc.1** | Release rehearsal | A fresh application uses the packaged candidate without checkout-only files or undocumented setup. |
 | **1.0.0** | Stable integration contract | All release conditions below pass; no known blocker remains. |
 
@@ -111,21 +111,31 @@ installation, and stable documentation checks pass.
 
 ### 0.4.0: compatibility and API stabilization
 
-- Name the public API to freeze: input parsing, `Run`, configuration, store
+- [x] Name the public API to freeze: input parsing, `Run`, configuration, store
   contract, error/status behavior, Rails hooks, and progress added earlier.
   Mark internals and resolve ineffective settings such as the reserved
   `allow_client_history` option before treating them as supported switches.
-- Run the client through success, tool results, approval, denial, cancellation,
+- [x] Run the client through success, tool results, approval, denial, cancellation,
   sanitized failure, and completed-run reconnect. Verify the resumed tool
   result is associated with the original call and text is not duplicated.
-- Record at least one live provider/model for text, a tool call, and approval
+- [x] Record at least one live provider/model for text, a tool call, and approval
   resume through the gem. Add a second provider only if its support is claimed.
   Keep credentials out of traces; record failures as well as successful runs.
-- Test the minimum and chosen current RubyLLM versions within the supported
+- [x] Test the minimum and chosen current RubyLLM versions within the supported
   range, plus the declared Ruby/Rails matrix. Narrow any unverified range or
   label it clearly. Verify PostgreSQL/MySQL only if adding a support claim.
-- Recheck upstream SDK gaps against the chosen dependency versions. Remove a
+- [x] Recheck upstream SDK gaps against the chosen dependency versions. Remove a
   local workaround only after replacement behavior passes the same tests.
+
+The 2026-10-21 candidate defines the public API and custom-store contract,
+removes an unused history switch, and refuses unsupported protocol settings.
+Read-only request and record values now isolate nested JSON and run identity.
+A real provider session exposed duplicate resumed tool-call events; intercepted
+HTTP, browser client state, and a passing OpenRouter approval session verify
+the fix. The remote 17-job Ruby/Rails/RubyLLM matrix passes. Installed-package,
+fresh core/Rails, advisory, browser, and docs checks pass separately. See
+[Compatibility](docs/_reference/compatibility.md) for versions and limits.
+Version 0.4 remains unreleased; no public artifact is claimed.
 
 ### 1.0.0.rc.1: release rehearsal
 
@@ -163,7 +173,7 @@ host need fits this gem's integration boundary.
 
 ## Next action
 
-Begin 0.4.0 by listing the public API to freeze and resolving reserved settings.
-Then verify the proposed dependency matrix and one live provider's text, tool,
-and approval-resume paths. Use the recorded 0.3 lifecycle contract as the
-regression baseline. Keep new event types outside this iteration.
+Prepare the 0.4.0 release through the package, tag, publication, and stable-docs
+checks in the [release guide](docs/_reference/releasing.md). Then rehearse the
+1.0 release candidate in fresh applications and review the release conditions.
+The proposed API is documented; a 1.0 stability promise still needs that rehearsal.
