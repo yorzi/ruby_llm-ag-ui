@@ -103,7 +103,8 @@ workflows. Independent-process SQLite tests include a producer killed after
 a synthetic tool effect and synchronized writes from the same observed payload.
 Storage acknowledgement failures preserve uncertain outcomes instead of guessing
 success or failure. Guides describe the changed custom-store contract and the
-requirement to drain old workers. Remote CI and publication remain pending.
+requirement to drain old workers. The 2026-10-20 remote matrix passes after
+excluding JSON 3, which is incompatible with Rails 8.0. Publication is pending.
 
 ### 0.4.0: compatibility and API stabilization
 

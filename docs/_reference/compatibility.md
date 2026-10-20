@@ -23,11 +23,11 @@ dependency does.
 
 | Component | Range | Evidence |
 |---|---|---|
-| Ruby | `>= 3.2` | Recorded 0.2 CI passes on 3.2.11, 3.3.12, and 3.4.11; 0.3 checked locally on 3.3.5 |
+| Ruby | `>= 3.2` | Recorded 0.3 CI passes on 3.2.11, 3.3.12, and 3.4.11 |
 | RubyLLM | `>= 2.1`, `< 3.0` | 2.1.1 (callback, approval and cancellation behavior read from its source) |
 | `ag-ui-protocol` | `~> 0.2.0` | 0.2.0 |
-| JSON | `>= 2.0`, `< 3` | Rails 8.0's encoder uses `quirks_mode`, removed in JSON 3; the gem excludes that incompatible combination |
-| Rails (adapter only) | `railties`, `actionpack`, `activerecord` `>= 8.0` | Recorded 0.2 CI passes on 8.0.5.1 and 8.1.4 with Ruby 3.3/3.4; 0.3 checked locally on 8.1.4 |
+| JSON | `>= 2.0`, `< 3` | 2.21.2 passes both Rails lines; JSON 3 removes the `quirks_mode` option used by Rails 8.0 |
+| Rails (adapter only) | `railties`, `actionpack`, `activerecord` `>= 8.0` | Recorded 0.3 CI passes on 8.0.5.1 and 8.1.4 with Ruby 3.3/3.4 |
 | AG-UI schema | pinned commit `89cedd3fd549feeee41e50e1d7c6d373e549241a` | vendored, SHA-256 recorded in [AG-UI Protocol Coverage]({% link _reference/protocol-coverage.md %}) |
 
 The pure-Ruby core uses `ruby_llm` and `ag-ui-protocol`, plus the patched
@@ -73,7 +73,21 @@ The real RubyLLM chat is also checked with intercepted HTTP: cancellation at
 a checkpoint makes no provider request, and a request timeout produces a
 sanitized, reconnectable failure. These tests make no live provider call.
 Installed-host checks pass for both endpoints and generated Rails models.
-Version 0.3 has no recorded remote CI or publication result yet.
+## Recorded 0.3 CI Verification
+
+The [2026-10-20 CI run](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39375830117)
+passes all ten jobs at `aa9e035`: Ruby 3.2.11, 3.3.12, and 3.4.11; Rails
+8.0.5.1 and 8.1.4 on Ruby 3.3/3.4; lint; installed-host checks; and the browser
+suite on Ubuntu 24.04. Each test job passes 284 examples with zero failures
+and one opt-in provider skip. The browser suite passes 18 workflows and
+validates all 242 consumed events with `@ag-ui/client` 1.0.3.
+It uses Playwright 1.64.1 and Chromium 156.0.8078.4. Desktop disconnection and
+390px cancellation screenshots from this run were inspected.
+
+The first candidate failed when Rails 8.0 and JSON 3 loaded a real RubyLLM
+chat. Version 0.3 bounds JSON to 2.x; the passing matrix uses 2.21.2. Intercepted
+HTTP tests reproduce the failure before the bound and pass after it. These
+checks make no live provider call.
 
 ## Recorded 0.2 Client Verification
 
