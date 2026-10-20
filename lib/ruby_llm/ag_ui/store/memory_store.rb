@@ -34,7 +34,7 @@ module RubyLLM
             )
             @records[key] = record
             thread = thread_key(scope, thread_id)
-            @threads[thread] = (@threads[thread] || []) + [run_id]
+            @threads[thread] = (@threads[thread] || []) + [record.run_id]
             Reservation.new(record: record, status: Reservation::CREATED)
           end
         end
@@ -107,11 +107,11 @@ module RubyLLM
         end
 
         def key_for(scope, thread_id, run_id)
-          [scope_key(scope), thread_id, run_id]
+          Immutable.copy([scope_key(scope), thread_id, run_id])
         end
 
         def thread_key(scope, thread_id)
-          [scope_key(scope), thread_id]
+          Immutable.copy([scope_key(scope), thread_id])
         end
       end
     end

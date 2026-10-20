@@ -25,9 +25,9 @@ module RubyLLM
       attr_reader :payload
 
       def initialize(interrupt_id:, status:, payload: nil)
-        @interrupt_id = interrupt_id
-        @status = status
-        @payload = payload
+        @interrupt_id = Immutable.copy(interrupt_id)
+        @status = Immutable.copy(status)
+        @payload = Immutable.copy(payload)
         freeze
       end
 

@@ -52,3 +52,15 @@ stuck record; deleting its reservation can repeat unknown tool effects.
 * [Configuration]({% link _getting_started/configuration.md %}) - set the default store.
 * [Rails Integration]({% link _advanced/rails-integration.md %}) - install the durable ActiveRecord store.
 * [Protocol Coverage]({% link _reference/protocol-coverage.md %}) - inspect reconnect events.
+
+
+## Keep Request and Record Values Read-only
+
+Parsed input, run identity, and JSON snapshots are isolated from the objects
+supplied by the caller. Nested strings, arrays, hashes, and parsed SDK message
+models are frozen. Editing them raises `FrozenError`; it cannot change the
+reserved digest or bypass a store revision check. Constructors copy JSON values
+rather than freezing the host's original state. Keep snapshots JSON-compatible.
+
+Create a new input with `Input.parse` for a new request. Use `RunRecord`
+transitions and retain `store.save`'s returned record when updating storage.

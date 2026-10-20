@@ -9,6 +9,28 @@ RSpec.shared_examples 'versioned run storage' do
     store.find(scope: 'actor:1', thread_id: 't', run_id: 'r')
   end
 
+  it 'retains its identity when the caller later edits reservation arguments' do
+    arguments = { scope: +'actor:1', thread_id: +'t', run_id: +'r', digest: +'d' }
+    record = store.reserve(**arguments).record
+    arguments.each_value { |value| value.replace('changed') }
+    expect(stored_record).to have_attributes(scope: 'actor:1', thread_id: 't', run_id: 'r', digest: 'd')
+    expect(store.latest_run(scope: 'actor:1', thread_id: 't')).to have_attributes(run_id: 'r', digest: 'd')
+    expect(record.digest).to eq('d')
+  end
+
+  it 'keeps snapshots and failures isolated from callers and loaded records' do
+    snapshot = { 'items' => ['original'] }
+    failure = { 'code' => +'safe_code', 'message' => +'Safe message' }
+    started = store.save(reserve_record.start(now: Time.now, snapshot: snapshot))
+    finished = store.save(started.finish(:failed, now: Time.now, failure: failure))
+    snapshot['items'] << 'changed'
+    failure['code'].replace('changed')
+    expect(stored_record.snapshot).to eq('items' => ['original'])
+    expect(stored_record.failure['code']).to eq('safe_code')
+    expect { finished.snapshot['items'] << 'changed' }.to raise_error(FrozenError)
+    expect { finished.failure['code'].replace('changed') }.to raise_error(FrozenError)
+  end
+
   it 'rejects an old worker snapshot after another writer finishes' do
     old = store.save(reserve_record.start(now: Time.now))
     store.save(old.finish(:cancelled, now: Time.now))

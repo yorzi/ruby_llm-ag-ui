@@ -72,18 +72,18 @@ module RubyLLM
       # rubocop:disable-next Metrics/ParameterLists -- one keyword per field the record owns
       def initialize(scope:, thread_id:, run_id:, digest:, created_at:, status: RESERVED, sequence: 0,
                      snapshot: nil, interrupts: [], failure: nil, updated_at: nil, revision: 0)
-        @scope = scope
-        @thread_id = thread_id
-        @run_id = run_id
-        @digest = digest
+        @scope = Immutable.copy(scope)
+        @thread_id = Immutable.copy(thread_id)
+        @run_id = Immutable.copy(run_id)
+        @digest = Immutable.copy(digest)
         @status = assert_status!(status)
         @sequence = sequence
         @revision = revision
-        @snapshot = snapshot
-        @interrupts = interrupts.freeze
-        @failure = failure
-        @created_at = created_at
-        @updated_at = updated_at || created_at
+        @snapshot = Immutable.copy(snapshot)
+        @interrupts = Immutable.copy(interrupts)
+        @failure = Immutable.copy(failure)
+        @created_at = Immutable.copy(created_at)
+        @updated_at = Immutable.copy(updated_at || created_at)
         freeze
       end
 
@@ -229,7 +229,7 @@ module RubyLLM
       end
 
       def iso8601(time)
-        time&.utc&.iso8601
+        time&.getutc&.iso8601
       end
 
       def assert_status!(value)

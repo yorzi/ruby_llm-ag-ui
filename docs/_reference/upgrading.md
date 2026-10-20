@@ -27,6 +27,11 @@ into the host chat; reconcile history in your host application.
 `config.protocol_version` remains `"1.0"`. Assigning any other value now raises
 `ConfigurationError` instead of accepting a setting the emitted events ignore.
 
+Nested request and JSON record values are now read-only. In-place edits raise
+`FrozenError`. Build a new input, or use record transitions and `store.save`,
+instead of mutating ids, snapshots, failure hashes, or interrupt values.
+Caller-owned JSON objects remain mutable and do not alias the stored record.
+
 ## Older Releases
 
 Read the [0.3 upgrading guide](https://github.com/yorzi/ruby_llm-ag-ui/blob/v0.3.0/docs/_reference/upgrading.md)

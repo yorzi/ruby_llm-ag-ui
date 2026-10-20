@@ -71,6 +71,7 @@ module RubyLLM
       end
 
       def initialize(attributes)
+        attributes = Immutable.copy(attributes)
         @thread_id = attributes[:thread_id]
         @run_id = attributes[:run_id]
         @parent_run_id = attributes[:parent_run_id]

@@ -14,6 +14,14 @@ RSpec.describe RubyLLM::AgUI::Input do
   end
 
   describe '.parse' do
+    it 'keeps nested input and typed messages consistent with the reserved digest' do
+      input = described_class.parse(minimal.merge('state' => { 'items' => ['original'] }))
+      expect { input.to_h['threadId'].replace('other-thread') }.to raise_error(FrozenError)
+      expect { input.state['items'] << 'changed' }.to raise_error(FrozenError)
+      expect { input.messages.first.content.replace('changed') }.to raise_error(FrozenError)
+      expect(input.digest).to eq(RubyLLM::AgUI::Canonical.digest(input.to_h))
+    end
+
     it 'parses a minimal input and applies schema defaults' do
       input = described_class.parse(json(minimal))
       expect(input.thread_id).to eq('thread-1')

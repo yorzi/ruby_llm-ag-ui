@@ -69,15 +69,15 @@ module RubyLLM
       # rubocop:disable Metrics/ParameterLists -- one keyword per field the value object owns
       def initialize(id:, tool_call_id:, arguments_digest:, expires_at:, reason: REASON_TOOL_CALL,
                      message: nil, status: PENDING, decided_at: nil, created_at: nil)
-        @id = id
-        @tool_call_id = tool_call_id
-        @arguments_digest = arguments_digest
-        @expires_at = expires_at
-        @reason = reason
-        @message = message
+        @id = Immutable.copy(id)
+        @tool_call_id = Immutable.copy(tool_call_id)
+        @arguments_digest = Immutable.copy(arguments_digest)
+        @expires_at = Immutable.copy(expires_at)
+        @reason = Immutable.copy(reason)
+        @message = Immutable.copy(message)
         @status = assert_status!(status)
-        @decided_at = decided_at
-        @created_at = created_at
+        @decided_at = Immutable.copy(decided_at)
+        @created_at = Immutable.copy(created_at)
         freeze
       end
 
@@ -146,7 +146,7 @@ module RubyLLM
           reason: reason,
           message: message,
           tool_call_id: tool_call_id,
-          expires_at: expires_at&.utc&.iso8601
+          expires_at: expires_at&.getutc&.iso8601
         )
       end
 
@@ -194,7 +194,7 @@ module RubyLLM
       private
 
       def iso8601(time)
-        time&.utc&.iso8601
+        time&.getutc&.iso8601
       end
 
       def assert_status!(value)

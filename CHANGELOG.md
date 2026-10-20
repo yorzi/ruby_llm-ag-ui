@@ -15,6 +15,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Reject unsupported `protocol_version` configuration instead of accepting a
   setting that cannot change the producer's fixed 1.0 output.
 
+### Fixed
+
+- Isolate and freeze nested input, identity, interrupt, and JSON record values.
+  Editing caller-owned data cannot mutate memory-store indexes or bypass a
+  record revision; editing published values raises `FrozenError`.
+
 ## [0.3.0] - 2026-10-20
 
 ### Added
