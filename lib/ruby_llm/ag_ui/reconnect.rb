@@ -12,7 +12,7 @@ module RubyLLM
     # What cannot be served this way is a run that has not ended: attaching a
     # second stream to a live run needs a relay the gem does not own, and a
     # silent second stream would duplicate the work. Those are refused.
-    class Reconnect
+    class Reconnect # :nodoc:
       # The failure reported for a run that failed before its sanitized error
       # was recorded — a record from an older release, or one whose write was
       # interrupted.

@@ -9,7 +9,7 @@ module RubyLLM
     # module never does that: it classifies the error by class and returns a
     # fixed, public message. The raw exception goes to the host logger, if the
     # host configured one, and nowhere else.
-    module ErrorSanitizer
+    module ErrorSanitizer # :nodoc:
       # Ordered by specificity. The first ancestor of the error whose name is a
       # key wins, so subclass relationships are respected without loading
       # optional error classes eagerly.

@@ -14,6 +14,17 @@ RSpec.describe RubyLLM::AgUI::Mapper do
     events.each { |event| expect_valid_event(JSON.parse(event.to_json)) }
   end
 
+  describe 'continued tool calls' do
+    it 'keeps the original result but still opens a new provider call' do
+      mapper.continue_tool_calls(['original'])
+      expect(mapper.before_tool_call(tool_call(id: 'original', name: 'lookup'))).to be_empty
+      result = mapper.message(tool_message(content: 'ready', tool_call_id: 'original'))
+      expect(types(result)).to include('TOOL_CALL_RESULT')
+      expect(types(mapper.before_tool_call(tool_call(id: 'new', name: 'lookup')))).to include('TOOL_CALL_START')
+      schema_valid!(result)
+    end
+  end
+
   describe 'identity' do
     it 'exposes the run it is projecting' do
       expect(mapper.thread_id).to eq('thread-1')

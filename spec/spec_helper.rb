@@ -14,7 +14,11 @@ require 'English'
 require 'ruby_llm/ag_ui'
 require 'webmock/rspec'
 
-WebMock.disable_net_connect! unless ENV['RUBY_LLM_LIVE'] == '1'
+if ENV['RUBY_LLM_LIVE'] == '1'
+  WebMock.disable_net_connect!(allow: %r{\Ahttps://openrouter\.ai/api/v1/chat/completions\z})
+else
+  WebMock.disable_net_connect!
+end
 
 Dir[File.join(__dir__, 'support', '**', '*.rb')].each { |file| require file }
 

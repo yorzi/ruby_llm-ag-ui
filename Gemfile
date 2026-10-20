@@ -4,6 +4,9 @@ source 'https://rubygems.org'
 
 gemspec
 
+# Exercise the lower and chosen current RubyLLM versions with separate locks.
+gem 'ruby_llm', ENV.fetch('RUBY_LLM_VERSION', '>= 2.1.0')
+
 group :development, :test do
   gem 'bundler-audit', '~> 0.9', require: false
   gem 'dotenv'

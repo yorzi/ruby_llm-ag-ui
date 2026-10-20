@@ -15,7 +15,7 @@ module RubyLLM
     #
     # An approval answers an interrupt. The host still re-authorizes the actor
     # before the tool executes.
-    class Resume
+    class Resume # :nodoc:
       # One entry's effect: the interrupt it answers and the decision to record.
       Decision = Struct.new(:interrupt, :decision, keyword_init: true)
 

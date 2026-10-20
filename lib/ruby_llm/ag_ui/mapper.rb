@@ -60,6 +60,12 @@ module RubyLLM
         @closed = false
       end
 
+      # Internal resume bookkeeping: these calls were already reported by the
+      # interrupted run. Only their result and progress belong to this run.
+      def continue_tool_calls(ids) # :nodoc:
+        @continued_tool_call_ids = ids.dup.freeze
+      end
+
       # One streamed Chunk from Chat#complete.
       def chunk(chunk)
         return [] if @closed
@@ -185,6 +191,8 @@ module RubyLLM
         return [] if tool_calls.nil? || tool_calls.empty?
 
         tool_calls.flat_map do |key, tool_call|
+          next [] if @continued_tool_call_ids&.include?(tool_call.id)
+
           record = track(key, tool_call, streamed: streamed)
           open_tool_call(record) + argument_events(record, tool_call, streamed: streamed)
         end

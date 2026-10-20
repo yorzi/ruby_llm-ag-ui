@@ -38,17 +38,44 @@ RSpec.describe RubyLLM::AgUI::Run do
 
   describe 'against a live provider' do
     before do
-      skip 'set RUBY_LLM_LIVE=1 (and a provider key) to run the live checks' unless ENV['RUBY_LLM_LIVE'] == '1'
+      skip 'set RUBY_LLM_LIVE=1 and OPENROUTER_API_KEY for bounded live checks' unless ENV['RUBY_LLM_LIVE'] == '1'
     end
 
-    let(:model) { ENV.fetch('RUBY_LLM_LIVE_MODEL', 'gpt-4o-mini') }
-    let(:chat) { RubyLLM::Chat.new(model: model).add_message(role: :user, content: prompt) }
+    let(:chat) { LiveHarness.chat(prompt: prompt) }
 
     it 'streams one real turn as a valid, successful AG-UI run' do
       expect(run.stream(to: sse)).to be_succeeded
       expect(event_types(sse)).to include('RUN_STARTED', 'TEXT_MESSAGE_START', 'TEXT_MESSAGE_END', 'RUN_FINISHED')
       expect(event_types(sse).last).to eq('RUN_FINISHED')
       decode_sse(sse).each { |event| expect_valid_event(event) }
+    end
+
+    it 'approves the original synthetic tool and reconnects without running it again' do
+      tool = LiveHarness::FixtureLookup.new
+      provider_chat = LiveHarness.chat(prompt: 'Call fixture_lookup with value ready, then say ready.', tool: tool)
+      store = RubyLLM::AgUI::Store::MemoryStore.new
+      first = stream(provider_chat, input, store, sse)
+      expect(first).to be_interrupted
+      expect(tool.calls).to eq(0)
+      call = decode_sse(sse).find { |event| event['type'] == 'TOOL_CALL_START' }
+      resumed_input = RubyLLM::AgUI::Input.parse(input.to_h.merge(
+                                                   'runId' => "#{input.run_id}-resume",
+                                                   'resume' => [{ 'interruptId' => first.interrupts.first.id,
+                                                                  'status' => 'resolved' }]
+                                                 ))
+      output = StringIO.new
+      expect(stream(provider_chat, resumed_input, store, output)).to be_succeeded
+      events = decode_sse(output)
+      expect(events.find { |event| event['type'] == 'TOOL_CALL_RESULT' }['toolCallId']).to eq(call['toolCallId'])
+      expect(events.map { |event| event['type'] }).not_to include('TOOL_CALL_START')
+      expect(output.string).not_to include('fixture-secret')
+      events.each { |event| expect_valid_event(event) }
+      expect(stream(provider_chat, resumed_input, store, StringIO.new)).to be_succeeded
+      expect(tool.calls).to eq(1)
+    end
+
+    def stream(chat, parsed_input, store, output)
+      RubyLLM::AgUI::Run.new(chat: chat, input: parsed_input, scope: 'live:actor-1', store: store).stream(to: output)
     end
   end
 end

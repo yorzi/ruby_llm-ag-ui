@@ -11,7 +11,8 @@ description: Browse RDoc pages generated from classes and methods in the gem sou
 {{ page.description }}
 {: .fs-6 .fw-300 }
 
-The [API reference]({{ '/api/' | relative_url }}) opens on the `RubyLLM` module. The generated pages follow the RDoc comments in `lib/`.
+Read the [Public API Contract]({% link _reference/public-api.md %}) before
+depending on a class. The [API reference]({{ '/api/' | relative_url }}) opens on the `RubyLLM` module. The generated pages follow the RDoc comments in `lib/`.
 
 | Build with | Reference |
 | --- | --- |

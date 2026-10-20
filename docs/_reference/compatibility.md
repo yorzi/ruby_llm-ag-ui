@@ -24,7 +24,7 @@ dependency does.
 | Component | Range | Evidence |
 |---|---|---|
 | Ruby | `>= 3.2` | Recorded 0.3 CI passes on 3.2.11, 3.3.12, and 3.4.11 |
-| RubyLLM | `>= 2.1`, `< 3.0` | 2.1.1 (callback, approval and cancellation behavior read from its source) |
+| RubyLLM | `>= 2.1`, `< 3.0` | 2.1.0 and 2.1.1 pass the local 0.4 offline suite; the recorded live session uses 2.1.1 |
 | `ag-ui-protocol` | `~> 0.2.0` | 0.2.0 |
 | JSON | `>= 2.0`, `< 3` | 2.21.2 passes both Rails lines; JSON 3 removes the `quirks_mode` option used by Rails 8.0 |
 | Rails (adapter only) | `railties`, `actionpack`, `activerecord` `>= 8.0` | Recorded 0.3 CI passes on 8.0.5.1 and 8.1.4 with Ruby 3.3/3.4 |
@@ -53,6 +53,42 @@ adapter is only loaded when `Rails::Railtie` is already defined.
 | `ruby_llm-ag_ui` installs outside the checkout | `bin/verify-package` resolves dependencies in a fresh gem home and loads the packaged core |
 
 The RSpec suite runs offline with fakes and no provider credentials. Package verification uses the network only to install dependencies, then runs its core and Rails checks without a provider. Its advisory check includes the actual default-library gem versions activated by the isolated core install.
+
+## Local 0.4 Development Verification
+
+On 2026-10-21, the candidate passes 294 offline examples with zero failures
+and two opt-in provider checks skipped. Separate runs use RubyLLM 2.1.0 and
+2.1.1 on Ruby 3.3.5 with Rails 8.1.4 and JSON 2.21.2. CI now defines both
+RubyLLM versions across Ruby 3.2/3.3/3.4 and Rails 8.0/8.1; a configured matrix
+is not a recorded pass until its run completes.
+
+The maintained client passes 18 workflows and validates all 242 consumed
+events. Approval assertions inspect the official client's messages as well as
+the wire: one original call, one associated result, no duplicate visible text
+after reconnect. The fixture now fires the same resumed before-tool callback
+as a real RubyLLM chat. Installed-host and generated Rails model checks pass.
+
+### Recorded Live Provider Session
+
+The 2026-10-21 local session uses OpenRouter with `openai/gpt-4.1-mini`,
+RubyLLM 2.1.1, and Ruby 3.3.5. Both live examples pass: streamed text, then a
+synthetic tool approval/resume with its original call id, redaction, and completed
+resume reconnect. The tool is not executed before approval and executes once
+after it. The same command includes one offline harness example, for three
+examples total with zero failures. It verifies the gem's Ruby path, not a live
+provider session through the browser or a deployed Rails application.
+
+This session first exposed duplicate tool-call starts on a real resume.
+An intercepted-HTTP real-chat test reproduces that defect before the fix and
+passes afterward. Text, tool results, and approval are live evidence for this
+route and model only. Live cancellation, timeout timing, network loss, denial,
+and other providers remain unverified. Follow
+[Provider Verification]({% link _advanced/provider-verification.md %}) to reproduce.
+
+The checked current `ag-ui-protocol` remains 0.2.0. Its missing cancelled
+outcome and `RUN_STARTED.protocolVersion` still require the local protocol
+shims. Their encoded events pass the pinned schema checks; no workaround is
+removed solely because a new version was expected.
 
 ## Local 0.3 Development Verification
 
@@ -134,12 +170,12 @@ checks after download.
 - **Other clients or versions.** CopilotKit and client versions other than the
   recorded `@ag-ui/client` version have not been verified. Schema conformance
   does not establish that every UI renders the events correctly.
-- **Live providers.** `spec/live/live_run_spec.rb` is the opt-in check
-  (`RUBY_LLM_LIVE=1`, plus a provider key); its provider context is skipped in the default suite. The same run setup
-  is exercised separately with an offline chat. Provider behavior in 2.1.1 is derived from its source, not from a recorded
-  session.
+- **Other live paths.** Only the recorded OpenRouter model's text and approval
+  workflow is verified live. Browser provider sessions, other providers,
+  cancellation timing, timeouts, and network-loss recovery need separate evidence.
 - **Every RubyLLM patch release in the `>= 2.1, < 3.0` range.** The upper bound
-  is enforced by the gemspec; the verified version is 2.1.1.
+  is a dependency resolver bound; verified versions are 2.1.0 and 2.1.1. Future
+  2.x releases need the same checks before a compatibility claim.
 - **Rails versions before 8.0.** The adapter uses `Rails.setup!` and an
   initializer, and its specs run on 8.0/8.1. It may work on 7.2 and it is not
   tested there.

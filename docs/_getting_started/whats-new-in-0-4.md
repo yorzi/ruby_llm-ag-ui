@@ -34,6 +34,23 @@ Changing a caller's original state cannot change a stored snapshot or identity.
 Use new inputs and record transitions instead of editing nested values. See
 [Reconnects]({% link _core_features/reconnects.md %}).
 
+The [Public API Contract]({% link _reference/public-api.md %}) identifies
+application and custom-store APIs and separates orchestration internals.
+
+## Associate Resumed Tool Results Once
+
+Real RubyLLM approval resumes now emit the result of the original call without
+repeating its start and arguments. The offline real-chat and opt-in provider
+checks use the same harness. See
+[Approval and Resume]({% link _core_features/approval-and-resume.md %}).
+
+## Verify the Provider Separately
+
+The opt-in harness checks OpenRouter text and a synthetic approval/resume
+without external business effects. The same real RubyLLM chat setup has offline
+HTTP tests. See [Provider Verification]({% link _advanced/provider-verification.md %})
+for credential handling, request limits, and the scope of the results.
+
 Version 0.4 is in development. Read
 [Compatibility]({% link _reference/compatibility.md %}) for recorded results
 and limits; an intended matrix is not a completed verification.

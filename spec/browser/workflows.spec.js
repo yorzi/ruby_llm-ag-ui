@@ -56,8 +56,14 @@ for (const backend of ['core', 'rails']) {
     expect(JSON.stringify(events)).not.toContain('fixture-secret');
     expect(events.find((e) => e.type === 'TOOL_CALL_RESULT').toolCallId)
       .toBe(events.find((e) => e.type === 'TOOL_CALL_START').toolCallId);
+    const originalCall = events.find((e) => e.type === 'TOOL_CALL_START').toolCallId;
+    const messages = await page.evaluate(() => window.demo.messages);
+    expect(messages.flatMap((m) => m.toolCalls || []).filter((c) => c.id === originalCall)).toHaveLength(1);
+    expect(messages.filter((m) => m.role === 'tool' && m.toolCallId === originalCall)).toHaveLength(1);
+    const visibleBeforeReplay = await page.locator('#messages').textContent();
     await page.getByRole('button', { name: 'Reconnect completed run' }).click();
     await expect(page.locator('#status')).toHaveText('reconnected: success');
+    expect(await page.locator('#messages').textContent()).toBe(visibleBeforeReplay);
     expect((await stats(page, request)).effects).toBe(1);
     await page.getByRole('button', { name: 'Run turn', exact: true }).click();
     await expect(page.locator('#status')).toHaveText('success');

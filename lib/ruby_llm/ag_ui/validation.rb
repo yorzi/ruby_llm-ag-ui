@@ -9,7 +9,7 @@ module RubyLLM
     # the client without echoing request bytes back.
     #
     # Included by RubyLLM::AgUI::Input::Parser and RubyLLM::AgUI::MessageParser.
-    module Validation
+    module Validation # :nodoc:
       # The longest accepted id (threadId, runId, message id, interrupt id).
       MAX_ID_LENGTH = 255
 

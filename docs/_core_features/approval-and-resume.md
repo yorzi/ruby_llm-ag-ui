@@ -60,3 +60,12 @@ The interrupt must still be pending and unexpired. The tool call id and argument
 * [Streaming Runs]({% link _core_features/streaming-runs.md %}) - follow the event and outcome sequence.
 * [Reconnects and Run Identity]({% link _core_features/reconnects.md %}) - understand stored run identity.
 * [Security and Deployment]({% link _advanced/security-and-deployment.md %}) - keep approval separate from authorization.
+
+
+## Keep the Original Tool Call
+
+RubyLLM fires its before-tool callback when an approved call executes. The
+resume run does not repeat the original `TOOL_CALL_START`, arguments, or end.
+Its `TOOL_CALL_RESULT` uses the original `toolCallId`. A later new tool call
+still emits its own start and arguments. Keep the client conversation across
+both runs so the result can attach to the call shown before the interrupt.

@@ -9,7 +9,7 @@ module RubyLLM
     # gem never trusts a client message as a system instruction or a tool
     # result. This parser only guarantees the shapes the pinned schema defines,
     # so a mismatch is a clear InputError instead of a downstream surprise.
-    class MessageParser
+    class MessageParser # :nodoc:
       include Validation
 
       # The roles the pinned schema defines.

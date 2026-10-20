@@ -14,7 +14,7 @@ module RubyLLM
     # The emitter decides nothing about the outcome and executes nothing. What it
     # owns is the one ordering rule a caller should never have to remember: a
     # run's open text, tool calls and step are closed before the terminal event.
-    class Emitter
+    class Emitter # :nodoc:
       # The run record, including the sequence numbers written so far.
       attr_reader :record
 

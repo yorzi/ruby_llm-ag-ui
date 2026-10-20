@@ -108,5 +108,5 @@ byId('reconnect').onclick = async () => {
   } catch (error) { status(`error: ${error.message}`); }
   finally { setBusy(false); }
 };
-window.demo = { get events() { return events; }, get threadId() { return threadId; }, get input() { return lastInput; } };
+window.demo = { get messages() { return agent.messages; }, get events() { return events; }, get threadId() { return threadId; }, get input() { return lastInput; } };
 reset();

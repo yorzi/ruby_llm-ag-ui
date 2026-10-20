@@ -119,7 +119,7 @@ module RubyLLM
       #
       # Kept separate from Input so the value object stays immutable and every
       # failure message stays in one place.
-      class Parser
+      class Parser # :nodoc:
         include Validation
 
         MAX_NESTING = 32
@@ -247,7 +247,7 @@ module RubyLLM
 
       # Builds the composite members of a RunAgentInput: the client tool
       # definitions, the context entries and the resume entries.
-      class PartBuilder
+      class PartBuilder # :nodoc:
         include Validation
 
         def tools(values)

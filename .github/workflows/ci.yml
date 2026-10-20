@@ -12,6 +12,9 @@ jobs:
       fail-fast: false
       matrix:
         ruby: ['3.2', '3.3', '3.4']
+        ruby_llm: ['2.1.0', '2.1.1']
+    env:
+      RUBY_LLM_VERSION: ${{ matrix.ruby_llm }}
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
@@ -28,8 +31,10 @@ jobs:
       matrix:
         ruby: ['3.3', '3.4']
         rails: ['~> 8.0.0', '~> 8.1.0']
+        ruby_llm: ['2.1.0', '2.1.1']
     env:
       RAILS_VERSION: ${{ matrix.rails }}
+      RUBY_LLM_VERSION: ${{ matrix.ruby_llm }}
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1

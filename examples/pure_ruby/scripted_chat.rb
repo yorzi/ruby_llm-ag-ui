@@ -81,6 +81,7 @@ class ScriptedChat
   # answer that follows from it.
   def finish_the_answer
     if @decisions[TOOL_CALL.id] == :approved
+      fire(:before_tool_call, TOOL_CALL)
       tool_message('Order 42 cancelled.')
       stream_chunk('Order 42 is cancelled.')
       assistant_message('Order 42 is cancelled.')

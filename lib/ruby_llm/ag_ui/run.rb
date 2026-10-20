@@ -102,6 +102,7 @@ module RubyLLM
 
       def start_execution(record, to)
         @mapper = build_mapper(record)
+        @mapper.continue_tool_calls(@chat.pending_approvals.map(&:id)) if resume.needed?
         @emitter = build_emitter(record, to, mapper: @mapper)
         @emitter.start(run_started_event(record), state: @state)
       end

@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.4.0] - Unreleased
 
+### Added
+
+- A proposed public application and custom-store contract, with orchestration
+  internals excluded from generated API documentation.
+- Explicit RubyLLM 2.1.0 and 2.1.1 CI matrices, and a shared intercepted/live
+  OpenRouter harness for text, approval, result association, and reconnect.
+- Client-state assertions for one original tool call and one associated result.
+
 ### Changed
 
 - Remove the unused `allow_client_history` configuration and diagnostic key.
@@ -16,6 +24,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   setting that cannot change the producer's fixed 1.0 output.
 
 ### Fixed
+
+- Resume real RubyLLM approval without repeating the original tool-call start
+  and arguments. Its result keeps the original call id; new calls still stream.
 
 - Isolate and freeze nested input, identity, interrupt, and JSON record values.
   Editing caller-owned data cannot mutate memory-store indexes or bypass a
