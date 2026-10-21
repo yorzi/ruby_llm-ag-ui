@@ -99,8 +99,8 @@ module RubyLLM
         @tools.filter_map { |tool| tool['name'] }
       end
 
-      # Whether the client supplied tool definitions. The first release never
-      # grants them; a run reports them and stops.
+      # Whether the client supplied tool definitions. Informational only: the
+      # gem never registers a client tool on the host's chat.
       def client_tools?
         !@tools.empty?
       end

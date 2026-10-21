@@ -96,7 +96,8 @@ module RubyLLM
         :custom
       end
 
-      # The run store, or nil when the host has not configured one.
+      # The configured run store. Raises ConfigurationError when the host has
+      # not configured one.
       def run_store!
         @run_store || raise(ConfigurationError, 'No run_store is configured. ' \
                                                 'Set RubyLLM::AgUI.config.run_store or pass store: to Run.new.')
