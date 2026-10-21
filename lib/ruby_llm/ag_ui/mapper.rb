@@ -47,12 +47,12 @@ module RubyLLM
         @run_id = run_id
         @redact = redact || RubyLLM::AgUI.config.redact
         @logger = logger || RubyLLM::AgUI.config.logger
-        @message_count = 0
-        @step_count = 0
+        @message_count = @step_count = 0
         @open_text_id = nil
         @last_message_id = nil
         @text_emitted = false
         @calls = {}
+        end_stream_keys
         @completed_tools = {}
         @open_step = nil
         @step_kind = nil
@@ -182,6 +182,7 @@ module RubyLLM
         events.concat(close_step)
         @last_message_id = nil
         @text_emitted = false
+        end_stream_keys
         events
       end
 
@@ -200,17 +201,36 @@ module RubyLLM
 
       # The record for one tool call, created on first sight.
       #
-      # A streamed delta is keyed by index and carries the id only on its first
-      # fragment; the complete message is keyed by id. Both keys point at the
-      # same record, so the call is opened once.
+      # A streamed delta is keyed by its provider stream index and carries the
+      # id only on its first fragment; the complete message is keyed by id. Both
+      # keys point at the same record, so the call is opened once. Providers
+      # restart stream indexes in every response, so an index names a call only
+      # until its completion ends. An unkeyed fragment continues the latest
+      # streamed call, as RubyLLM's own accumulator does.
       def track(key, tool_call, streamed:)
-        record = @calls[key] || find_call(tool_call.id) || new_call
+        record = lookup_call(key, tool_call, streamed: streamed)
         record[:id] ||= tool_call.id
         record[:name] ||= tool_call.name
         record[:streamed] ||= streamed
-        @calls[key] = record
+        remember_stream_call(key, record) if streamed
         @calls[record[:id]] = record if record[:id]
         record
+      end
+
+      def lookup_call(key, tool_call, streamed:)
+        (streamed && stream_call(key)) || find_call(tool_call.id) || new_call
+      end
+
+      def stream_call(key) = key.nil? ? @latest_stream_call : @stream_calls[key]
+
+      def remember_stream_call(key, record)
+        @stream_calls[key] = record unless key.nil?
+        @latest_stream_call = record
+      end
+
+      def end_stream_keys
+        @stream_calls = {}
+        @latest_stream_call = nil
       end
 
       def new_call

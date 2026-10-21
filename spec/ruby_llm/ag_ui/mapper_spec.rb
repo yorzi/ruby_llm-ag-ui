@@ -255,6 +255,33 @@ RSpec.describe RubyLLM::AgUI::Mapper do
       )
       schema_valid!(events)
     end
+
+    it 'opens a later round call that reuses the stream index of an earlier one' do
+      first = tool_call(id: 'call_1', name: 'search', arguments: { 'q' => 'ruby' })
+      second = tool_call(id: 'call_2', name: 'search', arguments: { 'q' => 'rails' })
+      mapper.chunk(chunk(tool_calls: streamed_tool_calls(id: 'call_1', name: 'search', arguments: '{"q":"ruby"}')))
+      mapper.message(assistant_message(tool_calls: { 'call_1' => first }))
+      mapper.before_tool_call(first)
+      mapper.message(tool_message(content: 'done', tool_call_id: 'call_1'))
+
+      events = mapper.chunk(chunk(tool_calls: streamed_tool_calls(id: 'call_2', name: 'search', arguments: '')))
+      events.concat(mapper.chunk(chunk(tool_calls: streamed_tool_calls(arguments: '{"q":"rails"}'))))
+      events.concat(mapper.message(assistant_message(tool_calls: { 'call_2' => second })))
+      events.concat(mapper.before_tool_call(second))
+
+      expect(types(events)).to eq(%w[STEP_FINISHED STEP_STARTED TOOL_CALL_START TOOL_CALL_ARGS TOOL_CALL_END
+                                     STEP_FINISHED])
+      expect(events.filter_map { |e| e.tool_call_id if e.respond_to?(:tool_call_id) }.uniq).to eq(['call_2'])
+      schema_valid!(events)
+    end
+
+    it 'attaches an unkeyed fragment to the latest streamed call' do
+      events = mapper.chunk(chunk(tool_calls: streamed_tool_calls(id: 'call_1', name: 'search', arguments: '{"q":')))
+      events.concat(mapper.chunk(chunk(tool_calls: { nil => tool_call(id: nil, name: nil, arguments: '"ruby"}') })))
+
+      expect(events.select { |e| e.type == 'TOOL_CALL_ARGS' }.map { |e| [e.tool_call_id, e.delta] })
+        .to eq([%w[call_1 {"q":], %w[call_1 "ruby"}]])
+    end
   end
 
   describe 'a closed mapper (a second turn on the same chat)' do
