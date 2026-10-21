@@ -16,6 +16,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Open each streamed tool call of a later tool round in the same turn. Providers
   restart stream indexes in every response, so a second round's arguments were
   sent to the first round's ended call before the new call opened.
+- Send streamed tool arguments that concatenate to valid JSON for Anthropic,
+  Bedrock, and Gemini. The empty input object that opens an Anthropic or
+  Bedrock call is no longer sent before its partial JSON, and a whole Gemini
+  call is serialized as JSON instead of Ruby `Hash#to_s` output.
 - Defer loading `ActiveRecord::Base` until the host uses the durable store.
   Requiring the gem during a Rails boot no longer loads Active Record before
   the application's configuration.

@@ -211,7 +211,6 @@ module RubyLLM
         record = lookup_call(key, tool_call, streamed: streamed)
         record[:id] ||= tool_call.id
         record[:name] ||= tool_call.name
-        record[:streamed] ||= streamed
         remember_stream_call(key, record) if streamed
         @calls[record[:id]] = record if record[:id]
         record
@@ -234,7 +233,7 @@ module RubyLLM
       end
 
       def new_call
-        { id: nil, name: nil, streamed: false, args_emitted: false, started: false, closed: false, buffered: nil }
+        { id: nil, name: nil, args_emitted: false, started: false, closed: false, buffered: nil }
       end
 
       def find_call(id)
@@ -280,19 +279,29 @@ module RubyLLM
       # A streamed chunk carries a fragment of the provider's own argument bytes
       # and goes out unchanged. A complete message carries the Hash RubyLLM
       # reconstructed from those bytes, so it is serialized once and only when
-      # the stream did not already deliver the fragments.
+      # the stream delivered no argument bytes for the call.
       def argument_delta(record, tool_call, streamed:)
-        return streamed_delta(tool_call) if streamed
-        return nil if record[:streamed] || record[:args_emitted]
+        delta = streamed ? streamed_delta(tool_call) : complete_delta(record, tool_call)
+        record[:args_emitted] = true unless delta.nil? || delta.empty?
+        delta
+      end
 
-        record[:args_emitted] = true
+      # Like RubyLLM's stream accumulator, an empty value carries no bytes:
+      # Anthropic and Bedrock open a call with an empty input object before
+      # streaming its partial JSON. Gemini streams a whole call as a parsed
+      # object, which is serialized as JSON.
+      def streamed_delta(tool_call)
         arguments = tool_call.arguments
+        return nil if arguments.nil? || (arguments.respond_to?(:empty?) && arguments.empty?)
+
         arguments.is_a?(String) ? arguments : Canonical.dump(arguments)
       end
 
-      def streamed_delta(tool_call)
+      def complete_delta(record, tool_call)
+        return nil if record[:args_emitted]
+
         arguments = tool_call.arguments
-        arguments.is_a?(String) ? arguments : arguments.to_s
+        arguments.is_a?(String) ? arguments : Canonical.dump(arguments)
       end
 
       def close_tool_calls

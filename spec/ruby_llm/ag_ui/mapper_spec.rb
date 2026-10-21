@@ -119,6 +119,34 @@ RSpec.describe RubyLLM::AgUI::Mapper do
       schema_valid!(events)
     end
 
+    it 'skips the empty input object a call opens with before partial JSON' do
+      opening = { 0 => tool_call(id: 'toolu_1', name: 'search', arguments: {}) }
+      events = mapper.chunk(chunk(tool_calls: opening))
+      events.concat(mapper.chunk(chunk(tool_calls: streamed_tool_calls(arguments: '{"q":"ruby"}'))))
+
+      expect(events.select { |e| e.type == 'TOOL_CALL_ARGS' }.map(&:delta)).to eq(['{"q":"ruby"}'])
+    end
+
+    it 'sends the complete arguments once when the stream sent no argument bytes' do
+      opening = { 0 => tool_call(id: 'toolu_1', name: 'ping', arguments: {}) }
+      events = mapper.chunk(chunk(tool_calls: opening))
+      events.concat(mapper.message(
+                      assistant_message(tool_calls: { 'toolu_1' => tool_call(id: 'toolu_1', name: 'ping') })
+                    ))
+      events.concat(mapper.before_tool_call(tool_call(id: 'toolu_1', name: 'ping')))
+
+      expect(types(events)).to eq(%w[STEP_STARTED TOOL_CALL_START TOOL_CALL_ARGS TOOL_CALL_END STEP_FINISHED])
+      expect(events.find { |e| e.type == 'TOOL_CALL_ARGS' }.delta).to eq('{}')
+    end
+
+    it 'serializes arguments a stream delivers as a parsed object' do
+      whole = { 'call_1' => tool_call(id: 'call_1', name: 'search', arguments: { 'q' => 'ruby' }) }
+      events = mapper.chunk(chunk(tool_calls: whole))
+
+      expect(events.select { |e| e.type == 'TOOL_CALL_ARGS' }.map(&:delta)).to eq(['{"q":"ruby"}'])
+      schema_valid!(events)
+    end
+
     it 'closes an open text message before the tool call starts' do
       events = mapper.chunk(chunk(content: 'Let me look'))
       later = streamed_tool_calls(id: 'call_1', name: 'search', arguments: '{}')
