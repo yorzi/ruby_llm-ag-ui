@@ -1,9 +1,9 @@
 # Roadmap to 1.0
 
-Sequence reviewed on 2026-10-21. Versions 0.2 and 0.3 are published. The
-0.4 candidate has recorded verification; later releases remain targets rather
-than promised dates. Keep one release in progress. Split or drop optional work when it delays
-the release's main outcome; use patch releases for fixes.
+Sequence reviewed on 2026-10-21. Versions 0.2, 0.3, and 0.4 are published.
+Later releases remain targets rather than promised dates. Keep one release in
+progress. Split or drop optional work when it delays the release's main outcome;
+use patch releases for fixes.
 
 ## What 1.0 means
 
@@ -48,7 +48,7 @@ behavior they describe; future features stay out of the changelog until built.
 | --- | --- | --- |
 | **0.2.0 (released)** | A real client example and opt-in tool progress | A pinned client consumes the demo; progress is ordered, redacted, and schema-valid. |
 | **0.3.0 (released)** | Reliable lifecycle and durable runs | Disconnect, cancellation, worker loss, and competing requests have tested, documented outcomes. |
-| **0.4.0 (release prepared)** | Compatibility and API stabilization | The proposed 1.0 support matrix and public API pass end-to-end verification. |
+| **0.4.0 (released)** | Compatibility and API stabilization | The proposed 1.0 support matrix and public API pass end-to-end verification. |
 | **1.0.0.rc.1** | Release rehearsal | A fresh application uses the packaged candidate without checkout-only files or undocumented setup. |
 | **1.0.0** | Stable integration contract | All release conditions below pass; no known blocker remains. |
 
@@ -137,8 +137,12 @@ fresh core/Rails, advisory, browser, and docs checks pass separately. See
 [Compatibility](docs/_reference/compatibility.md) for versions and limits.
 Release acceptance adds reconnect record consistency, real-chat denial, and
 installed-artifact result association. The 296-example suite, 17-job matrix,
-and rerun live text/approval checks pass. Publication is the remaining step;
-no public 0.4 artifact is claimed yet.
+and rerun live text/approval checks pass.
+[0.4.0](https://github.com/yorzi/ruby_llm-ag-ui/releases/tag/v0.4.0) is published
+on 2026-10-21. The actual GitHub and RubyGems downloads match, all 66 packaged
+files match the tag, and the downloaded artifact passes installed-host and
+fresh core/Rails checks. Stable and Next documentation pass HTTP and browser
+checks, including the version selector.
 
 ### 1.0.0.rc.1: release rehearsal
 
@@ -176,7 +180,9 @@ host need fits this gem's integration boundary.
 
 ## Next action
 
-Prepare the 0.4.0 release through the package, tag, publication, and stable-docs
-checks in the [release guide](docs/_reference/releasing.md). Then rehearse the
-1.0 release candidate in fresh applications and review the release conditions.
-The proposed API is documented; a 1.0 stability promise still needs that rehearsal.
+Rehearse `1.0.0.rc.1` in fresh plain Ruby and Rails applications using the
+published 0.4.0 artifact as the upgrade baseline. Record each 1.0 condition's
+acceptance command, result, and remaining gap. Verify the documented client and
+provider paths and upgrade steps before preparing the candidate. Keep features
+frozen; fix any blocker and repeat the affected checks. The proposed API is
+documented; a 1.0 stability promise still needs that rehearsal and review.

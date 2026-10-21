@@ -1,8 +1,11 @@
-# 0.4.0 development candidate
+# 0.4.0 validation
 
-2026-10-21, macOS arm64. Baseline `bdad5fb`; implementation commits `d29d303`,
-`2678e5e`, and `14b3c15`. Version 0.4 is unreleased. No tag, RubyGems upload,
-or public 0.4 download is claimed.
+The candidate evidence below records the pre-publication state. Release
+acceptance and public artifact verification follow it, with separate commits
+and hashes.
+
+Candidate: 2026-10-21, macOS arm64. Baseline `bdad5fb`; implementation commits
+`d29d303`, `2678e5e`, and `14b3c15`. No public download was available at that stage.
 
 ## Changes and regression evidence
 
@@ -69,3 +72,66 @@ Logs, screenshots, the temporary minimum-version bundle, and gems stay under
 ignored `tmp/` and `pkg/`. Browser screenshots are under
 `tmp/browser/2026-10-20T23-28-15-214Z-7197/`. The browser runner stops its
 loopback server and browser on exit; no preview service needs to remain running.
+
+## Release acceptance
+
+Acceptance commit `e09b81b` adds two regressions: a completed reconnect exposes
+the same observed record through `Run#stream` and `Run#record`, and a real
+RubyLLM chat denies an interrupted tool without executing it. The record test
+fails before the fix. Reconnect and public API guides change with that fix.
+The installed-host probe now checks that resume emits one result for the
+original call without another tool-call start, on both endpoints.
+
+- `bin/check --package`: 296 examples, zero failures, two opt-in provider skips;
+  95 Ruby files without lint offenses. Focused minimum/current RubyLLM runs pass.
+- `bin/check-browser`: 18 workflows, 242 schema-valid events. Desktop approval
+  progress and 390px Rails denial screenshots inspected under
+  `tmp/browser/2026-10-21T00-01-09-075Z-17947/`.
+- The release-code live rerun passes two OpenRouter text/approval cases plus
+  one offline harness case. Denial is intercepted-HTTP evidence, not live evidence.
+- [Acceptance CI](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39518735488)
+  and [tag-source CI](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39518971268)
+  each pass all 17 jobs. The latter runs at `23d9020`.
+
+## Published artifact and documentation
+
+Published on 2026-10-21. Annotated tag `v0.4.0` resolves to
+`23d9020ffc34377f7e3e0c393c3baff217b36359`.
+[Release Gem](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39519175592)
+passes verification and trusted publication. The
+[GitHub Release](https://github.com/yorzi/ruby_llm-ag-ui/releases/tag/v0.4.0)
+and [RubyGems version](https://rubygems.org/gems/ruby_llm-ag_ui/versions/0.4.0)
+are available.
+
+The verification job built `c9ee3ff728526996c2a48ae0720506b911fc0affb678de6c850b8679aeba7634`.
+The publish job rebuilt the gem. The actual public gem has a different hash:
+
+```text
+SHA256=e98b51b3c3465af99ed894cb94689a16cbdb31107a92d7203250d454cdb4ddb8
+```
+
+The actual GitHub and RubyGems downloads are byte-identical. RubyGems metadata,
+GitHub asset digest, and `SHA256SUMS` agree. The packaged manifest contains 66
+files and every file matches the tag byte for byte. This establishes source
+contents, not reproducibility of independently built gem archives.
+
+The downloaded artifact, without rebuilding, passes both installed endpoints,
+generated RubyLLM models, scoped chat persistence, and approval/progress/reconnect.
+It independently passes a fresh core install, activated dependency audit, and
+Rails 8.1.4 generator and migration up/down. Clean evidence:
+`/var/folders/lg/2wcb539s3x79yz10zq8ltv1m0000gn/T/ag-ui-package-20261021-19953-8sfl4j`.
+The audit uses the 1,266-advisory database at
+`5fd86bbd406995ea4ed2df84651b209e28072031`, with no findings.
+
+[Stable Docs](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39519565224)
+checks 8,748 links in 140 pages with zero errors and deploys successfully.
+Fifteen actual HTTP content checks pass, including stable/Next installation
+commands, upgrade and feature guides, generated API pages, and `llms.txt`.
+A fresh Chrome session verifies stable 0.4.0 and the version menu's Next link;
+`tmp/releases/v0.4.0/stable-docs.png` is visually inspected. The browser closes
+on exit. All public check logs and downloaded artifacts remain ignored under
+`tmp/releases/v0.4.0/` and `tmp/validation/`.
+
+The next planned version is `1.0.0.rc.1`. Rehearse fresh applications and the
+0.4 upgrade path, then review each 1.0 acceptance condition. Publication does
+not establish live denial, cancellation, other providers, or non-SQLite stores.

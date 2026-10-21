@@ -71,6 +71,23 @@ The browser suite again passes 18 workflows and validates all 242 consumed
 events. Desktop approval progress and 390px mobile denial screenshots were
 inspected. The earlier candidate record below retains its own commit and counts.
 
+### Published 0.4.0 Artifact
+
+The [tag-source CI](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39518971268)
+passes all 17 jobs at `23d9020`. The
+[0.4.0 release workflow](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39519175592)
+passes its offline, browser, advisory, installed-host, and clean-install checks.
+The actual GitHub and RubyGems downloads have matching SHA-256 hashes, including
+the release checksum and RubyGems metadata. All 66 packaged files match the tag.
+The downloaded artifact independently passes both installed endpoints and fresh
+core, activated-dependency audit, and Rails generator migration up/down checks.
+
+The [stable documentation deployment](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39519565224)
+passes. HTTP checks verify the stable guides, generated API, release history,
+and stable/Next installation commands and `llms.txt`. A fresh browser session
+shows 0.4.0 and switches to Next through the version menu; its screenshot was
+inspected. Publication checks do not expand the provider or database claims below.
+
 ## Local 0.4 Development Verification
 
 On 2026-10-21, the candidate passes 294 offline examples with zero failures
