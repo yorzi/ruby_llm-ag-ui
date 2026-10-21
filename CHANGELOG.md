@@ -16,6 +16,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the application's configuration.
 - Accept a redaction policy object that defines only `#call`, instead of
   failing the run when a tool result or progress update is redacted.
+- Refuse input with text that is not UTF-8, or a number JSON cannot represent,
+  as `MalformedInputError` (400) instead of raising `JSON::GeneratorError`.
 
 ## [0.4.0] - 2026-10-21
 

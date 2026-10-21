@@ -133,10 +133,15 @@ module RubyLLM
           @parts = PartBuilder.new
         end
 
+        # The digest re-encodes the accepted values, so text that is not UTF-8
+        # or a number that overflowed to Infinity is refused here as malformed
+        # input rather than escaping as an encoder error.
         def parse
           document = strip_unknown_members(decode(read_body))
           validate_common(document)
           build(document)
+        rescue JSON::GeneratorError
+          raise MalformedInputError, 'The request body must be valid UTF-8 JSON.'
         end
 
         private

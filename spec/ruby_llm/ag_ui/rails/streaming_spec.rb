@@ -79,6 +79,15 @@ RSpec.describe RubyLLM::AgUI::Rails::Streaming do
       expect(controller.response.stream.string).to be_empty
     end
 
+    it 'refuses a JSON body whose text is not UTF-8' do
+      controller = FakeController.new(body: %({"threadId":"thread-\xFF","runId":"run-1","messages":[]}).b)
+
+      controller.stream_ag_ui_run { |_input| chat }
+
+      expect(controller.refusals.first.first).to eq(400)
+      expect(controller.response.stream.string).to be_empty
+    end
+
     it 'refuses an input the gem will not accept' do
       controller = FakeController.new(body: JSON.generate('threadId' => 'thread-1', 'runId' => 'run-1'))
 

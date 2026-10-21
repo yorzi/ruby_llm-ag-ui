@@ -130,6 +130,15 @@ RSpec.describe RubyLLM::AgUI::Input do
         .to raise_error(RubyLLM::AgUI::MalformedInputError) { |error| expect(error.message).not_to include('not json') }
     end
 
+    it 'rejects text that is not UTF-8 and numbers JSON cannot represent' do
+      invalid = %({"threadId":"thread-\xFF","runId":"run-1","messages":[]}).b
+      expect { described_class.parse(invalid) }.to raise_error(RubyLLM::AgUI::MalformedInputError, /UTF-8/)
+      expect { described_class.parse(minimal.merge('threadId' => "thread-\xFF")) }
+        .to raise_error(RubyLLM::AgUI::MalformedInputError, /UTF-8/)
+      expect { described_class.parse(json(minimal).sub('{', '{"state":{"n":1e400},')) }
+        .to raise_error(RubyLLM::AgUI::MalformedInputError)
+    end
+
     it 'rejects a non-object JSON document' do
       expect { described_class.parse('[1, 2]') }.to raise_error(RubyLLM::AgUI::MalformedInputError, /object/)
     end
