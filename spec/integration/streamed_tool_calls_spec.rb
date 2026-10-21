@@ -86,6 +86,44 @@ RSpec.describe 'streamed tool calls with intercepted HTTP' do
     end
   end
 
+  describe 'OpenAI Responses' do
+    def event(type, data)
+      "event: #{type}\ndata: #{JSON.generate(data.merge(type: type))}\n\n"
+    end
+
+    def completed(output)
+      event('response.completed', response: { id: 'fixture', model: 'fixture-model', status: 'completed',
+                                              output: output, usage: { input_tokens: 1, output_tokens: 1 } })
+    end
+
+    # Each response numbers its output items from 0 again.
+    def tool_round(id, query)
+      item = { type: 'function_call', id: "fc_#{id}", call_id: id, name: tool.name, arguments: '' }
+      event('response.output_item.added', output_index: 0, item: item) +
+        event('response.function_call_arguments.delta', output_index: 0, delta: %({"query":"#{query}"})) +
+        completed([item.merge(arguments: %({"query":"#{query}"}), status: 'completed')])
+    end
+
+    it 'opens each round call once and sends its arguments only to that open call' do
+      text = { type: 'message', id: 'msg', role: 'assistant', status: 'completed',
+               content: [{ type: 'output_text', text: 'done', annotations: [] }] }
+      stub_request(:post, 'https://api.openai.com/v1/responses')
+        .to_return(headers: headers, body: tool_round('call_a', 'one'))
+        .then.to_return(headers: headers, body: tool_round('call_b', 'two'))
+        .then.to_return(headers: headers,
+                        body: event('response.output_text.delta', output_index: 0, content_index: 0,
+                                                                  delta: 'done') + completed([text]))
+
+      expect(calls(run(chat_for(:openai)))).to eq(
+        [
+          [['call_a'], %w[TOOL_CALL_START TOOL_CALL_ARGS TOOL_CALL_END], { 'query' => 'one' }],
+          [['call_b'], %w[TOOL_CALL_START TOOL_CALL_ARGS TOOL_CALL_END], { 'query' => 'two' }]
+        ]
+      )
+      expect(tool.queries).to eq(%w[one two])
+    end
+  end
+
   describe 'Anthropic Messages' do
     def event(type, data = {})
       "event: #{type}\ndata: #{JSON.generate(data.merge(type: type))}\n\n"
