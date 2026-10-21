@@ -97,7 +97,7 @@ module RubyLLM
       rescue StandardError => e
         @record = finalize { @emitter.fail(e) }
       ensure
-        finalize { @mapper&.close }
+        finalize { release }
       end
 
       def start_execution(record, to)
@@ -132,8 +132,15 @@ module RubyLLM
 
       def finalize(&) = @mutex.synchronize(&)
 
-      def project
-        @mutex.synchronize { @emitter.write(yield) }
+      # After release, a stale callback maps and writes nothing.
+      def project = @mutex.synchronize { @emitter&.write(yield) }
+
+      # The callbacks this run registered stay on the chat after it ends, and
+      # RubyLLM cannot remove them. The closed mapper maps nothing further, and
+      # dropping the emitter lets the response stream it writes to be freed.
+      def release
+        @mapper&.close
+        @emitter = nil
       end
 
       # A run that stopped for a human is an interrupt, never a success. Any
@@ -178,10 +185,7 @@ module RubyLLM
           raise ConfigurationError, 'chat must be a RubyLLM::Chat or act like one (it does not respond to #complete)'
         end
         raise ConfigurationError, 'input must be a RubyLLM::AgUI::Input' unless @input.is_a?(Input)
-
-        return if @scope.is_a?(String) && !@scope.empty?
-
-        raise ConfigurationError, Store::Base::SCOPE_MESSAGE
+        raise ConfigurationError, Store::Base::SCOPE_MESSAGE unless @scope.is_a?(String) && !@scope.empty?
       end
     end
   end

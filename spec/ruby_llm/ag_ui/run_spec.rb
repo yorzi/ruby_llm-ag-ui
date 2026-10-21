@@ -548,6 +548,21 @@ RSpec.describe RubyLLM::AgUI::Run do
       ).stream(to: to)
     end
 
+    # Built in its own frame so no local still points at the stream.
+    def finished_turn_stream(run_id)
+      stream = StringIO.new
+      stream_turn(run_id, to: stream)
+      WeakRef.new(stream)
+    end
+
+    it 'does not keep a finished run stream alive through its callbacks' do
+      require 'weakref'
+      streams = Array.new(3) { |index| finished_turn_stream("run-#{index}") }
+      GC.start(full_mark: true, immediate_sweep: true)
+
+      expect(streams.count(&:weakref_alive?)).to be < 3
+    end
+
     it 'writes nothing more to the first run stream' do
       first = StringIO.new
       stream_turn('run-1', to: first)

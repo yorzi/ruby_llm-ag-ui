@@ -18,6 +18,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   failing the run when a tool result or progress update is redacted.
 - Refuse input with text that is not UTF-8, or a number JSON cannot represent,
   as `MalformedInputError` (400) instead of raising `JSON::GeneratorError`.
+- Release a finished run's response stream. RubyLLM cannot remove callbacks,
+  so a chat reused across turns kept every earlier run's stream reachable.
 
 ## [0.4.0] - 2026-10-21
 
