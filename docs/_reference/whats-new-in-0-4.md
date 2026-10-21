@@ -1,7 +1,8 @@
 ---
 layout: default
 title: "What's New in 0.4"
-nav_order: -1
+nav_order: 40
+parent: Release History
 description: Review the public integration contract and verified compatibility boundaries.
 ---
 

@@ -1,6 +1,7 @@
 # Roadmap to 1.0
 
 Sequence reviewed on 2026-10-21. Versions 0.2, 0.3, and 0.4 are published.
+1.0.0.rc.1 is prepared locally and awaits remote CI and publication.
 Later releases remain targets rather than promised dates. Keep one release in
 progress. Split or drop optional work when it delays the release's main outcome;
 use patch releases for fixes.
@@ -49,7 +50,7 @@ behavior they describe; future features stay out of the changelog until built.
 | **0.2.0 (released)** | A real client example and opt-in tool progress | A pinned client consumes the demo; progress is ordered, redacted, and schema-valid. |
 | **0.3.0 (released)** | Reliable lifecycle and durable runs | Disconnect, cancellation, worker loss, and competing requests have tested, documented outcomes. |
 | **0.4.0 (released)** | Compatibility and API stabilization | The proposed 1.0 support matrix and public API pass end-to-end verification. |
-| **1.0.0.rc.1** | Release rehearsal | A fresh application uses the packaged candidate without checkout-only files or undocumented setup. |
+| **1.0.0.rc.1 (prepared)** | Release rehearsal | A fresh application uses the packaged candidate without checkout-only files or undocumented setup. |
 | **1.0.0** | Stable integration contract | All release conditions below pass; no known blocker remains. |
 
 ### 0.2.0: client example and tool progress
@@ -152,6 +153,26 @@ generator files and migrations, and rehearse upgrading from the last 0.x release
 Use another release candidate when a fix changes public behavior. Publish 1.0
 only after reviewing the results, without using a calendar deadline as the gate.
 
+- [x] Audit the mapper, run lifecycle, stores, input parsing, and Rails adapter
+  against RubyLLM 2.1.1's real provider protocols.
+- [x] Fix each confirmed defect with a failing test first: streamed tool calls
+  in a second tool round, Anthropic/Bedrock empty opening input, Gemini whole
+  call arguments, early Active Record loading, non-UTF-8 input as a server
+  error, call-only redaction policies, and retained streams on reused chats.
+- [x] Build the candidate and pass installed-host, clean core/Rails, advisory,
+  browser, and live OpenRouter checks.
+- [x] Rehearse the upgrade from the published 0.4.0 artifact: 0.4 records
+  reconnect and resume, and the generated files are unchanged.
+- [ ] Push the candidate, pass the remote matrix, tag `v1.0.0.rc.1`, and verify
+  the published artifact as the [release guide](docs/_reference/releasing.md)
+  describes.
+
+The 2026-10-21 local rehearsal is recorded in
+[Compatibility](docs/_reference/compatibility.md). The streamed tool-call
+defects affected Chat Completions, OpenAI Responses, Anthropic, Bedrock, and
+Gemini; the 0.4 evidence did not exercise two tool rounds or those shapes.
+Intercepted-HTTP specs now run a real RubyLLM chat for each tested shape.
+
 ## 1.0 release conditions
 
 - [ ] The claimed text, tool, approval, denial, cancellation, failure, progress,
@@ -180,9 +201,9 @@ host need fits this gem's integration boundary.
 
 ## Next action
 
-Rehearse `1.0.0.rc.1` in fresh plain Ruby and Rails applications using the
-published 0.4.0 artifact as the upgrade baseline. Record each 1.0 condition's
-acceptance command, result, and remaining gap. Verify the documented client and
-provider paths and upgrade steps before preparing the candidate. Keep features
-frozen; fix any blocker and repeat the affected checks. The proposed API is
-documented; a 1.0 stability promise still needs that rehearsal and review.
+Review the prepared `1.0.0.rc.1` commits, push them to `main`, and wait for the
+remote matrix. Tag `v1.0.0.rc.1` only on a passing commit, then verify the
+published artifact and Next documentation. Keep features frozen. Collect
+feedback on the candidate; a fix that changes public behavior needs another
+candidate before 1.0. Live evidence for a second provider is needed only if
+1.0 claims one.

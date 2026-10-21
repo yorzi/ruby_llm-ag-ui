@@ -15,6 +15,30 @@ After reading this guide, you will know:
 * How to move between versioned releases.
 * Where to find changes that need code updates.
 
+## Move from 0.4 to 1.0.0.rc.1
+
+Update your Gemfile and dependency:
+
+```ruby
+gem 'ruby_llm-ag_ui', '1.0.0.rc.1'
+```
+
+```sh
+bundle update ruby_llm-ag_ui
+```
+
+The release candidate keeps the 0.4 public API, configuration, and store
+contract. It needs no SQL migration, and the generated migration and
+initializer are unchanged. Records written by 0.4 stay readable: an exact retry
+reconnects to a 0.4 run, and a 0.4 interrupt can be resumed after the upgrade.
+
+Clients now receive tool argument deltas that join to valid JSON for every
+streamed call. If your client worked around the old `{}` prefix or Ruby
+`Hash#to_s` arguments, remove that workaround.
+
+Requiring the gem no longer loads `ActiveRecord::Base` during a Rails boot.
+Code that relied on the gem to load Active Record must load it itself.
+
 ## Move from 0.3 to 0.4
 
 Update your Gemfile and dependency:

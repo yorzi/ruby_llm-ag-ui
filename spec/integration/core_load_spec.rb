@@ -39,6 +39,6 @@ RSpec.describe 'requiring the core (FR-01)', type: :integration do
   end
 
   it 'reports the gem version' do
-    expect(RubyLLM::AgUI::VERSION).to match(/\A\d+\.\d+\.\d+\z/)
+    expect(RubyLLM::AgUI::VERSION).to match(/\A\d+\.\d+\.\d+(\.rc\.\d+)?\z/)
   end
 end

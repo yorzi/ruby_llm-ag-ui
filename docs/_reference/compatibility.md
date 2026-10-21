@@ -44,6 +44,8 @@ adapter is only loaded when `Rails::Railtie` is already defined.
 | The 31-type coverage map is the schema's own union | `spec/ruby_llm/ag_ui/coverage_spec.rb` compares the pinned list with `Coverage`, and the SDK enum at runtime |
 | The SDK's five legacy `THINKING_*` constants are never counted as 1.0 | the same spec asserts `LEGACY_SDK_ONLY` is absent from the map |
 | Text, tool and lifecycle sequences are ordered and closed | mapper specs, including partial arguments, a nil chunk, a tool that raises, and a thinking-only chunk |
+| Streamed tool arguments join to valid JSON for each call | `spec/integration/streamed_tool_calls_spec.rb` runs a real RubyLLM chat over intercepted Chat Completions, Responses, Anthropic, and Gemini streams, including two tool rounds in one turn |
+| A Rails boot does not load Active Record through the gem | `spec/integration/core_load_spec.rb` requires the gem after the Active Record railtie in a subprocess |
 | One outcome per run, and the outcome matches what happened | run specs: success, interrupt, cancelled, sanitized failure, unsupported pause |
 | `requires_approval` → interrupt → resume executes the tool once | run specs drive a fake chat through the pause, approve, deny, replay and expiry cases |
 | Identity is reserved, replayed and never re-executed | store specs (memory and ActiveRecord), run specs for conflict, reconnect and live-run refusal |
@@ -53,6 +55,37 @@ adapter is only loaded when `Rails::Railtie` is already defined.
 | `ruby_llm-ag_ui` installs outside the checkout | `bin/verify-package` resolves dependencies in a fresh gem home and loads the packaged core |
 
 The RSpec suite runs offline with fakes and no provider credentials. Package verification uses the network only to install dependencies, then runs its core and Rails checks without a provider. Its advisory check includes the actual default-library gem versions activated by the isolated core install.
+
+## 1.0.0.rc.1 Release Rehearsal
+
+On 2026-10-21, the candidate passes 313 offline examples with zero failures
+and two opt-in provider skips on Ruby 3.3.5, RubyLLM 2.1.1, and Rails 8.1.4.
+Lint passes on 97 files. The browser suite passes 18 workflows with
+`@ag-ui/client` 1.0.3 and validates all 242 consumed events. Desktop approval
+and 390px mobile denial screenshots were inspected.
+
+The built artifact passes both installed endpoints, the generated RubyLLM
+models, a clean gem home with the activated-dependency audit, and Rails
+generator migration up and down. The root advisory audit reports no findings.
+
+An upgrade rehearsal installs the published 0.4.0 gem in an isolated gem home,
+generates and migrates its table in SQLite, and records a succeeded run and an
+interrupted run. The candidate artifact then reconnects to the 0.4 run without
+executing it, resumes the 0.4 interrupt with the original call id, runs the
+tool once, and reconnects without running it again. Its generated migration
+and initializer match 0.4.0.
+
+The rerun OpenRouter session uses `openai/gpt-4.1-mini` with RubyLLM 2.1.1.
+Both live examples pass: streamed text, and the synthetic approval/resume with
+reconnect. The same command runs four offline and intercepted harness examples,
+for six examples and zero failures.
+
+The audit for this candidate found streamed tool-call defects that the 0.4
+evidence did not exercise: a second tool round in one turn, Anthropic and
+Bedrock empty opening input, and Gemini whole-call arguments. Each defect has a
+real-chat intercepted-HTTP spec that fails before its fix. Remote CI and the
+release workflow run when the candidate commit is pushed and tagged; they are
+not part of this local record.
 
 ## 0.4 Release Acceptance
 
@@ -212,8 +245,10 @@ checks after download.
   recorded `@ag-ui/client` version have not been verified. Schema conformance
   does not establish that every UI renders the events correctly.
 - **Other live paths.** Only the recorded OpenRouter model's text and approval
-  workflow is verified live. Browser provider sessions, other providers,
-  cancellation timing, timeouts, and network-loss recovery need separate evidence.
+  workflow is verified live. Anthropic, Gemini, and OpenAI Responses streams are
+  checked with intercepted HTTP only. Browser provider sessions, other
+  providers, cancellation timing, timeouts, and network-loss recovery need
+  separate evidence.
 - **Every RubyLLM patch release in the `>= 2.1, < 3.0` range.** The upper bound
   is a dependency resolver bound; verified versions are 2.1.0 and 2.1.1. Future
   2.x releases need the same checks before a compatibility claim.

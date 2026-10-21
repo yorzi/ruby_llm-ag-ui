@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.0.rc.1] - 2026-10-21
+
 ### Changed
 
 - The durable store finds interrupted runs through the shipped status index,

@@ -2,7 +2,7 @@
 layout: default
 title: Public API Contract
 nav_order: 3
-description: Build against the application API and custom-store contract proposed for 1.0.
+description: Build against the application API and custom-store contract that 1.0 stabilizes.
 ---
 
 # {{ page.title }}
@@ -32,8 +32,9 @@ returns its stored outcome on an exact retry; it never repeats the turn.
 An active duplicate is refused. See
 [Reconnects]({% link _core_features/reconnects.md %}).
 
-Version 0.4 proposes the following application contract for 1.0. It is not a
-1.0 stability promise yet. Breaking changes before 1.0 have upgrade steps.
+Version 1.0.0.rc.1 freezes the following application contract for 1.0. It
+becomes a stability promise when 1.0.0 is published. A change to it before then
+ships in another release candidate with upgrade steps.
 
 | Entry point | Application contract |
 | --- | --- |
