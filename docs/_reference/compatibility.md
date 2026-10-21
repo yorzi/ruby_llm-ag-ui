@@ -54,6 +54,23 @@ adapter is only loaded when `Rails::Railtie` is already defined.
 
 The RSpec suite runs offline with fakes and no provider credentials. Package verification uses the network only to install dependencies, then runs its core and Rails checks without a provider. Its advisory check includes the actual default-library gem versions activated by the isolated core install.
 
+## 0.4 Release Acceptance
+
+The [2026-10-21 acceptance CI](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/39518735488)
+passes all 17 jobs at `e09b81b`. Each test job reports 296 examples, zero failures,
+and two opt-in provider skips across the Ruby, Rails, and RubyLLM matrix below.
+Local checks also pass 296 examples and lint on 95 files. Both installed
+endpoints verify one original tool call and one result with its original id.
+
+The added regressions cover `Run#record` on reconnect and real RubyLLM denial
+without tool execution. Denial uses intercepted HTTP. The local OpenRouter
+text and approval/resume examples are separately rerun on the release code:
+two live cases plus one offline harness example pass with zero failures.
+
+The browser suite again passes 18 workflows and validates all 242 consumed
+events. Desktop approval progress and 390px mobile denial screenshots were
+inspected. The earlier candidate record below retains its own commit and counts.
+
 ## Local 0.4 Development Verification
 
 On 2026-10-21, the candidate passes 294 offline examples with zero failures

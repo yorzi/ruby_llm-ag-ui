@@ -48,7 +48,7 @@ behavior they describe; future features stay out of the changelog until built.
 | --- | --- | --- |
 | **0.2.0 (released)** | A real client example and opt-in tool progress | A pinned client consumes the demo; progress is ordered, redacted, and schema-valid. |
 | **0.3.0 (released)** | Reliable lifecycle and durable runs | Disconnect, cancellation, worker loss, and competing requests have tested, documented outcomes. |
-| **0.4.0 (candidate)** | Compatibility and API stabilization | The proposed 1.0 support matrix and public API pass end-to-end verification. |
+| **0.4.0 (release prepared)** | Compatibility and API stabilization | The proposed 1.0 support matrix and public API pass end-to-end verification. |
 | **1.0.0.rc.1** | Release rehearsal | A fresh application uses the packaged candidate without checkout-only files or undocumented setup. |
 | **1.0.0** | Stable integration contract | All release conditions below pass; no known blocker remains. |
 
@@ -135,7 +135,10 @@ HTTP, browser client state, and a passing OpenRouter approval session verify
 the fix. The remote 17-job Ruby/Rails/RubyLLM matrix passes. Installed-package,
 fresh core/Rails, advisory, browser, and docs checks pass separately. See
 [Compatibility](docs/_reference/compatibility.md) for versions and limits.
-Version 0.4 remains unreleased; no public artifact is claimed.
+Release acceptance adds reconnect record consistency, real-chat denial, and
+installed-artifact result association. The 296-example suite, 17-job matrix,
+and rerun live text/approval checks pass. Publication is the remaining step;
+no public 0.4 artifact is claimed yet.
 
 ### 1.0.0.rc.1: release rehearsal
 
