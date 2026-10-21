@@ -46,8 +46,7 @@ module RubyLLM
         end
 
         def latest_interrupted(scope:, thread_id:)
-          interrupted = RunRecord::INTERRUPTED.to_s
-          thread_rows(scope, thread_id).reverse.find { |row| row.status == interrupted }&.as_run_record
+          interrupted_rows(scope, thread_id).last&.as_run_record
         end
 
         def save(record)
@@ -119,12 +118,19 @@ module RubyLLM
           Record.where(scope: scope, thread_id: thread_id).order(:id).to_a
         end
 
-        # An interrupt id is unique among a thread's runs, so the thread is
-        # searched newest first and the first row that knows the id wins. A
-        # thread holds few runs, and the alternative is a JSON query that would
-        # bind this store to one database.
+        # Only an interrupted run carries interrupts, and it keeps that status
+        # after they are answered. The status index finds those rows without
+        # loading every run on the thread.
+        def interrupted_rows(scope, thread_id)
+          Record.where(scope: scope, thread_id: thread_id, status: RunRecord::INTERRUPTED.to_s).order(:id).to_a
+        end
+
+        # An interrupt id is unique among a thread's runs, so the interrupted
+        # runs are searched newest first and the first row that knows the id
+        # wins. The alternative is a JSON query that would bind this store to
+        # one database.
         def row_for_interrupt(scope, thread_id, interrupt_id)
-          thread_rows(scope, thread_id).reverse.find { |row| row.as_run_record.interrupt(interrupt_id) }
+          interrupted_rows(scope, thread_id).reverse.find { |row| row.as_run_record.interrupt(interrupt_id) }
         end
       end
     end

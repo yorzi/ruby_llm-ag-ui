@@ -127,6 +127,17 @@ RSpec.describe RubyLLM::AgUI::Rails::ActiveRecordStore do
       expect(store.find_interrupt(scope: scope, thread_id: thread, interrupt_id: 'i1')).to be_pending
     end
 
+    it 'finds an older interrupted run behind newer runs that ended otherwise' do
+      pause!(run_id: 'run-1')
+      store.save(reserve(run_id: 'run-2').record.start(now: now).finish(:succeeded, now: now))
+      reserve(run_id: 'run-3')
+
+      expect(store.latest_interrupted(scope: scope, thread_id: thread).run_id).to eq('run-1')
+      expect(store.find_interrupt(scope: scope, thread_id: thread, interrupt_id: 'i1')).to be_pending
+      expect(redeem(:approved)).to be_recorded
+      expect(store.latest_interrupted(scope: scope, thread_id: thread).interrupts.first).to be_approved
+    end
+
     it 'records the first decision and reports a repeated one as a replay' do
       pause!
 

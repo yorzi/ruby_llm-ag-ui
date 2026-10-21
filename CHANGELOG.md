@@ -6,6 +6,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- The durable store finds interrupted runs through the shipped status index,
+  instead of loading and parsing every run on the thread for each resume.
+
 ### Fixed
 
 - Open each streamed tool call of a later tool round in the same turn. Providers
