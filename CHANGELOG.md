@@ -14,6 +14,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Defer loading `ActiveRecord::Base` until the host uses the durable store.
   Requiring the gem during a Rails boot no longer loads Active Record before
   the application's configuration.
+- Accept a redaction policy object that defines only `#call`, instead of
+  failing the run when a tool result or progress update is redacted.
 
 ## [0.4.0] - 2026-10-21
 

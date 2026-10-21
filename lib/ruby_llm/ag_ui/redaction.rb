@@ -51,8 +51,10 @@ module RubyLLM
 
       # Calls +callable+ with the arguments its arity takes, so a host can write
       # either `->(kind, payload) { ... }` or the terse `->(payload) { ... }`.
+      # A policy object that only defines #call is read the same way.
       def apply(callable, kind, payload)
-        callable.arity == 1 ? callable.call(payload) : callable.call(kind, payload)
+        arity = callable.respond_to?(:arity) ? callable.arity : callable.method(:call).arity
+        arity == 1 ? callable.call(payload) : callable.call(kind, payload)
       end
     end
   end
