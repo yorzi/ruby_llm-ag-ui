@@ -39,7 +39,7 @@ Version 0.4 proposes the following application contract for 1.0. It is not a
 | --- | --- |
 | `RubyLLM::AgUI.configure`, `.config`, `.reset_configuration!` | Application defaults listed in [Configuration]({% link _getting_started/configuration.md %}). |
 | `Input.parse(raw, max_bytes: nil, strict: false, logger: nil)` | Accept a Hash, JSON String, or readable body; return parsed identity, data, digest, warnings, and `to_h`. |
-| `Run.new(...).stream(to:)` | Reserve before execution; return a `RunRecord`; serialize callbacks and detach a failed transport. `Run#record` exposes a producer's final record. |
+| `Run.new(...).stream(to:)` | Reserve before execution; return a `RunRecord`; serialize callbacks and detach a failed transport. `Run#record` exposes the reserved record and, after completion or reconnect, the returned outcome. |
 | `SSEWriter#write`, `#flush`, `#close`, `#closed?`, `.headers` | Encode schema-valid events on an IO-like stream; direct write failures raise `TransportError`. |
 | `RunRecord`, `Interrupt`, `ResumeEntry` | Read-only identity and JSON data, predicates, documented transitions, and serialization. Transitions return new values. |
 | `Redaction.default`, `.none` and a host callable | Transform tool output and opt-in progress; nil uses the default redactor. |

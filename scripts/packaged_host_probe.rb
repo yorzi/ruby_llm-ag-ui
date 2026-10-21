@@ -33,6 +33,10 @@ AgUiDemo.with_host do |host|
     body['resume'] = [{ 'interruptId' => interrupt, 'status' => 'resolved' }]
     second = events(request.post("/#{endpoint}", headers.merge(input: JSON.generate(body))))
     abort 'not successful' unless second.last['outcome'] == { 'type' => 'success' }
+    call = first.find { |event| event['type'] == 'TOOL_CALL_START' }
+    results = second.select { |event| event['type'] == 'TOOL_CALL_RESULT' }
+    abort 'original tool call repeated on resume' if second.any? { |event| event['type'] == 'TOOL_CALL_START' }
+    abort 'result lost its original call' unless results.size == 1 && results.first['toolCallId'] == call['toolCallId']
     abort 'progress missing' unless second.count { |event| event['type'] == 'ACTIVITY_SNAPSHOT' } == 2
     replay = events(request.post("/#{endpoint}", headers.merge(input: JSON.generate(body))))
     abort 'reconnect executed content again' unless replay.map { |event| event['type'] } ==

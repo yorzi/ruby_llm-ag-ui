@@ -430,6 +430,15 @@ RSpec.describe RubyLLM::AgUI::Run do
       expect(decode_sse(target).last['outcome']).to eq('type' => 'cancelled')
     end
 
+    it 'exposes the same observed record through stream and record on reconnect' do
+      stream(succeeding_chat)
+      run = described_class.new(chat: unrunnable, input: input, scope: scope, store: store)
+      expect(run.record).to be_nil
+      outcome = run.stream(to: StringIO.new)
+      expect(outcome).to be_succeeded
+      expect(run.record).to equal(outcome)
+    end
+
     it 'reports the recorded failure without the exception text' do
       stream(FakeChat.new { |chat| chat.fail!(RubyLLM::RateLimitError.new('key sk-live-secret leaked')) })
 

@@ -64,3 +64,6 @@ rather than freezing the host's original state. Keep snapshots JSON-compatible.
 
 Create a new input with `Input.parse` for a new request. Use `RunRecord`
 transitions and retain `store.save`'s returned record when updating storage.
+
+After `Run#stream` returns a recorded outcome, `Run#record` exposes that same
+record, including on a reconnect. Reading it never executes the chat.

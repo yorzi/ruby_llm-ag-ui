@@ -20,7 +20,8 @@ module RubyLLM
     # input, because a scope derived from anything the client sent would let one
     # client attach to another's run.
     class Run
-      # The run's authoritative record, once it has been reserved.
+      # The reserved record or final outcome observed by this run, including a
+      # reconnect. Nil before the run obtains its reservation.
       attr_reader :record
 
       # rubocop:disable-next Metrics/ParameterLists -- one keyword per host-supplied or overridable value
@@ -52,16 +53,15 @@ module RubyLLM
       def stream(to:)
         resume.plan(now: @clock.call) if resume.needed?
         reservation = reserve
-        return execute(reservation.record, to) if reservation.created?
+        @record = reservation.record
+        return execute(@record, to) if reservation.created?
 
-        reconnect(reservation.record, to)
+        reconnect(@record, to)
       end
 
       private
 
-      def resume
-        @resume ||= Resume.new(input: @input, store: @store, scope: @scope, chat: @chat)
-      end
+      def resume = @resume ||= Resume.new(input: @input, store: @store, scope: @scope, chat: @chat)
 
       def reserve
         Persistence.write do

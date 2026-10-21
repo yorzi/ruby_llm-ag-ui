@@ -41,7 +41,8 @@ application and custom-store APIs and separates orchestration internals.
 
 Real RubyLLM approval resumes now emit the result of the original call without
 repeating its start and arguments. The offline real-chat and opt-in provider
-checks use the same harness. See
+checks use the same harness. `Run#record` also exposes the recorded outcome
+after a reconnect, matching the return value from `stream`. See
 [Approval and Resume]({% link _core_features/approval-and-resume.md %}).
 
 ## Verify the Provider Separately
@@ -51,6 +52,6 @@ without external business effects. The same real RubyLLM chat setup has offline
 HTTP tests. See [Provider Verification]({% link _advanced/provider-verification.md %})
 for credential handling, request limits, and the scope of the results.
 
-Version 0.4 is in development. Read
+Read
 [Compatibility]({% link _reference/compatibility.md %}) for recorded results
 and limits; an intended matrix is not a completed verification.

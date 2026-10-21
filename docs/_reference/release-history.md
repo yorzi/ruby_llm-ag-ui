@@ -17,7 +17,7 @@ description: Review RubyLLM AG-UI releases, newest first, with highlights and up
 
 | Release | Date | Highlights |
 | --- | --- | --- |
-| 0.4.0 development | Unreleased | [API and compatibility]({% link _getting_started/whats-new-in-0-4.md %}): effective configuration, immutable records, and real-chat approval verification |
+| [0.4.0](https://github.com/yorzi/ruby_llm-ag-ui/releases/tag/v0.4.0) | 2026-10-21 | [API and compatibility]({% link _getting_started/whats-new-in-0-4.md %}): effective configuration, immutable records, and real-chat approval verification |
 | [0.3.0](https://github.com/yorzi/ruby_llm-ag-ui/releases/tag/v0.3.0) | 2026-10-20 | [Lifecycle and worker recovery]({% link _reference/whats-new-in-0-3.md %}): disconnect handling, scoped cancellation, and conditional durable writes |
 | [0.2.0](https://github.com/yorzi/ruby_llm-ag-ui/releases/tag/v0.2.0) | 2026-10-19 | [Client workflows and tool progress]({% link _reference/whats-new-in-0-2.md %}): opt-in redacted progress, a real-client demo, and completed resume reconnect |
 | [0.1.0](https://github.com/yorzi/ruby_llm-ag-ui/releases/tag/v0.1.0) | 2026-10-18 | [First release]({% link _reference/whats-new-in-0-1.md %}): AG-UI event mapping, approval and resume, cancellation, reconnect, and the optional Rails adapter |

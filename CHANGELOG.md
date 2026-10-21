@@ -6,7 +6,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.4.0] - Unreleased
+## [0.4.0] - 2026-10-21
 
 ### Added
 
@@ -25,9 +25,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Expose the returned reconnect outcome through `Run#record`, without executing
+  the chat again. Verify real RubyLLM denial and installed result association.
 - Resume real RubyLLM approval without repeating the original tool-call start
   and arguments. Its result keeps the original call id; new calls still stream.
-
 - Isolate and freeze nested input, identity, interrupt, and JSON record values.
   Editing caller-owned data cannot mutate memory-store indexes or bypass a
   record revision; editing published values raises `FrozenError`.

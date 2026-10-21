@@ -15,10 +15,20 @@ After reading this guide, you will know:
 * How to move between versioned releases.
 * Where to find changes that need code updates.
 
-## Develop against 0.4
+## Move from 0.3 to 0.4
 
-Version 0.4 is unreleased. Use the main checkout for these changes.
-The latest published release remains 0.3.
+Update your Gemfile and dependency:
+
+```ruby
+gem 'ruby_llm-ag_ui', '~> 0.4.0'
+```
+
+```sh
+bundle update ruby_llm-ag_ui
+```
+
+This release keeps JSON 2.x and the 0.3 store revision contract. It needs no
+additional SQL migration. Drain old workers before replacing their code.
 
 Remove assignments to `config.allow_client_history`. The unused setting is
 removed, including its diagnostic key. The gem never imports client messages
