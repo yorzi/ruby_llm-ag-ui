@@ -1,10 +1,13 @@
 # frozen_string_literal: true
 
-require_relative 'record'
-
 module RubyLLM
   module AgUI
     module Rails
+      # Defining the row class loads ActiveRecord::Base. Defer it to first use,
+      # so requiring the gem during a Rails boot does not load Active Record
+      # before the host's configuration.
+      autoload :Record, File.expand_path('record', __dir__)
+
       # The durable run store: run identity in a table instead of a process.
       #
       # The in-process store is correct for one process only. A host that runs

@@ -23,6 +23,21 @@ RSpec.describe 'requiring the core (FR-01)', type: :integration do
     expect(output).to include('ok')
   end
 
+  it 'defers Active Record until the host loads it during a Rails boot' do
+    output = run_probe(<<~RUBY)
+      require 'rails'
+      require 'active_record/railtie'
+      require 'ruby_llm/ag_ui'
+      abort 'ActiveRecord::Base was loaded' unless ActiveRecord.autoload?(:Base)
+      abort 'store missing' unless defined?(RubyLLM::AgUI::Rails::ActiveRecordStore)
+      ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ':memory:')
+      abort 'record missing' unless RubyLLM::AgUI::Rails::Record.table_name == 'ruby_llm_ag_ui_runs'
+      puts 'ok'
+    RUBY
+    expect($CHILD_STATUS).to be_success, output
+    expect(output).to include('ok')
+  end
+
   it 'reports the gem version' do
     expect(RubyLLM::AgUI::VERSION).to match(/\A\d+\.\d+\.\d+\z/)
   end
