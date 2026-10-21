@@ -61,7 +61,7 @@ Legend:
 | `TEXT_MESSAGE_CONTENT` | text | One delta per non-empty `chunk.content`, in order. |
 | `TEXT_MESSAGE_END` | text | Closed before a tool call, a phase change or the terminal event. |
 | `TOOL_CALL_START` | tool | Emitted when a call is observed before it runs. |
-| `TOOL_CALL_ARGS` | tool | Arguments as received; never re-synthesized. |
+| `TOOL_CALL_ARGS` | tool | Deltas that concatenate to the call's JSON arguments; streamed fragments unchanged. |
 | `TOOL_CALL_END` | tool | Closed before the call runs or the run ends. |
 | `TOOL_CALL_RESULT` | tool | The tool result, after the host redaction policy. |
 | `STATE_SNAPSHOT` | state | On a reconnect: the state the host gave the run. |

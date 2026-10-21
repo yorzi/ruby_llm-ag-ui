@@ -111,7 +111,8 @@ reason.
    the events to write. The mapper is a state machine: a text message opens on
    its first non-empty chunk and closes before a tool call, a phase change or the
    terminal event; a tool call opens when its id and name are both known, streams
-   its argument deltas as received, and closes before it runs; one step per phase
+   argument deltas that concatenate to its JSON arguments, and closes before it
+   runs; one step per phase
    (`completion`, `tool`) so consecutive steps never overlap.
 6. **Write.** The emitter writes the events as SSE, advancing the run record's
    sequence by one per event.

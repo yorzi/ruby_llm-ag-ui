@@ -30,7 +30,7 @@ In an application, parse the request first, then pass the host-selected chat, pa
 
 The mapper turns RubyLLM callbacks into AG-UI events. The emitter assigns each event a sequence, persists run state, closes open text or tool events, and writes one JSON event per `data:` line through the SSE writer.
 
-An assistant message opens on its first non-empty chunk and closes before a tool call, phase change, or terminal event. A tool call starts when its id and name are known, emits the arguments as received, and ends before the call runs. One run ends with one terminal result.
+An assistant message opens on its first non-empty chunk and closes before a tool call, phase change, or terminal event. A tool call starts when its id and name are known and ends before the call runs. Its argument deltas concatenate to the JSON arguments the tool receives: streamed fragments go out unchanged, a call a provider sends whole is serialized once, and the empty object some providers open a call with is not sent. One run ends with one terminal result.
 
 ## Outcomes
 
