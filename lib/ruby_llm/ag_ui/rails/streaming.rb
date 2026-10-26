@@ -66,10 +66,10 @@ module RubyLLM
           # identity claimed with different input or a resume that answers
           # nothing, 413 for a body past the configured bound.
           reject_ag_ui_request(e.http_status, e.message)
-        rescue ::ActiveRecord::RecordNotFound
-          reject_ag_ui_request(NOT_FOUND, 'There is no such thread.')
         rescue ::RubyLLM::AgUI::StreamError => e
           reject_ag_ui_request(CONFLICT, e.message)
+        rescue StandardError => e
+          reject_ag_ui_host_error(e)
         end
 
         # The tenant/actor key every reservation is bounded by.
@@ -88,6 +88,12 @@ module RubyLLM
         end
 
         private
+
+        def reject_ag_ui_host_error(error)
+          raise error unless defined?(::ActiveRecord::RecordNotFound) && error.is_a?(::ActiveRecord::RecordNotFound)
+
+          reject_ag_ui_request(NOT_FOUND, 'There is no such thread.')
+        end
 
         # Whether this client can read an event stream. An AG-UI client asks for
         # `text/event-stream`; a request that asks for something else is told so

@@ -46,4 +46,11 @@ RSpec.describe 'the optional Rails adapter (FR-01)', type: :integration do
     expect($CHILD_STATUS).to be_success, output
     expect(output).to include('ok')
   end
+
+  it 'handles stream refusals and preserves host errors without Active Record' do
+    probe = File.expand_path('../fixtures/rails_without_active_record.rb', __dir__)
+    output = run_probe(File.read(probe))
+    expect($CHILD_STATUS).to be_success, output
+    expect(output).to include('ok')
+  end
 end

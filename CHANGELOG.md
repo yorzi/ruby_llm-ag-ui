@@ -15,6 +15,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Handle stream refusals in Rails hosts without Active Record, preserving
+  unrelated host errors instead of replacing them with a missing constant.
 - Honor zero quality and media-range precedence in `SSEWriter.accepts?`.
   Rails refuses an unacceptable stream with 406 before resolving a chat or
   reserving a run, even when a wildcard would otherwise allow streaming.

@@ -195,6 +195,14 @@ what `spec/support/fake_chat.rb` in this repository does.
 | Tool results are `[redacted]` | Redaction is the default; configure `config.redact` |
 | A run succeeds but the client shows nothing | The client was not sent the interrupt/resume flow it expected, or it re-sent a `runId` whose run had already ended |
 
+## Use Rails Without Active Record
+
+You can use the streaming concern without Active Record. In that setup,
+configure a host-supplied store and resolve the chat from your own persistence.
+Stream conflicts still return 409. When Active Record is loaded, a missing
+record returns 404. Other errors raised while resolving a chat remain host
+errors and propagate to your application's error handling.
+
 ## Next Steps
 
 * [Approval and Resume]({% link _core_features/approval-and-resume.md %}) - answer a tool approval pause.

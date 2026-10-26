@@ -139,6 +139,13 @@ RSpec.describe RubyLLM::AgUI::Rails::Streaming do
     it 'needs a block to build the chat' do
       expect { controller.stream_ag_ui_run }.to raise_error(RubyLLM::AgUI::ConfigurationError, /block/)
     end
+
+    it 'returns 404 for a missing Active Record chat without exposing its lookup details' do
+      controller.stream_ag_ui_run { |_input| raise ActiveRecord::RecordNotFound, 'private actor query' }
+
+      expect(controller.refusals).to eq([[404, 'There is no such thread.']])
+      expect(controller.response.stream.string).to be_empty
+    end
   end
 
   describe 'a client that leaves mid-run (FR-05)' do
