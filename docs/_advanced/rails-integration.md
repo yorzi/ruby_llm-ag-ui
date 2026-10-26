@@ -85,7 +85,7 @@ app knows what the client is looking at.
 | Request | Response |
 |---|---|
 | Valid input, `Accept: text/event-stream` | `200`, SSE, one `data:` line per AG-UI event |
-| `Accept` that cannot read SSE | `406` before any event |
+| `Accept` that cannot read SSE, including an effective `q=0` | `406` before resolving the chat or reserving a run |
 | Empty, non-JSON, or schema-invalid body | `400` |
 | Body past `config.max_input_bytes` | `413` |
 | `threadId` the actor does not own, when the block raises `ActiveRecord::RecordNotFound` | `404` |

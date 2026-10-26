@@ -15,6 +15,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Honor zero quality and media-range precedence in `SSEWriter.accepts?`.
+  Rails refuses an unacceptable stream with 406 before resolving a chat or
+  reserving a run, even when a wildcard would otherwise allow streaming.
 - Open each streamed tool call of a later tool round in the same turn. Providers
   restart stream indexes in every response, so a second round's arguments were
   sent to the first round's ended call before the new call opened.

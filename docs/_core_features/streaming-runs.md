@@ -55,6 +55,14 @@ failure cannot replace an outcome that is already persisted. `SSEWriter` used
 directly raises `TransportError`, a subclass of `StreamError`; `Run` handles
 that transport error. Mapping and persistence errors are separate failures.
 
+## Check the Client's Accept Header
+
+`SSEWriter.accepts?` checks whether an `Accept` header permits an event stream.
+An explicit `text/event-stream;q=0` refuses streaming even with `*/*;q=1`.
+A specific media range takes precedence over its wildcard, following
+[HTTP quality and media-range rules](https://www.rfc-editor.org/rfc/rfc9110.html#section-12.5.1).
+The Rails adapter answers 406 before choosing a chat or reserving a run.
+
 ## Next Steps
 
 * [Validating Input]({% link _core_features/input-validation.md %}) - parse untrusted request data.

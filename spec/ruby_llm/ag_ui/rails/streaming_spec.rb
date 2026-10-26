@@ -79,6 +79,16 @@ RSpec.describe RubyLLM::AgUI::Rails::Streaming do
       expect(controller.response.stream.string).to be_empty
     end
 
+    it 'refuses an explicit zero-quality stream before resolving the chat or reserving a run' do
+      controller = FakeController.new(accept: 'text/event-stream;q=0, */*;q=1', body: body)
+
+      controller.stream_ag_ui_run { |_input| raise 'the chat must not be built' }
+
+      expect(controller.refusals.first.first).to eq(406)
+      expect(controller.response.stream.string).to be_empty
+      expect(store.latest_run(scope: 'tenant-1:actor-1', thread_id: 'thread-1')).to be_nil
+    end
+
     it 'refuses a JSON body whose text is not UTF-8' do
       controller = FakeController.new(body: %({"threadId":"thread-\xFF","runId":"run-1","messages":[]}).b)
 

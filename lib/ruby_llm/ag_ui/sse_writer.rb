@@ -48,14 +48,31 @@ module RubyLLM
       #
       # A host calls this before opening the stream. An explicit header that
       # cannot accept `text/event-stream` is a client that will not understand
-      # the response, so the host should answer 406 instead of streaming.
+      # the response, so the host should answer 406 instead of streaming. A zero
+      # quality refuses that range; a more specific range overrides a wildcard.
       def self.accepts?(accept)
         return true if accept.nil? || accept.strip.empty?
 
-        accept.split(',').any? do |range|
-          %w[text/event-stream text/* */*].include?(range.split(';').first.to_s.strip.downcase)
+        matches = accept.split(',').filter_map do |range|
+          media_type, *parameters = range.downcase.split(';').map(&:strip)
+          specificity = %w[*/* text/* text/event-stream].index(media_type)
+          next if specificity.nil?
+
+          [specificity, accept_quality(parameters)]
         end
+        return false if matches.empty?
+
+        matches.max.last.positive?
       end
+
+      def self.accept_quality(parameters)
+        quality = parameters.find { |parameter| parameter.split('=', 2).first.strip == 'q' }
+        return 1.0 unless quality
+
+        value = quality.split('=', 2).last.to_s.strip
+        value.match?(/\A(?:0(?:\.\d{0,3})?|1(?:\.0{0,3})?)\z/) ? value.to_f : 0.0
+      end
+      private_class_method :accept_quality
 
       # The Content-Type for the response the host is about to open.
       def content_type

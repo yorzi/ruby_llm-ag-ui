@@ -33,6 +33,26 @@ RSpec.describe RubyLLM::AgUI::SSEWriter do
       expect(described_class.accepts?('application/json')).to be(false)
       expect(described_class.accepts?('text/html;q=1.0')).to be(false)
     end
+
+    it 'honors zero quality even when a less specific wildcard allows streaming' do
+      ['text/event-stream;q=0', '*/*;q=0', 'text/event-stream;q=0, */*;q=1',
+       'text/*;q=0, */*;q=1'].each do |accept|
+        expect(described_class.accepts?(accept)).to be(false), accept
+      end
+    end
+
+    it 'uses the most specific range before comparing quality' do
+      ['text/event-stream;q=0.1, text/*;q=0', '*/*;q=0, text/*;q=0.5',
+       'TEXT/EVENT-STREAM; Q=0.001'].each do |accept|
+        expect(described_class.accepts?(accept)).to be(true), accept
+      end
+    end
+
+    it 'does not treat an invalid quality as permission to stream' do
+      %w[invalid -1 1.1 NaN].each do |quality|
+        expect(described_class.accepts?("text/event-stream;q=#{quality}")).to be(false)
+      end
+    end
   end
 
   describe '#headers' do
