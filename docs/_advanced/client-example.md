@@ -37,6 +37,13 @@ Choose **Plain Ruby** or **Rails + SQLite**, then run a turn. The official
 chat per fixture actor and thread, so approval resumes the original tool call
 and later turns use the same conversation.
 
+The development bundle pins `@ag-ui/client` 1.0.3 and overrides Zod to 4.6.6
+for [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5).
+The client and core schema code import `zod/v4`; browser workflows verify the
+override with the pinned client. Run `npm audit` alongside the browser checks.
+These JavaScript packages are development dependencies and are not shipped in
+the Ruby gem.
+
 ## Try the Interactions
 
 The tool scenario pauses for approval. Approve it to run a synthetic order
