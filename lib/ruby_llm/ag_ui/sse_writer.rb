@@ -66,7 +66,7 @@ module RubyLLM
       end
 
       def self.accept_quality(parameters)
-        quality = parameters.find { |parameter| parameter.split('=', 2).first.strip == 'q' }
+        quality = parameters.find { |parameter| parameter.split('=', 2).first.to_s.strip == 'q' }
         return 1.0 unless quality
 
         value = quality.split('=', 2).last.to_s.strip

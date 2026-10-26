@@ -1,7 +1,8 @@
 # Roadmap to 1.0
 
-Sequence reviewed on 2026-10-21. Versions 0.2, 0.3, and 0.4 are published.
-1.0.0.rc.1 is prepared locally and awaits remote CI and publication.
+Sequence reviewed on 2026-10-26. Versions 0.2, 0.3, and 0.4 are published.
+1.0.0.rc.1 is a local, unpublished candidate. After automated verification and
+the maintainer's real installation tests, the next planned publication is 1.0.0.
 Later releases remain targets rather than promised dates. Keep one release in
 progress. Split or drop optional work when it delays the release's main outcome;
 use patch releases for fixes.
@@ -150,8 +151,9 @@ checks, including the version selector.
 Freeze features. Build and install the candidate artifact into fresh plain Ruby
 and Rails applications. Run the documented client and provider paths, verify
 generator files and migrations, and rehearse upgrading from the last 0.x release.
-Use another release candidate when a fix changes public behavior. Publish 1.0
-only after reviewing the results, without using a calendar deadline as the gate.
+Repeat affected acceptance checks when a fix changes public behavior. Keep the
+candidate unpublished. Publish 1.0 only after the maintainer accepts the real
+installation, without using a calendar deadline as the gate.
 
 - [x] Audit the mapper, run lifecycle, stores, input parsing, and Rails adapter
   against RubyLLM 2.1.1's real provider protocols.
@@ -163,15 +165,22 @@ only after reviewing the results, without using a calendar deadline as the gate.
   browser, and live OpenRouter checks.
 - [x] Rehearse the upgrade from the published 0.4.0 artifact: 0.4 records
   reconnect and resume, and the generated files are unchanged.
-- [ ] Push the candidate, pass the remote matrix, tag `v1.0.0.rc.1`, and verify
-  the published artifact as the [release guide](docs/_reference/releasing.md)
-  describes.
+- [ ] Pass the final remote matrix and review the fixed local artifact.
+- [ ] Complete the maintainer's real application installation and upgrade tests
+  using [Candidate Acceptance](docs/_reference/release-candidate.md). Do not
+  tag or publish an RC. Prepare 1.0.0 only after this acceptance.
 
 The 2026-10-21 local rehearsal is recorded in
 [Compatibility](docs/_reference/compatibility.md). The streamed tool-call
 defects affected Chat Completions, OpenAI Responses, Anthropic, Bedrock, and
 Gemini; the 0.4 evidence did not exercise two tool rounds or those shapes.
 Intercepted-HTTP specs now run a real RubyLLM chat for each tested shape.
+
+The 2026-10-26 review adds pre-stream HTTP refusal tests and a real Rails host
+without Active Record, and makes the two-artifact 0.4 upgrade probe repeatable
+in CI. Ruby and client advisory checks are refreshed. The browser client uses
+patched Zod with the same 18 passing workflows. The candidate remains local;
+the maintainer's real application installation is still pending.
 
 ## 1.0 release conditions
 
@@ -201,9 +210,9 @@ host need fits this gem's integration boundary.
 
 ## Next action
 
-Review the prepared `1.0.0.rc.1` commits, push them to `main`, and wait for the
-remote matrix. Tag `v1.0.0.rc.1` only on a passing commit, then verify the
-published artifact and Next documentation. Keep features frozen. Collect
-feedback on the candidate; a fix that changes public behavior needs another
-candidate before 1.0. Live evidence for a second provider is needed only if
-1.0 claims one.
+Complete the final remote checks and hand the fixed local candidate artifact to
+the maintainer for real application testing. Keep features frozen and record
+the exact artifact hash with the results. Resolve any reported defect, repeat
+the affected checks, then prepare and publish 1.0.0 after acceptance. Keep RC
+tags and publication disabled. Live evidence for a second provider is needed
+only if 1.0 claims one.

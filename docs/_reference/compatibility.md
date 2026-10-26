@@ -58,6 +58,49 @@ The RSpec suite runs offline with fakes and no provider credentials. Package ver
 
 ## 1.0.0.rc.1 Release Rehearsal
 
+The candidate stays local and unpublished. Follow
+[Candidate Acceptance]({% link _reference/release-candidate.md %}) to install
+its gem file. Maintainer testing in a real application remains required before
+1.0.0. The dated 2026-10-21 evidence below records the earlier rehearsal.
+
+### Final Local Review on 2026-10-26
+
+The offline suite passes 320 examples with zero failures and two opt-in live
+checks skipped, on Ruby 3.3.5 with RubyLLM 2.1.1 and Rails 8.1.4. Line coverage
+is 97.58 percent; this measures executed lines rather than complete behavior.
+The same 320 examples pass separately on the minimum RubyLLM 2.1.0.
+Lint passes on 100 files. Added regressions cover SSE quality and wildcard
+precedence, empty media parameters, and actual Rails requests without Active
+Record. Known missing-record errors still return 404; unrelated host errors
+propagate. The focused tests reproduce the defects before their fixes.
+
+The client still uses `@ag-ui/client` 1.0.3. After overriding Zod to 4.6.6,
+18 browser workflows pass with all 242 consumed events schema-valid. Desktop
+approval progress and 390px mobile denial screenshots were inspected. The
+2026-10-26 npm audit reports zero findings. Before the override, the audit
+reported four high findings from one transitive Zod advisory. This is a
+development bundle, not a JavaScript dependency shipped with the Ruby gem.
+
+The Ruby audit uses 1,269 advisories at
+`03da937a9e171e3fedebde6620e203559b7a60c0` and reports no findings after updating
+the local Rails dependency `crass` from 1.0.7 to 1.0.8. Existing applications
+need their own lockfile audit; installing this gem does not audit a host's
+Rails dependencies. CI now audits both the Ruby development bundle and npm.
+
+`bin/verify-upgrade` preserves this rehearsal as a repeatable command. It
+installs the published 0.4.0 artifact and the built candidate, then uses separate
+processes against one temporary SQLite database. Generated files are unchanged;
+0.4 completed outcomes reconnect, old approvals execute once, denial executes
+no effect, completed retries do not execute again, and scope isolation holds.
+Its scripted chat and existing development dependencies are separate evidence
+from clean installation and real-provider tests.
+
+The bounded OpenRouter rerun passes both live text and approval/resume checks
+with `openai/gpt-4.1-mini`, plus one offline harness case. No live browser,
+Rails/provider, denial, cancellation-timing, or additional-provider claim is made.
+
+### Earlier Local Rehearsal on 2026-10-21
+
 On 2026-10-21, the candidate passes 313 offline examples with zero failures
 and two opt-in provider skips on Ruby 3.3.5, RubyLLM 2.1.1, and Rails 8.1.4.
 Lint passes on 97 files. The browser suite passes 18 workflows with
@@ -83,9 +126,8 @@ for six examples and zero failures.
 The audit for this candidate found streamed tool-call defects that the 0.4
 evidence did not exercise: a second tool round in one turn, Anthropic and
 Bedrock empty opening input, and Gemini whole-call arguments. Each defect has a
-real-chat intercepted-HTTP spec that fails before its fix. Remote CI and the
-release workflow run when the candidate commit is pushed and tagged; they are
-not part of this local record.
+real-chat intercepted-HTTP spec that fails before its fix. Remote CI is separate
+from that local record. No RC tag or publication is planned.
 
 ## 0.4 Release Acceptance
 

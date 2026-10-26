@@ -19,10 +19,12 @@ RubyLLM and AG-UI maintainers.
 ## Install
 
 ```ruby
-gem 'ruby_llm-ag_ui', '1.0.0.rc.1'
+gem 'ruby_llm-ag_ui', '~> 0.4.0'
 ```
 
-This is the 1.0 release candidate. The latest stable release is 0.4.0.
+The latest published release is 0.4.0. The 1.0 candidate is available as a local
+build for [installation acceptance](docs/_reference/release-candidate.md);
+it is not published on RubyGems.
 
 Requires Ruby >= 3.2, RubyLLM >= 2.1 and < 3.0, and `ag-ui-protocol` 0.2.x.
 Run `bundle install` after adding the gem.

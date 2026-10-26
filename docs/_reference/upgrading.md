@@ -17,15 +17,10 @@ After reading this guide, you will know:
 
 ## Move from 0.4 to 1.0.0.rc.1
 
-Update your Gemfile and dependency:
-
-```ruby
-gem 'ruby_llm-ag_ui', '1.0.0.rc.1'
-```
-
-```sh
-bundle update ruby_llm-ag_ui
-```
+Install the local artifact through
+[Candidate Acceptance]({% link _reference/release-candidate.md %}).
+The candidate is not available on RubyGems. Keep a copy of your 0.4 lockfile
+and database backup so you can compare the upgrade in a disposable application.
 
 The release candidate keeps the 0.4 public API, configuration, and store
 contract. It needs no SQL migration, and the generated migration and

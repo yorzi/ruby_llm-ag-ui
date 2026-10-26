@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Check persisted 0.4 data through two separately activated installed gems.
+require 'digest'
+require 'fileutils'
+require 'open3'
+require 'rbconfig'
+require 'rubygems/installer'
+require 'tmpdir'
+require_relative '../lib/ruby_llm/ag_ui/version'
+
+root = File.expand_path('..', __dir__)
+previous = ARGV.fetch(0) { abort 'usage: bundle exec ruby bin/verify-upgrade /path/to/ruby_llm-ag_ui-0.4.0.gem' }
+candidate = File.join(root, "pkg/ruby_llm-ag_ui-#{RubyLLM::AgUI::VERSION}.gem")
+abort 'Build the candidate first: bundle exec rake build' unless File.file?(candidate)
+abort 'The 0.4.0 artifact does not exist' unless File.file?(previous)
+
+Dir.mktmpdir('ag-ui-upgrade-') do |workspace|
+  home = File.join(workspace, 'gems')
+  artifacts = [previous, candidate].map do |path|
+    frozen = File.join(workspace, File.basename(path))
+    FileUtils.cp(path, frozen)
+    specification = Gem::Installer.at(frozen, install_dir: home, ignore_dependencies: true, document: []).install
+    [specification, Digest::SHA256.file(frozen).hexdigest]
+  end
+  abort 'Expected a 0.4.0 baseline' unless artifacts.first.first.version.to_s == '0.4.0'
+  abort 'Wrong candidate version' unless artifacts.last.first.version.to_s == RubyLLM::AgUI::VERSION
+
+  environment = {
+    'GEM_HOME' => home, 'GEM_PATH' => ([home] + Gem.path).join(File::PATH_SEPARATOR),
+    'RUBYOPT' => nil, 'RUBYLIB' => nil, 'BUNDLE_GEMFILE' => nil, 'BUNDLE_BIN_PATH' => nil
+  }
+  artifacts.each_with_index do |(specification, sha), index|
+    variables = environment.merge('UPGRADE_PHASE' => index.to_s, 'UPGRADE_HOME' => workspace,
+                                  'UPGRADE_VERSION' => specification.version.to_s,
+                                  'EXPECTED_GEM_ROOT' => specification.full_gem_path)
+    output, error, result = Open3.capture3(variables, RbConfig.ruby,
+                                           File.join(root, 'scripts/upgrade_probe.rb'), chdir: workspace)
+    FileUtils.mkdir_p(File.join(root, 'tmp/validation'))
+    File.write(File.join(root, "tmp/validation/upgrade-#{index}.log"), output + error)
+    abort output + error unless result.success?
+
+    puts output
+    puts "UPGRADE_ARTIFACT: #{specification.version} SHA256=#{sha}"
+  end
+end

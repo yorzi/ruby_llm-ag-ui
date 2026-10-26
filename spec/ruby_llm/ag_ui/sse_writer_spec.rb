@@ -53,6 +53,11 @@ RSpec.describe RubyLLM::AgUI::SSEWriter do
         expect(described_class.accepts?("text/event-stream;q=#{quality}")).to be(false)
       end
     end
+
+    it 'allows empty media parameters without raising an error' do
+      expect(described_class.accepts?('text/event-stream; ;q=0.5;')).to be(true)
+      expect(described_class.accepts?('text/event-stream; ;q=0;')).to be(false)
+    end
   end
 
   describe '#headers' do

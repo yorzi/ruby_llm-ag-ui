@@ -18,13 +18,12 @@ After reading this guide, you will know:
 
 ## Try the Release Candidate
 
-```sh
-bundle add ruby_llm-ag_ui --version 1.0.0.rc.1
-```
-
-Version 1.0.0.rc.1 freezes features for 1.0. It keeps the public API and store
-contract that 0.4 proposed, and it needs no new migration. A fix that changes
-public behavior ships as another release candidate before 1.0. Report a problem
+Build and install the local gem using
+[Candidate Acceptance]({% link _reference/release-candidate.md %}).
+Version 1.0.0.rc.1 is not published or tagged. It freezes features for 1.0
+and keeps the public API and store contract that 0.4 proposed, with no new
+migration. Repeat the affected checks after a fix. After maintainer acceptance,
+the next planned publication is 1.0.0. Report a problem
 with the versions from `RubyLLM::AgUI.config.to_h`, as
 [Compatibility]({% link _reference/compatibility.md %}) describes.
 
@@ -53,6 +52,14 @@ Requiring the gem during `Bundler.require` no longer loads `ActiveRecord::Base`.
 The durable store's row class loads on first use, after your application's
 configuration. The generated initializer still assigns
 `RubyLLM::AgUI::Rails::ActiveRecordStore.new` as before.
+
+## Refuse an Unacceptable Stream Before Provider Work
+
+`SSEWriter.accepts?` honors quality values and media-range precedence. An
+explicit `text/event-stream;q=0` refuses SSE even with `*/*;q=1`. Empty media
+parameters do not raise a server error. Rails returns 406 before resolving a
+chat or reserving a run. Stream conflicts also return 409 in Rails hosts that
+do not load Active Record; unrelated host errors still propagate.
 
 ## Refuse Malformed Text as a Client Error
 
