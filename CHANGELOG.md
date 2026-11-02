@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.0.0.rc.1] - Unreleased
 
+### Removed
+
+- Support for Ruby 3.2, which reached end of life in March 2026. The gem now
+  requires Ruby 3.3 or newer, and CI tests Ruby 3.3, 3.4, and 4.0.
+
 ### Changed
 
 - The durable store finds interrupted runs through the shipped status index,

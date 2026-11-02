@@ -34,6 +34,9 @@ streamed call. If your client worked around the old `{}` prefix or Ruby
 Requiring the gem no longer loads `ActiveRecord::Base` during a Rails boot.
 Code that relied on the gem to load Active Record must load it itself.
 
+1.0 requires Ruby 3.3 or newer. Upgrade an application on Ruby 3.2 before you
+update the gem; Bundler refuses to install 1.0 on Ruby 3.2.
+
 ## Move from 0.3 to 0.4
 
 Update your Gemfile and dependency:

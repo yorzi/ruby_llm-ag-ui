@@ -22,7 +22,7 @@ After reading this guide, you will know:
 {% if site.docs_unreleased %}bundle add ruby_llm-ag_ui --git https://github.com/yorzi/ruby_llm-ag-ui --branch main{% else %}bundle add ruby_llm-ag_ui --version {{ site.version }}{% endif %}
 ```
 
-The gem requires Ruby 3.2 or newer, RubyLLM 2.1 or newer, and `ag-ui-protocol` 0.2.x. The Rails adapter is optional. Provider credentials belong to your RubyLLM application; the parser example below needs none.
+The gem requires Ruby 3.3 or newer, RubyLLM 2.1 or newer, and `ag-ui-protocol` 0.2.x. The Rails adapter is optional. Provider credentials belong to your RubyLLM application; the parser example below needs none.
 
 The runtime dependencies select patched `cgi`, `resolv`, `uri`, and `zlib` gems. An older Ruby installation's default library versions do not override those dependency requirements.
 

@@ -23,7 +23,7 @@ dependency does.
 
 | Component | Range | Evidence |
 |---|---|---|
-| Ruby | `>= 3.2` | Recorded 0.4 CI passes on 3.2.11, 3.3.12, and 3.4.11; 4.0.9 passes locally, and CI now includes 4.0 |
+| Ruby | `>= 3.3` | Recorded 0.4 CI passes on 3.3.12 and 3.4.11; 4.0.9 passes locally, and CI now includes 4.0. Ruby 3.2 is no longer supported |
 | RubyLLM | `>= 2.1`, `< 3.0` | 2.1.0 and 2.1.1 pass the 0.4 CI matrix; the recorded live session uses 2.1.1 |
 | `ag-ui-protocol` | `~> 0.2.0` | 0.2.0 |
 | JSON | `>= 2.0`, `< 3` | 2.21.2 passes both Rails lines; JSON 3 removes the `quirks_mode` option used by Rails 8.0 |
