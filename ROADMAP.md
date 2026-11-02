@@ -1,8 +1,8 @@
 # Roadmap to 1.0
 
-Sequence reviewed on 2026-11-02. Versions 0.2, 0.3, and 0.4 are published.
-The local 1.0.0.rc.1 candidate was accepted without an RC publication, and
-1.0.0 is prepared for publication from its release tag.
+Sequence reviewed on 2026-11-02. Versions 0.2, 0.3, 0.4, and
+[1.0.0](https://github.com/yorzi/ruby_llm-ag-ui/releases/tag/v1.0.0) are published. The local 1.0.0.rc.1
+candidate was accepted without an RC publication.
 Later releases remain targets rather than promised dates. Keep one release in
 progress. Split or drop optional work when it delays the release's main outcome;
 use patch releases for fixes.
@@ -52,7 +52,7 @@ behavior they describe; future features stay out of the changelog until built.
 | **0.3.0 (released)** | Reliable lifecycle and durable runs | Disconnect, cancellation, worker loss, and competing requests have tested, documented outcomes. |
 | **0.4.0 (released)** | Compatibility and API stabilization | The proposed 1.0 support matrix and public API pass end-to-end verification. |
 | **1.0.0.rc.1 (accepted, not published)** | Release rehearsal | A fresh application uses the packaged candidate without checkout-only files or undocumented setup. |
-| **1.0.0 (prepared)** | Stable integration contract | All release conditions below pass; no known blocker remains. |
+| **1.0.0 (released)** | Stable integration contract | All release conditions below pass; no known blocker remains. |
 
 ### 0.2.0: client example and tool progress
 
@@ -218,7 +218,9 @@ host need fits this gem's integration boundary.
 
 ## Next action
 
-Tag the release commit after CI passes, then verify the RubyGems and GitHub
-downloads against the tag, the installed artifact, and the stable and archived
-documentation. Fixes after 1.0.0 ship as patch releases. Live evidence for a
-second provider is needed only if a release claims one.
+1.0.0 is published on 2026-11-02. Its 21-job CI run and release workflow pass,
+the RubyGems and GitHub downloads match each other and the tag, and the stable,
+`/v0/`, and `/next/` documentation is deployed. Fixes after 1.0.0 ship as patch
+releases, and the public contract changes only in 2.0. Pick the next feature
+from the deferred list only when a host needs it. Live evidence for a second
+provider is needed only if a release claims one.

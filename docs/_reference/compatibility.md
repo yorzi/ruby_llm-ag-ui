@@ -62,6 +62,22 @@ Version 1.0.0 was rehearsed as the local, unpublished candidate 1.0.0.rc.1 and
 published after the maintainer's acceptance. The dated reviews below record that
 candidate. The 2026-10-21 evidence records the earlier rehearsal.
 
+### Published 1.0.0 Artifact
+
+The [release CI](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/41449302653) passes all 21 jobs at `e80dfdd`:
+Ruby 3.3, 3.4, and 4.0 with RubyLLM 2.1.0 and 2.1.1; Rails 8.0 and 8.1 on each
+Ruby; lint, installed-host checks, and the browser suite. The
+[release workflow](https://github.com/yorzi/ruby_llm-ag-ui/actions/runs/41449675749) verifies the tagged package and
+publishes it through trusted publishing.
+
+The RubyGems and GitHub Release downloads have the same SHA-256,
+`28a223ca6f668f077f677e72c6040da7ae9387d828be86e3f11cd35c8909a762`, which matches
+`SHA256SUMS` and the RubyGems metadata. All 67 packaged files match `v1.0.0`
+byte for byte. The downloaded gem passes both installed endpoints, clean core
+and Rails installation, and the activated-dependency advisory check without
+being rebuilt. The stable documentation, the 0.4 archive at `/v0/`, and `/next/`
+serve the expected versions.
+
 ### Release Verification on 2026-11-02
 
 The 1.0.0 release commit passes 321 offline examples with zero failures and two
