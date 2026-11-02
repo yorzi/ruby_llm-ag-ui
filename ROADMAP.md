@@ -1,6 +1,6 @@
 # Roadmap to 1.0
 
-Sequence reviewed on 2026-10-26. Versions 0.2, 0.3, and 0.4 are published.
+Sequence reviewed on 2026-11-02. Versions 0.2, 0.3, and 0.4 are published.
 1.0.0.rc.1 is a local, unpublished candidate. After automated verification and
 the maintainer's real installation tests, the next planned publication is 1.0.0.
 Later releases remain targets rather than promised dates. Keep one release in
@@ -182,6 +182,11 @@ in CI. Ruby and client advisory checks are refreshed. The browser client uses
 patched Zod with the same 18 passing workflows. The candidate remains local;
 the maintainer's real application installation is still pending.
 
+The 2026-11-02 review fixes one more streamed tool-call defect: a fragment with
+a new id under a reused stream index now opens a new call, as RubyLLM does.
+Ruby 4.0.9 passes the suite with both RubyLLM lines, and CI adds Ruby 4.0. The
+fix changes a packaged file, so the 2026-10-26 artifact is superseded.
+
 ## 1.0 release conditions
 
 - [ ] The claimed text, tool, approval, denial, cancellation, failure, progress,
@@ -210,8 +215,9 @@ host need fits this gem's integration boundary.
 
 ## Next action
 
-Complete the final remote checks and hand the fixed local candidate artifact to
-the maintainer for real application testing. Keep features frozen and record
+Push the 2026-11-02 fix, pass the final remote matrix including Ruby 4.0, then
+rebuild the candidate and repeat the installed-host, upgrade, and browser checks.
+Hand that rebuilt artifact to the maintainer for real application testing. Keep features frozen and record
 the exact artifact hash with the results. Resolve any reported defect, repeat
 the affected checks, then prepare and publish 1.0.0 after acceptance. Keep RC
 tags and publication disabled. Live evidence for a second provider is needed

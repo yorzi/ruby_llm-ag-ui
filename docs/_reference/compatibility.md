@@ -23,11 +23,11 @@ dependency does.
 
 | Component | Range | Evidence |
 |---|---|---|
-| Ruby | `>= 3.2` | Recorded 0.4 CI passes on 3.2.11, 3.3.12, and 3.4.11 |
+| Ruby | `>= 3.2` | Recorded 0.4 CI passes on 3.2.11, 3.3.12, and 3.4.11; 4.0.9 passes locally, and CI now includes 4.0 |
 | RubyLLM | `>= 2.1`, `< 3.0` | 2.1.0 and 2.1.1 pass the 0.4 CI matrix; the recorded live session uses 2.1.1 |
 | `ag-ui-protocol` | `~> 0.2.0` | 0.2.0 |
 | JSON | `>= 2.0`, `< 3` | 2.21.2 passes both Rails lines; JSON 3 removes the `quirks_mode` option used by Rails 8.0 |
-| Rails (adapter only) | `railties`, `actionpack`, `activerecord` `>= 8.0` | Recorded 0.4 CI passes on 8.0.5.1 and 8.1.4 with Ruby 3.3/3.4 |
+| Rails (adapter only) | `railties`, `actionpack`, `activerecord` `>= 8.0` | Recorded 0.4 CI passes on 8.0.5.1 and 8.1.4 with Ruby 3.3/3.4; both pass locally on Ruby 4.0.9 |
 | AG-UI schema | pinned commit `89cedd3fd549feeee41e50e1d7c6d373e549241a` | vendored, SHA-256 recorded in [AG-UI Protocol Coverage]({% link _reference/protocol-coverage.md %}) |
 
 The pure-Ruby core uses `ruby_llm` and `ag-ui-protocol`, plus the patched
@@ -62,6 +62,25 @@ The candidate stays local and unpublished. Follow
 [Candidate Acceptance]({% link _reference/release-candidate.md %}) to install
 its gem file. Maintainer testing in a real application remains required before
 1.0.0. The dated 2026-10-21 evidence below records the earlier rehearsal.
+
+### Candidate Review on 2026-11-02
+
+A review of every change since 0.4.0 found one more streamed tool-call defect.
+RubyLLM starts a new call for each fragment that carries an id, but the mapper
+continued the call already at that stream index. An OpenAI-compatible server
+that sends each parallel call whole at index 0 had the second call's arguments
+appended to the first. A real-chat intercepted-HTTP spec fails before the fix.
+
+The offline suite passes 321 examples with zero failures and two opt-in live
+checks skipped on Ruby 3.3.5, and lint passes on 100 files. Ruby 4.0.9 passes the
+same 321 examples twice: with RubyLLM 2.1.1 and Rails 8.1.4, and with RubyLLM
+2.1.0 and Rails 8.0.5.1. Malformed-input refusal holds on JSON 2.7.1, 2.9.1, and
+2.21.2. CI adds Ruby 4.0 to the core and Rails matrices; its remote results are
+separate evidence.
+
+The fix changes a packaged file, so the 2026-10-26 artifact below is superseded.
+Rebuild the candidate and repeat the installed-host, upgrade, and browser checks
+before maintainer acceptance.
 
 ### Final Local Review on 2026-10-26
 
