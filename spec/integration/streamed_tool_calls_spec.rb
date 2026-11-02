@@ -44,10 +44,12 @@ RSpec.describe 'streamed tool calls with intercepted HTTP' do
     decode_sse(output).each { |event| expect_valid_event(event) }
   end
 
-  # The call events a client sees, with each call's assembled arguments parsed.
+  # The call events a client sees, grouped by call in order of first sight,
+  # with each call's assembled arguments parsed. Calls of one response may
+  # overlap, so events are grouped by id rather than by position.
   def calls(events)
     events.select { |event| %w[TOOL_CALL_START TOOL_CALL_ARGS TOOL_CALL_END].include?(event['type']) }
-          .slice_before { |event| event['type'] == 'TOOL_CALL_START' }
+          .group_by { |event| event['toolCallId'] }.values
           .map { |call| summarize(call) }
   end
 
@@ -74,6 +76,27 @@ RSpec.describe 'streamed tool calls with intercepted HTTP' do
       stub_request(:post, 'https://openrouter.ai/api/v1/chat/completions')
         .to_return(headers: headers, body: tool_round('call_a', 'one'))
         .then.to_return(headers: headers, body: tool_round('call_b', 'two'))
+        .then.to_return(headers: headers, body: sse([{ content: 'done' }], 'stop'))
+
+      expect(calls(run(chat_for(:openrouter)))).to eq(
+        [
+          [['call_a'], %w[TOOL_CALL_START TOOL_CALL_ARGS TOOL_CALL_END], { 'query' => 'one' }],
+          [['call_b'], %w[TOOL_CALL_START TOOL_CALL_ARGS TOOL_CALL_END], { 'query' => 'two' }]
+        ]
+      )
+      expect(tool.queries).to eq(%w[one two])
+    end
+
+    # Some OpenAI-compatible servers send each parallel call whole, at index 0.
+    # RubyLLM starts a new call for every fragment that carries an id.
+    it 'opens a new call when a fragment with a new id reuses a stream index' do
+      round = sse([{ tool_calls: [{ index: 0, id: 'call_a', type: 'function',
+                                    function: { name: tool.name, arguments: '{"query":"one"}' } }] },
+                   { tool_calls: [{ index: 0, id: 'call_b', type: 'function',
+                                    function: { name: tool.name, arguments: '{"query":"two"}' } }] }],
+                  'tool_calls')
+      stub_request(:post, 'https://openrouter.ai/api/v1/chat/completions')
+        .to_return(headers: headers, body: round)
         .then.to_return(headers: headers, body: sse([{ content: 'done' }], 'stop'))
 
       expect(calls(run(chat_for(:openrouter)))).to eq(

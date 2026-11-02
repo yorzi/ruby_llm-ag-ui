@@ -206,7 +206,8 @@ module RubyLLM
       # keys point at the same record, so the call is opened once. Providers
       # restart stream indexes in every response, so an index names a call only
       # until its completion ends. An unkeyed fragment continues the latest
-      # streamed call, as RubyLLM's own accumulator does.
+      # streamed call, and a fragment with a different id starts a new call
+      # under the same key, as RubyLLM's own accumulator does.
       def track(key, tool_call, streamed:)
         record = lookup_call(key, tool_call, streamed: streamed)
         record[:id] ||= tool_call.id
@@ -217,7 +218,14 @@ module RubyLLM
       end
 
       def lookup_call(key, tool_call, streamed:)
-        (streamed && stream_call(key)) || find_call(tool_call.id) || new_call
+        record = stream_call(key) if streamed
+        return record if record && continues?(record, tool_call)
+
+        find_call(tool_call.id) || new_call
+      end
+
+      def continues?(record, tool_call)
+        tool_call.id.nil? || record[:id].nil? || record[:id] == tool_call.id
       end
 
       def stream_call(key) = key.nil? ? @latest_stream_call : @stream_calls[key]

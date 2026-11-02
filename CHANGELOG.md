@@ -15,6 +15,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Open a new tool call when a streamed fragment carries a new id under a stream
+  index already in use, as RubyLLM does. An OpenAI-compatible server that sends
+  each parallel call whole at index 0 no longer has a second call's arguments
+  appended to the first call.
 - Handle stream refusals in Rails hosts without Active Record, preserving
   unrelated host errors instead of replacing them with a missing constant.
 - Honor zero quality and media-range precedence in `SSEWriter.accepts?`.

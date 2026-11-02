@@ -30,7 +30,7 @@ with the versions from `RubyLLM::AgUI.config.to_h`, as
 ## Stream Tool Calls Correctly Across Protocols
 
 A client assembles a tool call's arguments by joining its `TOOL_CALL_ARGS`
-deltas. Before this release, three provider shapes produced arguments the client
+deltas. Before this release, four provider shapes produced arguments the client
 could not parse or attribute:
 
 * A second tool round in one turn sent its arguments to the first round's ended
@@ -40,6 +40,9 @@ could not parse or attribute:
   partial JSON, so the client received `{}{"query":"one"}`.
 * Gemini sends a whole call as a parsed object, which went out as Ruby
   `Hash#to_s` output instead of JSON.
+* Some OpenAI-compatible servers send each parallel call whole at index 0. The
+  second call's arguments were appended to the first call. RubyLLM starts a new
+  call for each fragment with a new id, and so does the mapper now.
 
 Each call now opens once, and its deltas join to the JSON arguments the tool
 received. Intercepted-HTTP specs run a real RubyLLM chat for Chat Completions,
