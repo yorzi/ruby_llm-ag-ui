@@ -15,14 +15,19 @@ After reading this guide, you will know:
 * How to move between versioned releases.
 * Where to find changes that need code updates.
 
-## Move from 0.4 to 1.0.0.rc.1
+## Move from 0.4 to 1.0
 
-Install the local artifact through
-[Candidate Acceptance]({% link _reference/release-candidate.md %}).
-The candidate is not available on RubyGems. Keep a copy of your 0.4 lockfile
-and database backup so you can compare the upgrade in a disposable application.
+Update your Gemfile and dependency:
 
-The release candidate keeps the 0.4 public API, configuration, and store
+```ruby
+gem 'ruby_llm-ag_ui', '~> 1.0'
+```
+
+```sh
+bundle update ruby_llm-ag_ui
+```
+
+1.0 keeps the 0.4 public API, configuration, and store
 contract. It needs no SQL migration, and the generated migration and
 initializer are unchanged. Records written by 0.4 stay readable: an exact retry
 reconnects to a 0.4 run, and a 0.4 interrupt can be resumed after the upgrade.

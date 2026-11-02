@@ -32,9 +32,9 @@ returns its stored outcome on an exact retry; it never repeats the turn.
 An active duplicate is refused. See
 [Reconnects]({% link _core_features/reconnects.md %}).
 
-Version 1.0.0.rc.1 freezes the following application contract for 1.0. It
-becomes a stability promise when 1.0.0 is published. A change to it before then
-ships in another release candidate with upgrade steps.
+Version 1.0.0 makes the following application contract a stability promise.
+It follows Semantic Versioning: a change that breaks it waits for 2.0 and ships
+with upgrade steps.
 
 | Entry point | Application contract |
 | --- | --- |

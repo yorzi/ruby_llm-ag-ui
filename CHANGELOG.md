@@ -6,7 +6,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [1.0.0.rc.1] - Unreleased
+## [1.0.0] - 2026-11-02
+
+The stable integration contract. The public API, configuration, and store
+contract proposed in 0.4 are now covered by Semantic Versioning.
 
 ### Removed
 

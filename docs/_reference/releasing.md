@@ -40,10 +40,10 @@ so local and CI builds use the same navigation and parser.
 
 ## Review Release Scope
 
-For the unpublished 1.0 candidate, complete
-[Candidate Acceptance]({% link _reference/release-candidate.md %}) first. Keep
-`released: false` and do not push a version tag. The maintainer tests the local
-artifact before preparing the stable 1.0.0 publication.
+Keep `released: false` on `main` between releases. For a release that changes
+the public contract or its upgrade path, build the artifact, run
+`bundle exec ruby bin/verify-upgrade` with the previous published gem, and
+install it in a real application before you tag.
 
 Use the repository's [roadmap](https://github.com/yorzi/ruby_llm-ag-ui/blob/main/ROADMAP.md)
 for proposed iterations and the 1.0 release conditions. Guides describe available

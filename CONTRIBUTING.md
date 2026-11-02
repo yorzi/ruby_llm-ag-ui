@@ -41,11 +41,9 @@ The package probe installs the artifact outside the checkout using available
 development dependencies; `bin/verify-package` separately tests clean dependency
 resolution. Shut down all task-owned processes when the check finishes.
 
-Before 1.0, build the candidate and run `bundle exec ruby bin/verify-upgrade`
-with the downloaded 0.4.0 gem path. It checks installed artifacts in separate
-processes against one temporary SQLite database, without a provider. Follow
-[Candidate Acceptance](docs/_reference/release-candidate.md) for the maintainer's
-real installation tests. The RC stays unpublished.
+Before a release, build the gem and run `bundle exec ruby bin/verify-upgrade`
+with the downloaded previous release's gem path. It checks installed artifacts in
+separate processes against one temporary SQLite database, without a provider.
 
 Every behavior change needs a test, and lifecycle, identity and security changes
 need their negative case too. The acceptance IDs (FR-01..FR-08) are referenced

@@ -56,12 +56,31 @@ adapter is only loaded when `Rails::Railtie` is already defined.
 
 The RSpec suite runs offline with fakes and no provider credentials. Package verification uses the network only to install dependencies, then runs its core and Rails checks without a provider. Its advisory check includes the actual default-library gem versions activated by the isolated core install.
 
-## 1.0.0.rc.1 Release Rehearsal
+## 1.0.0 Release Evidence
 
-The candidate stays local and unpublished. Follow
-[Candidate Acceptance]({% link _reference/release-candidate.md %}) to install
-its gem file. Maintainer testing in a real application remains required before
-1.0.0. The dated 2026-10-21 evidence below records the earlier rehearsal.
+Version 1.0.0 was rehearsed as the local, unpublished candidate 1.0.0.rc.1 and
+published after the maintainer's acceptance. The dated reviews below record that
+candidate. The 2026-10-21 evidence records the earlier rehearsal.
+
+### Release Verification on 2026-11-02
+
+The 1.0.0 release commit passes 321 offline examples with zero failures and two
+opt-in live checks skipped on Ruby 3.3.5, and lint passes on 100 files. The
+browser suite passes 18 workflows with all 242 consumed events schema-valid. The
+built gem passes both installed endpoints, clean core and Rails installation with
+the generator migrated up and down, and the activated-dependency advisory check.
+The upgrade from the published 0.4.0 artifact keeps the generated files,
+reconnects, runs an approval once, and denies with no effect.
+
+The OpenRouter rerun passes live streamed text and approval with reconnect, plus
+the offline and intercepted harness cases: six examples, zero failures.
+
+The development bundle audit uses 1,307 advisories at
+`79c0e052ade15d29d3ecc1e8d4fa59c337a86383`. Advisories published on 2026-11-01
+affected `addressable`, `rack`, and `sqlite3` in the development and test bundle
+only; after updating them to 2.9.2, 3.2.8, and 2.10.2 the audit reports no
+findings. None is a runtime dependency of the gem. The npm audit reports zero
+findings.
 
 ### Candidate Review on 2026-11-02
 

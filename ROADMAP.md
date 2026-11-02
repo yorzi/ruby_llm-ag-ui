@@ -1,8 +1,8 @@
 # Roadmap to 1.0
 
 Sequence reviewed on 2026-11-02. Versions 0.2, 0.3, and 0.4 are published.
-1.0.0.rc.1 is a local, unpublished candidate. After automated verification and
-the maintainer's real installation tests, the next planned publication is 1.0.0.
+The local 1.0.0.rc.1 candidate was accepted without an RC publication, and
+1.0.0 is prepared for publication from its release tag.
 Later releases remain targets rather than promised dates. Keep one release in
 progress. Split or drop optional work when it delays the release's main outcome;
 use patch releases for fixes.
@@ -51,8 +51,8 @@ behavior they describe; future features stay out of the changelog until built.
 | **0.2.0 (released)** | A real client example and opt-in tool progress | A pinned client consumes the demo; progress is ordered, redacted, and schema-valid. |
 | **0.3.0 (released)** | Reliable lifecycle and durable runs | Disconnect, cancellation, worker loss, and competing requests have tested, documented outcomes. |
 | **0.4.0 (released)** | Compatibility and API stabilization | The proposed 1.0 support matrix and public API pass end-to-end verification. |
-| **1.0.0.rc.1 (prepared)** | Release rehearsal | A fresh application uses the packaged candidate without checkout-only files or undocumented setup. |
-| **1.0.0** | Stable integration contract | All release conditions below pass; no known blocker remains. |
+| **1.0.0.rc.1 (accepted, not published)** | Release rehearsal | A fresh application uses the packaged candidate without checkout-only files or undocumented setup. |
+| **1.0.0 (prepared)** | Stable integration contract | All release conditions below pass; no known blocker remains. |
 
 ### 0.2.0: client example and tool progress
 
@@ -165,10 +165,9 @@ installation, without using a calendar deadline as the gate.
   browser, and live OpenRouter checks.
 - [x] Rehearse the upgrade from the published 0.4.0 artifact: 0.4 records
   reconnect and resume, and the generated files are unchanged.
-- [ ] Pass the final remote matrix and review the fixed local artifact.
-- [ ] Complete the maintainer's real application installation and upgrade tests
-  using [Candidate Acceptance](docs/_reference/release-candidate.md). Do not
-  tag or publish an RC. Prepare 1.0.0 only after this acceptance.
+- [x] Pass the final remote matrix and review the fixed local artifact.
+- [x] Obtain the maintainer's acceptance. No RC was tagged or published; the
+  maintainer approved publishing 1.0.0 on 2026-11-02.
 
 The 2026-10-21 local rehearsal is recorded in
 [Compatibility](docs/_reference/compatibility.md). The streamed tool-call
@@ -185,21 +184,25 @@ the maintainer's real application installation is still pending.
 The 2026-11-02 review fixes one more streamed tool-call defect: a fragment with
 a new id under a reused stream index now opens a new call, as RubyLLM does.
 Ruby 4.0.9 passes the suite with both RubyLLM lines, and CI adds Ruby 4.0. The
-fix changes a packaged file, so the 2026-10-26 artifact is superseded.
+fix changes a packaged file, so the 2026-10-26 artifact is superseded. The
+rebuilt artifact passes installed-host, upgrade, browser, and live OpenRouter
+text and approval checks. 1.0 also drops Ruby 3.2, which reached end of life.
 
 ## 1.0 release conditions
 
-- [ ] The claimed text, tool, approval, denial, cancellation, failure, progress,
+- [x] The claimed text, tool, approval, denial, cancellation, failure, progress,
   and reconnect paths pass against the recorded client and provider versions.
-- [ ] Run identity, tenant isolation, approval replay/expiry, redaction, event
+  Live evidence covers text and approval with reconnect; the other paths use
+  the real client against scripted chats and intercepted HTTP.
+- [x] Run identity, tenant isolation, approval replay/expiry, redaction, event
   order, and concurrent store operations have positive and negative tests.
-- [ ] Worker-loss and transport-failure behavior is explicit, tested, and does
+- [x] Worker-loss and transport-failure behavior is explicit, tested, and does
   not silently re-execute side effects.
-- [ ] The declared dependency matrix passes CI. Local tests, remote CI, client
+- [x] The declared dependency matrix passes CI. Local tests, remote CI, client
   checks, and live-provider checks are recorded as separate evidence.
-- [ ] The public API is documented, examples work from the installed artifact,
+- [x] The public API is documented, examples work from the installed artifact,
   and breaking changes have upgrade steps.
-- [ ] Package, advisory, and documentation checks in the
+- [x] Package, advisory, and documentation checks in the
   [release guide](docs/_reference/releasing.md) pass. Version, changelog,
   What's New, and published documentation agree when the release is published.
 
@@ -215,10 +218,7 @@ host need fits this gem's integration boundary.
 
 ## Next action
 
-Push the 2026-11-02 fix and pass the final remote matrix, including Ruby 4.0.
-The rebuilt candidate already passes the installed-host, upgrade, and browser
-checks. Hand that artifact to the maintainer for real application testing. Keep features frozen and record
-the exact artifact hash with the results. Resolve any reported defect, repeat
-the affected checks, then prepare and publish 1.0.0 after acceptance. Keep RC
-tags and publication disabled. Live evidence for a second provider is needed
-only if 1.0 claims one.
+Tag the release commit after CI passes, then verify the RubyGems and GitHub
+downloads against the tag, the installed artifact, and the stable and archived
+documentation. Fixes after 1.0.0 ship as patch releases. Live evidence for a
+second provider is needed only if a release claims one.

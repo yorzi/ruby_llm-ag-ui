@@ -2,7 +2,7 @@
 layout: default
 title: "What's New in 1.0"
 nav_order: -1
-description: Try the 1.0 release candidate, with streamed tool calls fixed across provider protocols and a rehearsed upgrade from 0.4.
+description: Install the stable 1.0 release, with streamed tool calls fixed across provider protocols, Ruby 3.3 or newer, and a rehearsed upgrade from 0.4.
 ---
 
 # {{ page.title }}
@@ -12,20 +12,27 @@ description: Try the 1.0 release candidate, with streamed tool calls fixed acros
 
 After reading this guide, you will know:
 
-* How to try the release candidate and report a problem.
+* What the 1.0 stability promise covers.
 * Which streamed tool-call fixes reach your client.
 * What changed for Rails boots, malformed input, and long-lived chats.
 
-## Try the Release Candidate
+## Install 1.0
 
-Build and install the local gem using
-[Candidate Acceptance]({% link _reference/release-candidate.md %}).
-Version 1.0.0.rc.1 is not published or tagged. It freezes features for 1.0
-and keeps the public API and store contract that 0.4 proposed, with no new
-migration. Repeat the affected checks after a fix. After maintainer acceptance,
-the next planned publication is 1.0.0. Report a problem
-with the versions from `RubyLLM::AgUI.config.to_h`, as
+```ruby
+gem 'ruby_llm-ag_ui', '~> 1.0'
+```
+
+Version 1.0.0 keeps the public API, configuration, and store contract that 0.4
+proposed, with no new migration. From 1.0 on, that contract follows Semantic
+Versioning: a change that breaks it waits for 2.0. See the
+[Public API Contract]({% link _reference/public-api.md %}) for what it covers.
+Report a problem with the versions from `RubyLLM::AgUI.config.to_h`, as
 [Compatibility]({% link _reference/compatibility.md %}) describes.
+
+## Use Ruby 3.3 or Newer
+
+Ruby 3.2 reached end of life in March 2026, and 1.0 requires Ruby 3.3 or newer.
+CI tests Ruby 3.3, 3.4, and 4.0 with RubyLLM 2.1.0 and 2.1.1.
 
 ## Stream Tool Calls Correctly Across Protocols
 
@@ -86,11 +93,11 @@ works now, alongside lambdas and methods.
 
 Change the version in your Gemfile and run `bundle update ruby_llm-ag_ui`.
 Records written by 0.4 stay readable. The release rehearsal reconnects to a 0.4
-run and resumes a 0.4 interrupt with the candidate. Follow
+run and resumes a 0.4 interrupt with 1.0. Follow
 [Upgrading]({% link _reference/upgrading.md %}) for the steps.
 
 ## Next Steps
 
-* [Compatibility]({% link _reference/compatibility.md %}) - read the release candidate evidence.
+* [Compatibility]({% link _reference/compatibility.md %}) - read the 1.0 release evidence.
 * [Public API Contract]({% link _reference/public-api.md %}) - review the API 1.0 stabilizes.
 * [Release History]({% link _reference/release-history.md %}) - compare earlier releases.
