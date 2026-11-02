@@ -79,8 +79,11 @@ same 321 examples twice: with RubyLLM 2.1.1 and Rails 8.1.4, and with RubyLLM
 separate evidence.
 
 The fix changes a packaged file, so the 2026-10-26 artifact below is superseded.
-Rebuild the candidate and repeat the installed-host, upgrade, and browser checks
-before maintainer acceptance.
+The rebuilt candidate passes the installed-host checks for both endpoints and the
+generated RubyLLM models. Its upgrade from the published 0.4.0 artifact keeps the
+generated files, reconnects, runs an approval once, and denies with no effect.
+The browser suite passes 18 workflows with all 242 consumed events schema-valid;
+desktop approval progress and 390px mobile denial screenshots were inspected.
 
 ### Final Local Review on 2026-10-26
 

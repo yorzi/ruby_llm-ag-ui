@@ -92,3 +92,33 @@ Browser runners close their browsers and loopback servers on exit. Temporary
 upgrade and Bundler hosts are removed automatically; no preview service is
 needed after acceptance. Generated logs, database evidence, and the fixed
 candidate stay in ignored directories.
+
+## Addendum: 2026-11-02 review
+
+Candidate source `92a8116` (code) and `3e00433` (CI and evidence). The review of
+every change since 0.4.0 found one defect: a streamed fragment with a new id
+under a reused stream index continued the call at that index, unlike RubyLLM's
+accumulator. The new intercepted-HTTP spec fails before the fix.
+
+| Check | Result |
+| --- | --- |
+| Core and lint, Ruby 3.3.5 | 321 examples, zero failures, two opt-in skips; 100 files without offenses |
+| Ruby 4.0.9 | 321 examples pass with RubyLLM 2.1.1 / Rails 8.1.4, and with RubyLLM 2.1.0 / Rails 8.0.5.1 |
+| Malformed input | Refused as `MalformedInputError` on JSON 2.7.1, 2.9.1, and 2.21.2 |
+| Real client | 18 workflows, 242 schema-valid consumed events; screenshots inspected |
+| Installed host | Both endpoints, generator/migration, approval, progress, reconnect, generated RubyLLM models |
+| Upgrade | From the 0.4.0 download (`e98b51b3...`): unchanged generator, reconnect, approval once, denial, scope isolation |
+| Documentation | Site builds; v0.4.0 at / and the working tree at /next/ |
+
+Rebuilt artifact, superseding the 2026-10-26 hash above:
+
+```text
+pkg/ruby_llm-ag_ui-1.0.0.rc.1.gem
+SHA256=76b52b249e9cc922ba91c186f754276347dcd972886e3e8f9873d6e54fad4b00
+```
+
+The superseded artifact is kept under ignored `tmp/superseded-rc1-20261026/`.
+Logs are under ignored `tmp/validation/review-20261102/`; browser evidence is in
+`tmp/browser/2026-11-02T12-50-15-952Z-33029/`. Remote CI with Ruby 4.0 has not
+run yet; nothing is pushed, tagged, or published. Maintainer acceptance remains
+the release decision.

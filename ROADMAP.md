@@ -215,9 +215,9 @@ host need fits this gem's integration boundary.
 
 ## Next action
 
-Push the 2026-11-02 fix, pass the final remote matrix including Ruby 4.0, then
-rebuild the candidate and repeat the installed-host, upgrade, and browser checks.
-Hand that rebuilt artifact to the maintainer for real application testing. Keep features frozen and record
+Push the 2026-11-02 fix and pass the final remote matrix, including Ruby 4.0.
+The rebuilt candidate already passes the installed-host, upgrade, and browser
+checks. Hand that artifact to the maintainer for real application testing. Keep features frozen and record
 the exact artifact hash with the results. Resolve any reported defect, repeat
 the affected checks, then prepare and publish 1.0.0 after acceptance. Keep RC
 tags and publication disabled. Live evidence for a second provider is needed
